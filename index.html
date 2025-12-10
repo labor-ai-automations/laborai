@@ -1,1 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Projetos - LaborAI</title>
 
+    <!-- ======================================================= -->
+    <!-- ESTILOS (CSS)                                           -->
+    <!-- ======================================================= -->
+    <style>
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #3b82f6;
+            --background-color: #f1f5f9;
+            --card-background: #ffffff;
+            --text-color: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #22c55e;
+            --warning-color: #eab308;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- Login Section --- */
+        #login-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-card {
+            background: var(--card-background);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-card h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* --- App Container --- */
+        #app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .project-card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .project-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* --- Project Detail View --- */
+        .phase {
+            border-left: 3px solid var(--border-color);
+            padding-left: 20px;
+            margin-left: 10px;
+            margin-bottom: 24px;
+        }
+        .phase.completed { border-left-color: var(--success-color); }
+        .phase.in_progress { border-left-color: var(--warning-color); }
+
+        .update {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        .update-header { font-weight: bold; }
+        .update-meta { font-size: 0.8em; color: var(--text-light); }
+        .update-content a { color: var(--secondary-color); text-decoration: none; }
+
+        /* --- Admin View --- */
+        #admin-view {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .admin-section-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        #create-user-button {
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================= -->
+    <!-- ESTRUTURA HTML                                          -->
+    <!-- ======================================================= -->
+    <div id="login-section">
+        <div class="login-card">
+            <h2>Portal LaborAI</h2>
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="Seu e-mail" required>
+                <input type="password" id="login-password" placeholder="Sua senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="container hidden">
+        <header id="app-header">
+            <div>
+                <strong>LaborAI Portal</strong>
+            </div>
+            <div>
+                <span id="user-email"></span>
+                <button id="admin-button" class="hidden" style="width: auto; padding: 8px 12px; margin-left: 16px; background-color: var(--warning-color);">Admin</button>
+                <button id="logout-button" style="width: auto; padding: 8px 12px; margin-left: 16px;">Sair</button>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <!-- View do Dashboard (Lista de Projetos) -->
+            <div id="dashboard-view">
+                <h3>Meus Projetos</h3>
+                <div id="projects-list">
+                    <!-- Cards dos projetos serão inseridos aqui -->
+                </div>
+            </div>
+
+            <!-- View de Detalhe do Projeto -->
+            <div id="project-detail-view" class="hidden">
+                <button id="back-to-dashboard-button">&larr; Voltar ao Dashboard</button>
+                <h2 id="project-detail-name"></h2>
+                <div id="project-detail-content">
+                    <!-- A timeline e os detalhes do projeto serão inseridos aqui -->
+                </div>
+            </div>
+            
+            <!-- View de Admin (Começa escondida) -->
+            <div id="admin-view" class="hidden">
+                <button id="back-to-dashboard-from-admin-button">&larr; Voltar ao Dashboard</button>
+                <h2>Painel Administrativo</h2>
+                
+                <div class="admin-section-card">
+                    <h3>Criar Novo Usuário de Cliente</h3>
+                    <form id="create-user-form">
+                        <label for="client-select">Associar a qual cliente?</label>
+                        <select id="client-select" required></select>
+                        
+                        <label for="new-user-email">Email do novo usuário:</label>
+                        <input type="email" id="new-user-email" placeholder="email@cliente.com" required>
+                        
+                        <label for="new-user-password">Senha temporária:</label>
+                        <input type="password" id="new-user-password" placeholder="Crie uma senha forte" required>
+                        
+                        <button type="submit" id="create-user-button">Criar Usuário</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- SCRIPT DE IMPORTAÇÃO DO SUPABASE                        -->
+    <!-- ======================================================= -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- ======================================================= -->
+    <!-- LÓGICA DA APLICAÇÃO (JAVASCRIPT)                        -->
+    <!-- ======================================================= -->
+    <script>
+        // --- BLOCO DE CONFIGURAÇÃO ---
+        const SUPABASE_URL = 'URL_DO_SEU_PROJETO_SUPABASE';
+        const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_DO_SUPABASE';
+
+        const N8N_WEBHOOKS = {
+            CRIAR_PROJETO: 'URL_DO_SEU_WEBHOOK_N8N_CRIAR_PROJETO',
+            ADD_ATUALIZACAO: 'URL_DO_SEU_WEBHOOK_N8N_ADD_ATUALIZACAO',
+            CRIAR_USUARIO: 'URL_DO_SEU_WEBHOOK_N8N_CRIAR_USUARIO'
+        };
+
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- BLOCO DE SELETORES DE DOM ---
+        const loginSection = document.getElementById('login-section');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const logoutButton = document.getElementById('logout-button');
+        const userEmailSpan = document.getElementById('user-email');
+        const projectsListDiv = document.getElementById('projects-list');
+        const dashboardView = document.getElementById('dashboard-view');
+        const projectDetailView = document.getElementById('project-detail-view');
+        const backToDashboardButton = document.getElementById('back-to-dashboard-button');
+        const adminButton = document.getElementById('admin-button');
+        const adminView = document.getElementById('admin-view');
+        const backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button');
+        const createUserForm = document.getElementById('create-user-form');
+        const clientSelect = document.getElementById('client-select');
+
+        // --- BLOCO DE ESTADO DA APLICAÇÃO ---
+        let state = {
+            user: null,
+            projects: [],
+            clients: [],
+        };
+
+        // --- BLOCO DE FUNÇÕES DE RENDERIZAÇÃO ---
+        
+        function renderDashboard() {
+            projectsListDiv.innerHTML = ''; // Limpa a lista
+            if (state.projects.length === 0) {
+                projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>';
+                return;
+            }
+
+            state.projects.forEach(project => {
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.dataset.projectId = project.id;
+                
+                const versions = project.laborai_project_versions;
+                const latestVersion = versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                const statusLabel = project.status.replace('_', ' ').toUpperCase();
+
+                card.innerHTML = `
+                    <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
+                    <p>Status: <span style="font-weight: bold; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel}</span></p>
+                    <p>Última atualização: ${new Date(project.updated_at).toLocaleDateString()}</p>
+                `;
+                projectsListDiv.appendChild(card);
+            });
+        }
+
+        function renderProjectDetail(projectId) {
+            const project = state.projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            document.getElementById('project-detail-name').innerText = project.name;
+            const contentDiv = document.getElementById('project-detail-content');
+            contentDiv.innerHTML = ''; // Limpa o conteúdo anterior
+
+            const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(a.created_at));
+            
+            versions.forEach(version => {
+                const versionContainer = document.createElement('div');
+                versionContainer.innerHTML = `<h3>Versão ${version.version_number} - ${version.status.toUpperCase()}</h3><p>${version.summary || ''}</p>`;
+
+                const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
+                phases.forEach(phase => {
+                    const phaseDiv = document.createElement('div');
+                    phaseDiv.className = `phase ${phase.status.replace('_', '-')}`;
+                    phaseDiv.innerHTML = `<h4>Fase: ${phase.name} (${phase.status})</h4>`;
+
+                    const updates = phase.laborai_phase_updates.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                    updates.forEach(update => {
+                        const updateDiv = document.createElement('div');
+                        updateDiv.className = 'update';
+                        updateDiv.innerHTML = `
+                            <div class="update-header">
+                                <strong>${update.title}</strong>
+                                <span class="update-meta"> - ${new Date(update.created_at).toLocaleString()}</span>
+                            </div>
+                            <div class="update-content">
+                                <p>${update.description || ''}</p>
+                                ${update.content_url ? `<a href="${update.content_url}" target="_blank">Ver anexo</a>` : ''}
+                            </div>
+                        `;
+                        phaseDiv.appendChild(updateDiv);
+                    });
+                    versionContainer.appendChild(phaseDiv);
+                });
+                contentDiv.appendChild(versionContainer);
+            });
+        }
+
+        function populateClientDropdown() {
+            clientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
+            state.clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.innerText = client.name;
+                clientSelect.appendChild(option);
+            });
+        }
+
+        // --- BLOCO DE FUNÇÕES DE DADOS ---
+
+        async function fetchAllData() {
+            const userIsAdmin = state.user?.user_metadata?.role === 'admin';
+            let projectsQuery;
+
+            if (userIsAdmin) {
+                // Admin vê todos os projetos
+                projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`);
+            } else {
+                // Cliente vê apenas os projetos associados ao seu clientId
+                const userClientId = state.user?.user_metadata?.clientId;
+                if (!userClientId) {
+                    state.projects = [];
+                    renderDashboard();
+                    return;
+                }
+                projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
+            }
+            
+            const projectsPromise = projectsQuery;
+            const clientsPromise = userIsAdmin ? supabase.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
+            
+            const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
+
+            if (projectsResult.error) console.error("Erro ao buscar projetos:", projectsResult.error);
+            else state.projects = projectsResult.data;
+
+            if (clientsResult.error) console.error("Erro ao buscar clientes:", clientsResult.error);
+            else state.clients = clientsResult.data;
+            
+            renderDashboard();
+        }
+
+        // --- BLOCO DE CONTROLE DE UI ---
+        
+        function showView(viewId) {
+            dashboardView.classList.add('hidden');
+            projectDetailView.classList.add('hidden');
+            adminView.classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        // --- BLOCO DE EVENT LISTENERS ---
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert('Erro no login: ' + error.message);
+            } else {
+                state.user = data.user;
+                initApp();
+            }
+        });
+
+        logoutButton.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            loginSection.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+            state = { user: null, projects: [], clients: [] };
+        });
+
+        backToDashboardButton.addEventListener('click', () => showView('dashboard-view'));
+
+        projectsListDiv.addEventListener('click', (e) => {
+            const card = e.target.closest('.project-card');
+            if (card) {
+                const projectId = card.dataset.projectId;
+                renderProjectDetail(projectId);
+                showView('project-detail-view');
+            }
+        });
+
+        adminButton.addEventListener('click', () => {
+            populateClientDropdown();
+            showView('admin-view');
+        });
+
+        backToDashboardFromAdminButton.addEventListener('click', () => showView('dashboard-view'));
+
+        createUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const button = document.getElementById('create-user-button');
+            button.disabled = true;
+            button.innerText = 'Criando...';
+
+            const clientId = clientSelect.value;
+            const email = document.getElementById('new-user-email').value;
+            const password = document.getElementById('new-user-password').value;
+
+            try {
+                const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clientId, email, password })
+                });
+
+                if (!response.ok) throw new Error('Falha na resposta do servidor.');
+                
+                const result = await response.json();
+                alert(result.status || 'Usuário criado com sucesso!');
+                createUserForm.reset();
+
+            } catch (error) {
+                console.error('Erro ao criar usuário:', error);
+                alert('Ocorreu um erro ao criar o usuário.');
+            } finally {
+                button.disabled = false;
+                button.innerText = 'Criar Usuário';
+            }
+        });
+
+        // --- BLOCO DE INICIALIZAÇÃO ---
+
+        async function initApp() {
+            loginSection.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            userEmailSpan.innerText = state.user.email;
+
+            if (state.user?.user_metadata?.role === 'admin') {
+                adminButton.classList.remove('hidden');
+            }
+
+            await fetchAllData();
+            showView('dashboard-view');
+        }
+
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                state.user = session.user;
+                initApp();
+            } else {
+                loginSection.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+            }
+        }
+
+        checkSession();
+
+    </script>
+</body>
+</html>
