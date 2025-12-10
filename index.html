@@ -245,9 +245,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- BLOCO DE CONFIGURAÇÃO ---
-            const SUPABASE_URL = 'SUA_URL_DO_SUPABASE_AQUI'; // Substitua
-            const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_DO_SUPABASE_AQUI'; // Substitua
-            const N8N_BASE_URL = 'SUA_URL_BASE_DO_N8N_AQUI'; // Ex: https://meu-n8n.com
+            const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
+            
+            const N8N_BASE_URL = 'SUA_URL_BASE_DO_N8N_AQUI'; // <<<---- ÚNICA COISA QUE VOCÊ PRECISA SUBSTITUIR
 
             // Webhooks com nomes exatos dos workflows
             const N8N_WEBHOOKS = {
@@ -260,7 +261,7 @@
                 ADD_ATIVO_COLECAO: `${N8N_BASE_URL}/webhook/adicionar-ativo-colecao`,
             };
 
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             // --- BLOCO DE SELETORES DE DOM ---
             const loginSection = document.getElementById('login-section');
@@ -292,16 +293,13 @@
                     projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>';
                     return;
                 }
-
                 state.projects.forEach(project => {
                     const card = document.createElement('div');
                     card.className = 'project-card';
                     card.dataset.projectId = project.id;
-                    
                     const versions = project.laborai_project_versions;
                     const latestVersion = versions && versions.length > 0 ? versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0] : null;
                     const statusLabel = project.status.replace('_', ' ').toUpperCase();
-
                     card.innerHTML = `
                         <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
                         <p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel}</span></p>
@@ -314,23 +312,18 @@
             function renderProjectDetail(projectId) {
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
-                
                 document.getElementById('project-detail-name').innerText = project.name;
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
-
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-                
                 versions.forEach(version => {
                     const versionContainer = document.createElement('div');
                     versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${version.status.toUpperCase()}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
-
                     const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
                     phases.forEach(phase => {
                         const phaseDiv = document.createElement('div');
                         phaseDiv.className = `phase ${phase.status.replace('_', '-')}`;
                         phaseDiv.innerHTML = `<h4>${phase.name} (${phase.status})</h4>`;
-
                         const updates = phase.laborai_phase_updates.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
                         updates.forEach(update => {
                             const updateDiv = document.createElement('div');
@@ -369,7 +362,7 @@
                 let projectsQuery;
 
                 if (userIsAdmin) {
-                    projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`);
+                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`);
                 } else {
                     const userClientId = state.user?.user_metadata?.clientId;
                     if (!userClientId) {
@@ -377,11 +370,11 @@
                         renderDashboard();
                         return;
                     }
-                    projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
+                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
                 }
                 
                 const projectsPromise = projectsQuery;
-                const clientsPromise = userIsAdmin ? supabase.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
+                const clientsPromise = userIsAdmin ? supabaseClient.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
                 
                 const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
 
@@ -408,7 +401,7 @@
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
                 
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                 if (error) {
                     alert('Erro no login: ' + error.message);
                 } else {
@@ -418,7 +411,7 @@
             });
 
             logoutButton.addEventListener('click', async () => {
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 window.location.reload();
             });
 
@@ -456,13 +449,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ clientId, email, password })
                     });
-
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    
                     const result = await response.json();
                     alert(result.status || 'Usuário criado com sucesso!');
                     createUserForm.reset();
-
                 } catch (error) {
                     console.error('Erro ao criar usuário:', error);
                     alert('Ocorreu um erro ao criar o usuário.');
@@ -487,7 +477,7 @@
             }
 
             async function checkSession() {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session) {
                     state.user = session.user;
                     initApp();
