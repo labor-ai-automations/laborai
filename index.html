@@ -256,18 +256,16 @@
             // --- BLOCO DE CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
-            
-            const N8N_BASE_URL = 'SUA_URL_BASE_DO_N8N_AQUI'; // <<<---- ÚNICA COISA QUE VOCÊ PRECISA SUBSTITUIR
 
             const N8N_WEBHOOKS = {
-                CRIAR_CLIENTE: `${N8N_BASE_URL}/webhook/criar-novo-cliente`,
-                CRIAR_USUARIO: `${N8N_BASE_URL}/webhook/criar-novo-usuario`,
-                CRIAR_PROJETO: `${N8N_BASE_URL}/webhook/criar-novo-projeto`,
-                ADD_ATUALIZACAO: `${N8N_BASE_URL}/webhook/adicionar-atualizacao-fase`,
-                ATUALIZAR_STATUS_FASE: `${N8N_BASE_URL}/webhook/atualizar-status-fase`,
-                CRIAR_NOVA_VERSAO: `${N8N_BASE_URL}/webhook/criar-nova-versao`,
-                CRIAR_NOVA_COLECAO: `${N8N_BASE_URL}/webhook/criar-nova-colecao`,
-                ADD_ATIVO_COLECAO: `${N8N_BASE_URL}/webhook/adicionar-ativo-colecao`,
+                CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
+                CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
+                CRIAR_PROJETO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-projeto',
+                ADD_ATUALIZACAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-fase',
+                ATUALIZAR_STATUS_FASE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-status-fase',
+                CRIAR_NOVA_VERSAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-versao',
+                CRIAR_NOVA_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-colecao',
+                ADD_ATIVO_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-ativo-colecao',
             };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
