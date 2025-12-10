@@ -4,27 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Projetos - LaborAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- ======================================================= -->
-    <!-- ESTILOS (CSS)                                           -->
+    <!-- ESTILOS (CSS) - DARK MODE MODERNO                       -->
     <!-- ======================================================= -->
     <style>
         :root {
-            --primary-color: #1e40af;
-            --secondary-color: #3b82f6;
-            --background-color: #f1f5f9;
-            --card-background: #ffffff;
-            --text-color: #334155;
-            --text-light: #64748b;
-            --border-color: #e2e8f0;
+            --background-dark: #111827;
+            --surface-dark: #1f2937;
+            --border-dark: #374151;
+            --primary-accent: #3b82f6;
+            --primary-accent-hover: #60a5fa;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
             --success-color: #22c55e;
-            --warning-color: #eab308;
+            --warning-color: #f59e0b;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
             margin: 0;
             line-height: 1.6;
         }
@@ -37,106 +40,115 @@
 
         .hidden { display: none !important; }
 
-        /* --- Login Section --- */
+        /* --- Novo Design da Seção de Login --- */
         #login-section {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         .login-card {
-            background: var(--card-background);
+            background: var(--surface-dark);
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            border: 1px solid var(--border-dark);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             width: 100%;
             max-width: 400px;
+            text-align: center;
         }
         .login-card h2 {
-            text-align: center;
+            font-size: 24px;
             margin-top: 0;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
+        }
+        .login-card p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
         }
         input, select {
             width: 100%;
             padding: 12px;
             margin-bottom: 16px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-dark);
             border-radius: 6px;
             box-sizing: border-box;
-            background-color: white;
+            background-color: #374151;
+            color: var(--text-primary);
+            font-size: 16px;
         }
+        input::placeholder { color: #6b7280; }
+        
         button {
             width: 100%;
             padding: 12px;
             border: none;
             border-radius: 6px;
-            background-color: var(--primary-color);
+            background-color: var(--primary-accent);
             color: white;
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 16px;
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        button:hover {
-            background-color: var(--secondary-color);
-        }
-        button:disabled {
-            background-color: #94a3b8;
-            cursor: not-allowed;
-        }
+        button:hover { background-color: var(--primary-accent-hover); }
+        button:disabled { background-color: #4b5563; cursor: not-allowed; }
 
-        /* --- App Container --- */
+        /* --- App Container e Header --- */
         #app-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-dark);
             margin-bottom: 24px;
         }
+        #app-header strong { font-size: 1.2em; }
 
+        /* --- Cards e Outros Componentes --- */
         .project-card {
-            background: var(--card-background);
+            background: var(--surface-dark);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-dark);
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
         }
         .project-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--primary-accent);
         }
 
-        /* --- Project Detail View --- */
+        /* --- Detalhes do Projeto e Admin --- */
         .phase {
-            border-left: 3px solid var(--border-color);
+            border-left: 3px solid var(--border-dark);
             padding-left: 20px;
             margin-left: 10px;
             margin-bottom: 24px;
         }
         .phase.completed { border-left-color: var(--success-color); }
-        .phase.in_progress { border-left-color: var(--warning-color); }
+        .phase.in-progress { border-left-color: var(--warning-color); }
 
         .update {
             margin-bottom: 12px;
             padding: 12px;
-            background: #f8fafc;
+            background: var(--background-dark);
+            border: 1px solid var(--border-dark);
             border-radius: 6px;
         }
         .update-header { font-weight: bold; }
-        .update-meta { font-size: 0.8em; color: var(--text-light); }
-        .update-content a { color: var(--secondary-color); text-decoration: none; }
+        .update-meta { font-size: 0.8em; color: var(--text-secondary); }
+        .update-content a { color: var(--primary-accent); text-decoration: none; }
 
-        /* --- Admin View --- */
         #admin-view {
-            background: var(--card-background);
+            background: var(--surface-dark);
             padding: 20px;
             border-radius: 8px;
+            border: 1px solid var(--border-dark);
         }
         .admin-section-card {
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-dark);
             border-radius: 8px;
             padding: 20px;
             margin-top: 20px;
@@ -144,22 +156,22 @@
         label {
             display: block;
             margin-bottom: 8px;
-            font-weight: bold;
+            font-weight: 500;
         }
         #create-user-button {
             margin-top: 10px;
         }
-
     </style>
 </head>
 <body>
 
     <!-- ======================================================= -->
-    <!-- ESTRUTURA HTML                                          -->
+    <!-- ESTRUTURA HTML (Refinada)                               -->
     <!-- ======================================================= -->
     <div id="login-section">
         <div class="login-card">
             <h2>Portal LaborAI</h2>
+            <p>Acesse seus projetos e acompanhe o andamento.</p>
             <form id="login-form">
                 <input type="email" id="login-email" placeholder="Seu e-mail" required>
                 <input type="password" id="login-password" placeholder="Sua senha" required>
@@ -171,12 +183,12 @@
     <div id="app-container" class="container hidden">
         <header id="app-header">
             <div>
-                <strong>LaborAI Portal</strong>
+                <strong>LaborAI</strong>
             </div>
             <div>
-                <span id="user-email"></span>
+                <span id="user-email" style="color: var(--text-secondary);"></span>
                 <button id="admin-button" class="hidden" style="width: auto; padding: 8px 12px; margin-left: 16px; background-color: var(--warning-color);">Admin</button>
-                <button id="logout-button" style="width: auto; padding: 8px 12px; margin-left: 16px;">Sair</button>
+                <button id="logout-button" style="width: auto; padding: 8px 12px; margin-left: 16px; background: none; border: 1px solid var(--border-dark);">Sair</button>
             </div>
         </header>
 
@@ -191,7 +203,7 @@
 
             <!-- View de Detalhe do Projeto -->
             <div id="project-detail-view" class="hidden">
-                <button id="back-to-dashboard-button">&larr; Voltar ao Dashboard</button>
+                <button id="back-to-dashboard-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2 id="project-detail-name"></h2>
                 <div id="project-detail-content">
                     <!-- A timeline e os detalhes do projeto serão inseridos aqui -->
@@ -200,7 +212,7 @@
             
             <!-- View de Admin (Começa escondida) -->
             <div id="admin-view" class="hidden">
-                <button id="back-to-dashboard-from-admin-button">&larr; Voltar ao Dashboard</button>
+                <button id="back-to-dashboard-from-admin-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2>Painel Administrativo</h2>
                 
                 <div class="admin-section-card">
@@ -219,7 +231,6 @@
                     </form>
                 </div>
             </div>
-
         </main>
     </div>
 
@@ -229,267 +240,265 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- ======================================================= -->
-    <!-- LÓGICA DA APLICAÇÃO (JAVASCRIPT)                        -->
+    <!-- LÓGICA DA APLICAÇÃO (JAVASCRIPT) - FINAL                -->
     <!-- ======================================================= -->
     <script>
-        // --- BLOCO DE CONFIGURAÇÃO ---
-        const SUPABASE_URL = 'URL_DO_SEU_PROJETO_SUPABASE';
-        const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_DO_SUPABASE';
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- BLOCO DE CONFIGURAÇÃO ---
+            const SUPABASE_URL = 'SUA_URL_DO_SUPABASE_AQUI'; // Substitua
+            const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_DO_SUPABASE_AQUI'; // Substitua
+            const N8N_BASE_URL = 'SUA_URL_BASE_DO_N8N_AQUI'; // Ex: https://meu-n8n.com
 
-        const N8N_WEBHOOKS = {
-            CRIAR_PROJETO: 'URL_DO_SEU_WEBHOOK_N8N_CRIAR_PROJETO',
-            ADD_ATUALIZACAO: 'URL_DO_SEU_WEBHOOK_N8N_ADD_ATUALIZACAO',
-            CRIAR_USUARIO: 'URL_DO_SEU_WEBHOOK_N8N_CRIAR_USUARIO'
-        };
+            // Webhooks com nomes exatos dos workflows
+            const N8N_WEBHOOKS = {
+                CRIAR_USUARIO: `${N8N_BASE_URL}/webhook/criar-novo-usuario`,
+                CRIAR_PROJETO: `${N8N_BASE_URL}/webhook/criar-novo-projeto`,
+                ADD_ATUALIZACAO: `${N8N_BASE_URL}/webhook/adicionar-atualizacao-fase`,
+                ATUALIZAR_STATUS_FASE: `${N8N_BASE_URL}/webhook/atualizar-status-fase`,
+                CRIAR_NOVA_VERSAO: `${N8N_BASE_URL}/webhook/criar-nova-versao`,
+                CRIAR_NOVA_COLECAO: `${N8N_BASE_URL}/webhook/criar-nova-colecao`,
+                ADD_ATIVO_COLECAO: `${N8N_BASE_URL}/webhook/adicionar-ativo-colecao`,
+            };
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- BLOCO DE SELETORES DE DOM ---
-        const loginSection = document.getElementById('login-section');
-        const appContainer = document.getElementById('app-container');
-        const loginForm = document.getElementById('login-form');
-        const logoutButton = document.getElementById('logout-button');
-        const userEmailSpan = document.getElementById('user-email');
-        const projectsListDiv = document.getElementById('projects-list');
-        const dashboardView = document.getElementById('dashboard-view');
-        const projectDetailView = document.getElementById('project-detail-view');
-        const backToDashboardButton = document.getElementById('back-to-dashboard-button');
-        const adminButton = document.getElementById('admin-button');
-        const adminView = document.getElementById('admin-view');
-        const backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button');
-        const createUserForm = document.getElementById('create-user-form');
-        const clientSelect = document.getElementById('client-select');
+            // --- BLOCO DE SELETORES DE DOM ---
+            const loginSection = document.getElementById('login-section');
+            const appContainer = document.getElementById('app-container');
+            const loginForm = document.getElementById('login-form');
+            const logoutButton = document.getElementById('logout-button');
+            const userEmailSpan = document.getElementById('user-email');
+            const projectsListDiv = document.getElementById('projects-list');
+            const dashboardView = document.getElementById('dashboard-view');
+            const projectDetailView = document.getElementById('project-detail-view');
+            const backToDashboardButton = document.getElementById('back-to-dashboard-button');
+            const adminButton = document.getElementById('admin-button');
+            const adminView = document.getElementById('admin-view');
+            const backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button');
+            const createUserForm = document.getElementById('create-user-form');
+            const clientSelect = document.getElementById('client-select');
 
-        // --- BLOCO DE ESTADO DA APLICAÇÃO ---
-        let state = {
-            user: null,
-            projects: [],
-            clients: [],
-        };
+            // --- BLOCO DE ESTADO DA APLICAÇÃO ---
+            let state = {
+                user: null,
+                projects: [],
+                clients: [],
+            };
 
-        // --- BLOCO DE FUNÇÕES DE RENDERIZAÇÃO ---
-        
-        function renderDashboard() {
-            projectsListDiv.innerHTML = ''; // Limpa a lista
-            if (state.projects.length === 0) {
-                projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>';
-                return;
-            }
-
-            state.projects.forEach(project => {
-                const card = document.createElement('div');
-                card.className = 'project-card';
-                card.dataset.projectId = project.id;
-                
-                const versions = project.laborai_project_versions;
-                const latestVersion = versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
-                const statusLabel = project.status.replace('_', ' ').toUpperCase();
-
-                card.innerHTML = `
-                    <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
-                    <p>Status: <span style="font-weight: bold; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel}</span></p>
-                    <p>Última atualização: ${new Date(project.updated_at).toLocaleDateString()}</p>
-                `;
-                projectsListDiv.appendChild(card);
-            });
-        }
-
-        function renderProjectDetail(projectId) {
-            const project = state.projects.find(p => p.id === projectId);
-            if (!project) return;
-            
-            document.getElementById('project-detail-name').innerText = project.name;
-            const contentDiv = document.getElementById('project-detail-content');
-            contentDiv.innerHTML = ''; // Limpa o conteúdo anterior
-
-            const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(a.created_at));
-            
-            versions.forEach(version => {
-                const versionContainer = document.createElement('div');
-                versionContainer.innerHTML = `<h3>Versão ${version.version_number} - ${version.status.toUpperCase()}</h3><p>${version.summary || ''}</p>`;
-
-                const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
-                phases.forEach(phase => {
-                    const phaseDiv = document.createElement('div');
-                    phaseDiv.className = `phase ${phase.status.replace('_', '-')}`;
-                    phaseDiv.innerHTML = `<h4>Fase: ${phase.name} (${phase.status})</h4>`;
-
-                    const updates = phase.laborai_phase_updates.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-                    updates.forEach(update => {
-                        const updateDiv = document.createElement('div');
-                        updateDiv.className = 'update';
-                        updateDiv.innerHTML = `
-                            <div class="update-header">
-                                <strong>${update.title}</strong>
-                                <span class="update-meta"> - ${new Date(update.created_at).toLocaleString()}</span>
-                            </div>
-                            <div class="update-content">
-                                <p>${update.description || ''}</p>
-                                ${update.content_url ? `<a href="${update.content_url}" target="_blank">Ver anexo</a>` : ''}
-                            </div>
-                        `;
-                        phaseDiv.appendChild(updateDiv);
-                    });
-                    versionContainer.appendChild(phaseDiv);
-                });
-                contentDiv.appendChild(versionContainer);
-            });
-        }
-
-        function populateClientDropdown() {
-            clientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
-            state.clients.forEach(client => {
-                const option = document.createElement('option');
-                option.value = client.id;
-                option.innerText = client.name;
-                clientSelect.appendChild(option);
-            });
-        }
-
-        // --- BLOCO DE FUNÇÕES DE DADOS ---
-
-        async function fetchAllData() {
-            const userIsAdmin = state.user?.user_metadata?.role === 'admin';
-            let projectsQuery;
-
-            if (userIsAdmin) {
-                // Admin vê todos os projetos
-                projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`);
-            } else {
-                // Cliente vê apenas os projetos associados ao seu clientId
-                const userClientId = state.user?.user_metadata?.clientId;
-                if (!userClientId) {
-                    state.projects = [];
-                    renderDashboard();
+            // --- BLOCO DE FUNÇÕES DE RENDERIZAÇÃO ---
+            function renderDashboard() {
+                projectsListDiv.innerHTML = '';
+                if (!state.projects || state.projects.length === 0) {
+                    projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>';
                     return;
                 }
-                projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
-            }
-            
-            const projectsPromise = projectsQuery;
-            const clientsPromise = userIsAdmin ? supabase.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
-            
-            const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
 
-            if (projectsResult.error) console.error("Erro ao buscar projetos:", projectsResult.error);
-            else state.projects = projectsResult.data;
+                state.projects.forEach(project => {
+                    const card = document.createElement('div');
+                    card.className = 'project-card';
+                    card.dataset.projectId = project.id;
+                    
+                    const versions = project.laborai_project_versions;
+                    const latestVersion = versions && versions.length > 0 ? versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0] : null;
+                    const statusLabel = project.status.replace('_', ' ').toUpperCase();
 
-            if (clientsResult.error) console.error("Erro ao buscar clientes:", clientsResult.error);
-            else state.clients = clientsResult.data;
-            
-            renderDashboard();
-        }
-
-        // --- BLOCO DE CONTROLE DE UI ---
-        
-        function showView(viewId) {
-            dashboardView.classList.add('hidden');
-            projectDetailView.classList.add('hidden');
-            adminView.classList.add('hidden');
-            document.getElementById(viewId).classList.remove('hidden');
-        }
-
-        // --- BLOCO DE EVENT LISTENERS ---
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert('Erro no login: ' + error.message);
-            } else {
-                state.user = data.user;
-                initApp();
-            }
-        });
-
-        logoutButton.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            loginSection.classList.remove('hidden');
-            appContainer.classList.add('hidden');
-            state = { user: null, projects: [], clients: [] };
-        });
-
-        backToDashboardButton.addEventListener('click', () => showView('dashboard-view'));
-
-        projectsListDiv.addEventListener('click', (e) => {
-            const card = e.target.closest('.project-card');
-            if (card) {
-                const projectId = card.dataset.projectId;
-                renderProjectDetail(projectId);
-                showView('project-detail-view');
-            }
-        });
-
-        adminButton.addEventListener('click', () => {
-            populateClientDropdown();
-            showView('admin-view');
-        });
-
-        backToDashboardFromAdminButton.addEventListener('click', () => showView('dashboard-view'));
-
-        createUserForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const button = document.getElementById('create-user-button');
-            button.disabled = true;
-            button.innerText = 'Criando...';
-
-            const clientId = clientSelect.value;
-            const email = document.getElementById('new-user-email').value;
-            const password = document.getElementById('new-user-password').value;
-
-            try {
-                const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ clientId, email, password })
+                    card.innerHTML = `
+                        <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
+                        <p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel}</span></p>
+                        <p style="font-size: 0.9em; color: var(--text-secondary);">Última atualização: ${new Date(project.updated_at).toLocaleDateString('pt-BR')}</p>
+                    `;
+                    projectsListDiv.appendChild(card);
                 });
+            }
 
-                if (!response.ok) throw new Error('Falha na resposta do servidor.');
+            function renderProjectDetail(projectId) {
+                const project = state.projects.find(p => p.id === projectId);
+                if (!project) return;
                 
-                const result = await response.json();
-                alert(result.status || 'Usuário criado com sucesso!');
-                createUserForm.reset();
+                document.getElementById('project-detail-name').innerText = project.name;
+                const contentDiv = document.getElementById('project-detail-content');
+                contentDiv.innerHTML = '';
 
-            } catch (error) {
-                console.error('Erro ao criar usuário:', error);
-                alert('Ocorreu um erro ao criar o usuário.');
-            } finally {
-                button.disabled = false;
-                button.innerText = 'Criar Usuário';
+                const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                
+                versions.forEach(version => {
+                    const versionContainer = document.createElement('div');
+                    versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${version.status.toUpperCase()}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
+
+                    const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
+                    phases.forEach(phase => {
+                        const phaseDiv = document.createElement('div');
+                        phaseDiv.className = `phase ${phase.status.replace('_', '-')}`;
+                        phaseDiv.innerHTML = `<h4>${phase.name} (${phase.status})</h4>`;
+
+                        const updates = phase.laborai_phase_updates.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                        updates.forEach(update => {
+                            const updateDiv = document.createElement('div');
+                            updateDiv.className = 'update';
+                            updateDiv.innerHTML = `
+                                <div class="update-header">
+                                    <strong>${update.title}</strong>
+                                </div>
+                                <div class="update-content">
+                                    <p>${update.description || ''}</p>
+                                    ${update.content_url ? `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>` : ''}
+                                </div>
+                                <div class="update-meta">${new Date(update.created_at).toLocaleString('pt-BR')}</div>
+                            `;
+                            phaseDiv.appendChild(updateDiv);
+                        });
+                        versionContainer.appendChild(phaseDiv);
+                    });
+                    contentDiv.appendChild(versionContainer);
+                });
             }
+
+            function populateClientDropdown() {
+                clientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
+                state.clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.innerText = client.name;
+                    clientSelect.appendChild(option);
+                });
+            }
+
+            // --- BLOCO DE FUNÇÕES DE DADOS ---
+            async function fetchAllData() {
+                const userIsAdmin = state.user?.user_metadata?.role === 'admin';
+                let projectsQuery;
+
+                if (userIsAdmin) {
+                    projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`);
+                } else {
+                    const userClientId = state.user?.user_metadata?.clientId;
+                    if (!userClientId) {
+                        state.projects = [];
+                        renderDashboard();
+                        return;
+                    }
+                    projectsQuery = supabase.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
+                }
+                
+                const projectsPromise = projectsQuery;
+                const clientsPromise = userIsAdmin ? supabase.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
+                
+                const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
+
+                if (projectsResult.error) { console.error("Erro ao buscar projetos:", projectsResult.error); }
+                else { state.projects = projectsResult.data; }
+
+                if (clientsResult.error) { console.error("Erro ao buscar clientes:", clientsResult.error); }
+                else { state.clients = clientsResult.data; }
+                
+                renderDashboard();
+            }
+
+            // --- BLOCO DE CONTROLE DE UI ---
+            function showView(viewId) {
+                dashboardView.classList.add('hidden');
+                projectDetailView.classList.add('hidden');
+                adminView.classList.add('hidden');
+                document.getElementById(viewId).classList.remove('hidden');
+            }
+
+            // --- BLOCO DE EVENT LISTENERS ---
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert('Erro no login: ' + error.message);
+                } else {
+                    state.user = data.user;
+                    initApp();
+                }
+            });
+
+            logoutButton.addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.reload();
+            });
+
+            backToDashboardButton.addEventListener('click', () => showView('dashboard-view'));
+
+            projectsListDiv.addEventListener('click', (e) => {
+                const card = e.target.closest('.project-card');
+                if (card) {
+                    const projectId = card.dataset.projectId;
+                    renderProjectDetail(projectId);
+                    showView('project-detail-view');
+                }
+            });
+
+            adminButton.addEventListener('click', () => {
+                populateClientDropdown();
+                showView('admin-view');
+            });
+
+            backToDashboardFromAdminButton.addEventListener('click', () => showView('dashboard-view'));
+
+            createUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const button = document.getElementById('create-user-button');
+                button.disabled = true;
+                button.innerText = 'Criando...';
+
+                const clientId = clientSelect.value;
+                const email = document.getElementById('new-user-email').value;
+                const password = document.getElementById('new-user-password').value;
+
+                try {
+                    const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ clientId, email, password })
+                    });
+
+                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
+                    
+                    const result = await response.json();
+                    alert(result.status || 'Usuário criado com sucesso!');
+                    createUserForm.reset();
+
+                } catch (error) {
+                    console.error('Erro ao criar usuário:', error);
+                    alert('Ocorreu um erro ao criar o usuário.');
+                } finally {
+                    button.disabled = false;
+                    button.innerText = 'Criar Usuário';
+                }
+            });
+
+            // --- BLOCO DE INICIALIZAÇÃO ---
+            async function initApp() {
+                loginSection.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                userEmailSpan.innerText = state.user.email;
+
+                if (state.user?.user_metadata?.role === 'admin') {
+                    adminButton.classList.remove('hidden');
+                }
+
+                await fetchAllData();
+                showView('dashboard-view');
+            }
+
+            async function checkSession() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    state.user = session.user;
+                    initApp();
+                } else {
+                    loginSection.classList.remove('hidden');
+                    appContainer.classList.add('hidden');
+                }
+            }
+            
+            checkSession();
         });
-
-        // --- BLOCO DE INICIALIZAÇÃO ---
-
-        async function initApp() {
-            loginSection.classList.add('hidden');
-            appContainer.classList.remove('hidden');
-            userEmailSpan.innerText = state.user.email;
-
-            if (state.user?.user_metadata?.role === 'admin') {
-                adminButton.classList.remove('hidden');
-            }
-
-            await fetchAllData();
-            showView('dashboard-view');
-        }
-
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                state.user = session.user;
-                initApp();
-            } else {
-                loginSection.classList.remove('hidden');
-                appContainer.classList.add('hidden');
-            }
-        }
-
-        checkSession();
-
     </script>
 </body>
 </html>
