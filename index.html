@@ -63,7 +63,7 @@
         /* --- Nova Timeline Visual Aprimorada --- */
         .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: var(--surface-dark); }
         .phase-header.completed { border-color: var(--success-color); background: linear-gradient(to right, var(--success-bg), var(--surface-dark)); }
-        .phase-header.in_progress { border-color: var(--primary-accent); background: linear-gradient(to right, #1e3a8a, var(--surface-dark)); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); animation: pulse-border 3s ease-in-out infinite; }
+        .phase-header.in-progress { border-color: var(--primary-accent); background: linear-gradient(to right, #1e3a8a, var(--surface-dark)); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); animation: pulse-border 3s ease-in-out infinite; }
         @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); } 50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2); } }
         
         .update { margin-left: 20px; margin-bottom: 12px; padding: 12px; padding-left: 20px; background: var(--background-dark); border-left: 2px solid var(--border-dark); }
@@ -72,6 +72,9 @@
         #admin-view { background: var(--surface-dark); padding: 20px; border-radius: 8px; border: 1px solid var(--border-dark); }
         .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .admin-controls { margin-top: 10px; display: flex; gap: 10px; }
+        .admin-controls button { width: auto; padding: 4px 10px; font-size: 0.8em; background-color: var(--border-dark); }
+        .admin-controls button:hover { background-color: var(--text-secondary); }
 
         /* --- Toast Notifications --- */
         #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; }
@@ -79,6 +82,7 @@
         .toast::after { content: ''; position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; animation: shrink 3s linear forwards; }
         .toast.success { border-color: var(--success-color); background-color: var(--surface-dark); }
         .toast.error { border-color: var(--error-color); background-color: var(--surface-dark); }
+        .toast.info { border-color: var(--primary-accent); background-color: var(--surface-dark); }
         .toast-title { font-weight: 600; font-size: 0.9375rem; margin-bottom: 0.25rem; color: var(--text-primary); }
         .toast-message { font-size: 0.875rem; color: var(--text-secondary); }
         @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -168,20 +172,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-// --- BLOCO DE CONFIGURAÇÃO ---
-const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
+            // --- BLOCO DE CONFIGURAÇÃO ---
+            const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
 
-const N8N_WEBHOOKS = {
-    CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
-    CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
-    CRIAR_PROJETO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-projeto',
-    ADD_ATUALIZACAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-fase',
-    ATUALIZAR_STATUS_FASE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-status-fase',
-    CRIAR_NOVA_VERSAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-versao',
-    CRIAR_NOVA_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-colecao',
-    ADD_ATIVO_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-ativo-colecao'
-};
+            const N8N_WEBHOOKS = {
+                CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
+                CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
+                CRIAR_PROJETO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-projeto',
+                ADD_ATUALIZACAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-fase',
+                ATUALIZAR_STATUS_FASE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-status-fase',
+                CRIAR_NOVA_VERSAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-versao',
+                CRIAR_NOVA_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-colecao',
+                ADD_ATIVO_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-ativo-colecao',
+            };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -213,7 +217,7 @@ const N8N_WEBHOOKS = {
                 },
                 show(type, title, message, duration = 4000) {
                     if (!this.container) this.init();
-                    const icons = { success: '✅', error: '❌' };
+                    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
                     const toast = document.createElement('div');
                     toast.className = `toast ${type}`;
                     toast.innerHTML = `<div style="font-size: 1.5rem; margin-top: 4px;">${icons[type]}</div><div><div class="toast-title">${title}</div>${message ? `<div class="toast-message">${message}</div>` : ''}</div>`;
@@ -225,6 +229,7 @@ const N8N_WEBHOOKS = {
                 },
                 success(title, message, duration) { this.show('success', title, message, duration); },
                 error(title, message, duration) { this.show('error', title, message, duration); },
+                info(title, message, duration) { this.show('info', title, message, duration); }
             };
             ToastManager.init();
 
@@ -254,19 +259,31 @@ const N8N_WEBHOOKS = {
             function renderProjectDetail(projectId) {
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
+                const userIsAdmin = state.user?.user_metadata?.role === 'admin';
                 document.getElementById('project-detail-name').innerText = project.name;
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
                 versions.forEach(version => {
                     const versionContainer = document.createElement('div');
-                    versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${(STATUS_LABELS[version.status] || version.status).toUpperCase()}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
+                    const versionStatusLabel = (STATUS_LABELS[version.status] || version.status).toUpperCase();
+                    versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${versionStatusLabel}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
                     const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
                     phases.forEach(phase => {
                         const phaseDiv = document.createElement('div');
                         phaseDiv.className = `phase-header ${phase.status.replace('_', '-')}`;
                         const phaseStatusLabel = STATUS_LABELS[phase.status] || phase.status;
-                        phaseDiv.innerHTML = `<h4>${phase.name} (${phaseStatusLabel})</h4>`;
+                        let adminControlsHTML = '';
+                        if (userIsAdmin) {
+                            adminControlsHTML = `
+                                <div class="admin-controls">
+                                    <button onclick="updatePhaseStatus('${phase.id}', 'in_progress')">Iniciar</button>
+                                    <button onclick="updatePhaseStatus('${phase.id}', 'completed')">Concluir</button>
+                                    <button onclick="updatePhaseStatus('${phase.id}', 'pending')">Resetar</button>
+                                </div>
+                            `;
+                        }
+                        phaseDiv.innerHTML = `<h4>${phase.name} (${phaseStatusLabel})</h4>${adminControlsHTML}`;
                         const updatesContainer = document.createElement('div');
                         const updates = phase.laborai_phase_updates.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
                         updates.forEach(update => {
@@ -352,6 +369,29 @@ const N8N_WEBHOOKS = {
                 document.getElementById(viewId).classList.remove('hidden');
             }
 
+            // --- FUNÇÃO GLOBAL PARA BOTÕES DE ADMIN ---
+            window.updatePhaseStatus = async (phaseId, newStatus) => {
+                ToastManager.info('Atualizando status...', 'Aguarde um momento.', 2000);
+                try {
+                    const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_STATUS_FASE, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phaseId, newStatus })
+                    });
+                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
+                    
+                    ToastManager.success('Status atualizado!', 'Recarregando dados do projeto.');
+                    
+                    const currentProjectId = state.projects.find(p => p.laborai_project_versions.some(v => v.laborai_project_phases.some(ph => ph.id === phaseId)))?.id;
+                    await fetchAllData();
+                    if (currentProjectId) {
+                        renderProjectDetail(currentProjectId);
+                    }
+                } catch (error) {
+                    ToastManager.error('Erro ao atualizar', error.message);
+                }
+            };
+
             // --- BLOCO DE EVENT LISTENERS ---
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -376,7 +416,7 @@ const N8N_WEBHOOKS = {
                     const response = await fetch(N8N_WEBHOOKS.CRIAR_CLIENTE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientName: document.getElementById('new-client-name').value }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
                     const result = await response.json();
-                    ToastManager.success('Cliente criado!', result.status);
+                    ToastManager.success('Cliente criado!', 'O novo cliente já está disponível nos formulários.');
                     createClientForm.reset();
                     await fetchAllData(); populateClientDropdowns();
                 } catch (error) { ToastManager.error('Erro ao criar cliente', error.message); } 
@@ -421,6 +461,7 @@ const N8N_WEBHOOKS = {
                 if (state.user?.user_metadata?.role === 'admin') {
                     adminButton.classList.remove('hidden');
                 } else {
+                    // Tenta buscar o nome do cliente de ambos os padrões de metadados
                     const clientName = state.user?.user_metadata?.clientName || state.user?.user_metadata?.client_name;
                     if(clientName) clientNameHeader.innerText = `| ${clientName}`;
                 }
