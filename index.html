@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- ======================================================= -->
-    <!-- ESTILOS (CSS) - DARK MODE MODERNO                       -->
+    <!-- ESTILOS (CSS) - V2 com Melhorias de UX                  -->
     <!-- ======================================================= -->
     <style>
         :root {
@@ -21,7 +21,10 @@
             --text-primary: #f9fafb;
             --text-secondary: #9ca3af;
             --success-color: #22c55e;
+            --success-bg: #102d20;
             --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --error-bg: #3f1212;
         }
 
         body {
@@ -32,144 +35,62 @@
             line-height: 1.6;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .hidden { display: none !important; }
 
-        /* --- Novo Design da Seção de Login --- */
-        #login-section {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .login-card {
-            background: var(--surface-dark);
-            padding: 40px;
-            border-radius: 12px;
-            border: 1px solid var(--border-dark);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        .login-card h2 {
-            font-size: 24px;
-            margin-top: 0;
-            margin-bottom: 8px;
-        }
-        .login-card p {
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border-dark);
-            border-radius: 6px;
-            box-sizing: border-box;
-            background-color: #374151;
-            color: var(--text-primary);
-            font-size: 16px;
-            font-family: 'Inter', sans-serif;
-        }
+        /* --- Seção de Login --- */
+        #login-section { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-card { background: var(--surface-dark); padding: 40px; border-radius: 12px; border: 1px solid var(--border-dark); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; }
+        .login-card h2 { font-size: 24px; margin-top: 0; margin-bottom: 8px; }
+        .login-card p { color: var(--text-secondary); margin-bottom: 32px; }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-dark); border-radius: 6px; box-sizing: border-box; background-color: #374151; color: var(--text-primary); font-size: 16px; font-family: 'Inter', sans-serif; }
         input::placeholder, textarea::placeholder { color: #6b7280; }
         textarea { resize: vertical; }
         
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            background-color: var(--primary-accent);
-            color: white;
-            font-weight: 500;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; background-color: var(--primary-accent); color: white; font-weight: 500; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
         button:hover { background-color: var(--primary-accent-hover); }
         button:disabled { background-color: #4b5563; cursor: not-allowed; }
 
-        /* --- App Container e Header --- */
-        #app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-dark);
-            margin-bottom: 24px;
-        }
+        /* --- App Header com Nome do Cliente --- */
+        #app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border-dark); margin-bottom: 24px; }
         #app-header strong { font-size: 1.2em; }
+        #client-name-header { font-weight: 500; color: var(--text-secondary); margin-left: 8px; }
 
-        /* --- Cards e Outros Componentes --- */
-        .project-card {
-            background: var(--surface-dark);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border-dark);
-            cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .project-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary-accent);
-        }
+        /* --- Cards e Componentes --- */
+        .project-card { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-dark); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+        .project-card:hover { transform: translateY(-3px); border-color: var(--primary-accent); }
 
-        /* --- Detalhes do Projeto e Admin --- */
-        .phase {
-            border-left: 3px solid var(--border-dark);
-            padding-left: 20px;
-            margin-left: 10px;
-            margin-bottom: 24px;
-        }
-        .phase.completed { border-left-color: var(--success-color); }
-        .phase.in-progress { border-left-color: var(--warning-color); }
+        /* --- Nova Timeline Visual Aprimorada --- */
+        .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: var(--surface-dark); }
+        .phase-header.completed { border-color: var(--success-color); background: linear-gradient(to right, var(--success-bg), var(--surface-dark)); }
+        .phase-header.in_progress { border-color: var(--primary-accent); background: linear-gradient(to right, #1e3a8a, var(--surface-dark)); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); animation: pulse-border 3s ease-in-out infinite; }
+        @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); } 50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2); } }
+        
+        .update { margin-left: 20px; margin-bottom: 12px; padding: 12px; padding-left: 20px; background: var(--background-dark); border-left: 2px solid var(--border-dark); }
+        
+        /* --- Painel de Admin --- */
+        #admin-view { background: var(--surface-dark); padding: 20px; border-radius: 8px; border: 1px solid var(--border-dark); }
+        .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; }
 
-        .update {
-            margin-bottom: 12px;
-            padding: 12px;
-            background: var(--background-dark);
-            border: 1px solid var(--border-dark);
-            border-radius: 6px;
-        }
-        .update-header { font-weight: bold; }
-        .update-meta { font-size: 0.8em; color: var(--text-secondary); }
-        .update-content a { color: var(--primary-accent); text-decoration: none; }
-
-        #admin-view {
-            background: var(--surface-dark);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-dark);
-        }
-        .admin-section-card {
-            border: 1px solid var(--border-dark);
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        #create-user-button, #create-client-button, #create-project-button {
-            margin-top: 10px;
-        }
+        /* --- Toast Notifications --- */
+        #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; }
+        .toast { display: flex; align-items: flex-start; gap: 0.875rem; padding: 1rem 1.25rem; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25); border-left: 4px solid; animation: slideIn 0.3s ease-out; position: relative; overflow: hidden; }
+        .toast::after { content: ''; position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; animation: shrink 3s linear forwards; }
+        .toast.success { border-color: var(--success-color); background-color: var(--surface-dark); }
+        .toast.error { border-color: var(--error-color); background-color: var(--surface-dark); }
+        .toast-title { font-weight: 600; font-size: 0.9375rem; margin-bottom: 0.25rem; color: var(--text-primary); }
+        .toast-message { font-size: 0.875rem; color: var(--text-secondary); }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { to { transform: translateX(120%); opacity: 0; } }
+        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
+        .toast.removing { animation: slideOut 0.3s ease-in forwards; }
     </style>
 </head>
 <body>
 
-    <!-- ======================================================= -->
-    <!-- ESTRUTURA HTML (Refinada)                               -->
-    <!-- ======================================================= -->
+    <div id="toast-container"></div>
+
     <div id="login-section">
         <div class="login-card">
             <h2>Portal LaborAI</h2>
@@ -186,6 +107,7 @@
         <header id="app-header">
             <div>
                 <strong>LaborAI</strong>
+                <span id="client-name-header"></span>
             </div>
             <div>
                 <span id="user-email" style="color: var(--text-secondary);"></span>
@@ -195,47 +117,30 @@
         </header>
 
         <main id="main-content">
-            <!-- View do Dashboard (Lista de Projetos) -->
-            <div id="dashboard-view">
-                <h3>Meus Projetos</h3>
-                <div id="projects-list">
-                    <!-- Cards dos projetos serão inseridos aqui -->
-                </div>
-            </div>
-
-            <!-- View de Detalhe do Projeto -->
+            <div id="dashboard-view"><h3>Meus Projetos</h3><div id="projects-list"></div></div>
             <div id="project-detail-view" class="hidden">
                 <button id="back-to-dashboard-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
-                <h2 id="project-detail-name"></h2>
-                <div id="project-detail-content">
-                    <!-- A timeline e os detalhes do projeto serão inseridos aqui -->
-                </div>
+                <h2 id="project-detail-name"></h2><div id="project-detail-content"></div>
             </div>
-            
-            <!-- View de Admin (Começa escondida) -->
             <div id="admin-view" class="hidden">
                 <button id="back-to-dashboard-from-admin-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2>Painel Administrativo</h2>
-
                 <div class="admin-section-card">
                     <h3>Criar Novo Projeto</h3>
                     <form id="create-project-form">
                         <label for="project-client-select">Associar a qual cliente?</label>
                         <select id="project-client-select" required></select>
-                        
                         <label for="new-project-name">Nome do Projeto:</label>
                         <input type="text" id="new-project-name" placeholder="Ex: Dashboard de Produção V1" required>
-
                         <label for="new-project-description">Descrição Breve:</label>
-                        <textarea id="new-project-description" rows="3" placeholder="Resumo do que o projeto fará..."></textarea>
-                        
-                        <label for="new-project-phases">Fases do Projeto (uma por linha):</label>
-                        <textarea id="new-project-phases" rows="4" placeholder="Fase 1: Levantamento&#10;Fase 2: Desenvolvimento&#10;Fase 3: Testes" required></textarea>
-                        
+                        <textarea id="new-project-description" rows="2" placeholder="Resumo do que o projeto fará..."></textarea>
+                        <label for="phase-template-select">Template de Fases:</label>
+                        <select id="phase-template-select" required></select>
+                        <label for="new-project-phases" class="hidden">Fases do Projeto (uma por linha):</label>
+                        <textarea id="new-project-phases" rows="4" class="hidden" placeholder="Fase 1: Levantamento&#10;Fase 2: Desenvolvimento&#10;Fase 3: Testes"></textarea>
                         <button type="submit" id="create-project-button">Criar Projeto</button>
                     </form>
                 </div>
-
                 <div class="admin-section-card">
                     <h3>Criar Novo Cliente</h3>
                     <form id="create-client-form">
@@ -244,19 +149,15 @@
                         <button type="submit" id="create-client-button">Criar Cliente</button>
                     </form>
                 </div>
-                
                 <div class="admin-section-card">
                     <h3>Criar Novo Usuário de Cliente</h3>
                     <form id="create-user-form">
                         <label for="client-select">Associar a qual cliente?</label>
                         <select id="client-select" required></select>
-                        
                         <label for="new-user-email">Email do novo usuário:</label>
                         <input type="email" id="new-user-email" placeholder="email@cliente.com" required>
-                        
                         <label for="new-user-password">Senha temporária:</label>
                         <input type="password" id="new-user-password" placeholder="Crie uma senha forte" required>
-                        
                         <button type="submit" id="create-user-button">Criar Usuário</button>
                     </form>
                 </div>
@@ -264,60 +165,70 @@
         </main>
     </div>
 
-    <!-- ======================================================= -->
-    <!-- SCRIPT DE IMPORTAÇÃO DO SUPABASE                        -->
-    <!-- ======================================================= -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- ======================================================= -->
-    <!-- LÓGICA DA APLICAÇÃO (JAVASCRIPT) - FINAL                -->
-    <!-- ======================================================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- BLOCO DE CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
+            const N8N_BASE_URL = 'SUA_URL_BASE_DO_N8N_AQUI'; // <<<---- ÚNICA COISA QUE VOCÊ PRECISA SUBSTITUIR
+
             const N8N_WEBHOOKS = {
-                CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
-                CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
-                CRIAR_PROJETO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-projeto',
-                ADD_ATUALIZACAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-fase',
-                ATUALIZAR_STATUS_FASE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-status-fase',
-                CRIAR_NOVA_VERSAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-versao',
-                CRIAR_NOVA_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-colecao',
-                ADD_ATIVO_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-ativo-colecao',
+                CRIAR_CLIENTE: `${N8N_BASE_URL}/webhook/criar-novo-cliente`, CRIAR_USUARIO: `${N8N_BASE_URL}/webhook/criar-novo-usuario`,
+                CRIAR_PROJETO: `${N8N_BASE_URL}/webhook/criar-novo-projeto`, ADD_ATUALIZACAO: `${N8N_BASE_URL}/webhook/adicionar-atualizacao-fase`,
+                ATUALIZAR_STATUS_FASE: `${N8N_BASE_URL}/webhook/atualizar-status-fase`, CRIAR_NOVA_VERSAO: `${N8N_BASE_URL}/webhook/criar-nova-versao`,
+                CRIAR_NOVA_COLECAO: `${N8N_BASE_URL}/webhook/criar-nova-colecao`, ADD_ATIVO_COLECAO: `${N8N_BASE_URL}/webhook/adicionar-ativo-colecao`,
             };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             // --- BLOCO DE SELETORES DE DOM ---
-            const loginSection = document.getElementById('login-section');
-            const appContainer = document.getElementById('app-container');
-            const loginForm = document.getElementById('login-form');
-            const logoutButton = document.getElementById('logout-button');
-            const userEmailSpan = document.getElementById('user-email');
-            const projectsListDiv = document.getElementById('projects-list');
-            const dashboardView = document.getElementById('dashboard-view');
-            const projectDetailView = document.getElementById('project-detail-view');
-            const backToDashboardButton = document.getElementById('back-to-dashboard-button');
-            const adminButton = document.getElementById('admin-button');
-            const adminView = document.getElementById('admin-view');
-            const backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button');
-            const createClientForm = document.getElementById('create-client-form');
-            const createUserForm = document.getElementById('create-user-form');
-            const createProjectForm = document.getElementById('create-project-form');
-            const clientSelect = document.getElementById('client-select');
-            const projectClientSelect = document.getElementById('project-client-select');
+            const loginSection = document.getElementById('login-section'), appContainer = document.getElementById('app-container'),
+                  loginForm = document.getElementById('login-form'), logoutButton = document.getElementById('logout-button'),
+                  userEmailSpan = document.getElementById('user-email'), projectsListDiv = document.getElementById('projects-list'),
+                  dashboardView = document.getElementById('dashboard-view'), projectDetailView = document.getElementById('project-detail-view'),
+                  backToDashboardButton = document.getElementById('back-to-dashboard-button'), adminButton = document.getElementById('admin-button'),
+                  adminView = document.getElementById('admin-view'), backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button'),
+                  createClientForm = document.getElementById('create-client-form'), createUserForm = document.getElementById('create-user-form'),
+                  createProjectForm = document.getElementById('create-project-form'), clientSelect = document.getElementById('client-select'),
+                  projectClientSelect = document.getElementById('project-client-select'), phaseTemplateSelect = document.getElementById('phase-template-select'),
+                  newProjectPhasesTextarea = document.getElementById('new-project-phases'), clientNameHeader = document.getElementById('client-name-header');
 
             // --- BLOCO DE ESTADO DA APLICAÇÃO ---
-            let state = {
-                user: null,
-                projects: [],
-                clients: [],
+            let state = { user: null, projects: [], clients: [], phaseTemplates: [
+                { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
+                { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Desenho da Solução", "Desenvolvimento", "Homologação", "Go-Live"] },
+                { name: "Customizado", phases: [] }
+            ]};
+
+            // --- SISTEMA DE TOAST NOTIFICATION ---
+            const ToastManager = {
+                container: null,
+                init() {
+                    this.container = document.getElementById('toast-container');
+                    if (!this.container) { this.container = document.createElement('div'); this.container.id = 'toast-container'; document.body.appendChild(this.container); }
+                },
+                show(type, title, message, duration = 4000) {
+                    if (!this.container) this.init();
+                    const icons = { success: '✅', error: '❌' };
+                    const toast = document.createElement('div');
+                    toast.className = `toast ${type}`;
+                    toast.innerHTML = `<div style="font-size: 1.5rem; margin-top: 4px;">${icons[type]}</div><div><div class="toast-title">${title}</div>${message ? `<div class="toast-message">${message}</div>` : ''}</div>`;
+                    this.container.appendChild(toast);
+                    if (duration > 0) { setTimeout(() => this.remove(toast), duration); }
+                },
+                remove(toast) {
+                    if (toast && toast.parentElement) { toast.classList.add('removing'); setTimeout(() => { if (toast.parentElement) toast.parentElement.removeChild(toast); }, 300); }
+                },
+                success(title, message, duration) { this.show('success', title, message, duration); },
+                error(title, message, duration) { this.show('error', title, message, duration); },
             };
+            ToastManager.init();
 
             // --- BLOCO DE FUNÇÕES DE RENDERIZAÇÃO ---
+            const STATUS_LABELS = { 'pending': 'Pendente', 'in_progress': 'Em Desenvolvimento', 'completed': 'Concluído', 'evolving': 'Em Evolução', 'archived': 'Arquivado' };
+            
             function renderDashboard() {
                 projectsListDiv.innerHTML = '';
                 if (!state.projects || state.projects.length === 0) {
@@ -325,12 +236,10 @@
                     return;
                 }
                 state.projects.forEach(project => {
-                    const card = document.createElement('div');
-                    card.className = 'project-card';
-                    card.dataset.projectId = project.id;
+                    const card = document.createElement('div'); card.className = 'project-card'; card.dataset.projectId = project.id;
                     const versions = project.laborai_project_versions;
                     const latestVersion = versions && versions.length > 0 ? versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0] : null;
-                    const statusLabel = project.status.replace('_', ' ').toUpperCase();
+                    const statusLabel = STATUS_LABELS[project.status] || project.status.replace('_', ' ').toUpperCase();
                     card.innerHTML = `
                         <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
                         <p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel}</span></p>
@@ -349,29 +258,27 @@
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
                 versions.forEach(version => {
                     const versionContainer = document.createElement('div');
-                    versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${version.status.toUpperCase()}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
+                    versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${(STATUS_LABELS[version.status] || version.status).toUpperCase()}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
                     const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
                     phases.forEach(phase => {
                         const phaseDiv = document.createElement('div');
-                        phaseDiv.className = `phase ${phase.status.replace('_', '-')}`;
-                        phaseDiv.innerHTML = `<h4>${phase.name} (${phase.status})</h4>`;
+                        phaseDiv.className = `phase-header ${phase.status.replace('_', '-')}`;
+                        const phaseStatusLabel = STATUS_LABELS[phase.status] || phase.status;
+                        phaseDiv.innerHTML = `<h4>${phase.name} (${phaseStatusLabel})</h4>`;
+                        const updatesContainer = document.createElement('div');
                         const updates = phase.laborai_phase_updates.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
                         updates.forEach(update => {
                             const updateDiv = document.createElement('div');
                             updateDiv.className = 'update';
                             updateDiv.innerHTML = `
-                                <div class="update-header">
-                                    <strong>${update.title}</strong>
-                                </div>
-                                <div class="update-content">
-                                    <p>${update.description || ''}</p>
-                                    ${update.content_url ? `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>` : ''}
-                                </div>
+                                <div class="update-header"><strong>${update.title}</strong></div>
+                                <div class="update-content"><p>${update.description || ''}</p>${update.content_url ? `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>` : ''}</div>
                                 <div class="update-meta">${new Date(update.created_at).toLocaleString('pt-BR')}</div>
                             `;
-                            phaseDiv.appendChild(updateDiv);
+                            updatesContainer.appendChild(updateDiv);
                         });
                         versionContainer.appendChild(phaseDiv);
+                        versionContainer.appendChild(updatesContainer);
                     });
                     contentDiv.appendChild(versionContainer);
                 });
@@ -382,27 +289,42 @@
                 projectClientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
                 state.clients.forEach(client => {
                     const option = document.createElement('option');
-                    option.value = client.id;
-                    option.innerText = client.name;
+                    option.value = client.id; option.innerText = client.name;
                     clientSelect.appendChild(option.cloneNode(true));
                     projectClientSelect.appendChild(option);
                 });
             }
+            
+            function populatePhaseTemplatesDropdown() {
+                phaseTemplateSelect.innerHTML = '';
+                state.phaseTemplates.forEach(template => {
+                    const option = document.createElement('option');
+                    option.value = template.name; option.innerText = template.name;
+                    phaseTemplateSelect.appendChild(option);
+                });
+                updatePhasePreview();
+            }
 
+            function updatePhasePreview() {
+                const selectedTemplateName = phaseTemplateSelect.value;
+                const template = state.phaseTemplates.find(t => t.name === selectedTemplateName);
+                if (!template) return;
+                const isCustom = selectedTemplateName === 'Customizado';
+                newProjectPhasesTextarea.classList.toggle('hidden', !isCustom);
+                newProjectPhasesTextarea.previousElementSibling.classList.toggle('hidden', !isCustom);
+                if (!isCustom) { newProjectPhasesTextarea.value = template.phases.join('\n'); } 
+                else { newProjectPhasesTextarea.value = ''; newProjectPhasesTextarea.placeholder = "Fase 1:...\nFase 2:..."; }
+            }
+            
             // --- BLOCO DE FUNÇÕES DE DADOS ---
             async function fetchAllData() {
                 const userIsAdmin = state.user?.user_metadata?.role === 'admin';
                 let projectsQuery;
-
                 if (userIsAdmin) {
                     projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`);
                 } else {
                     const userClientId = state.user?.user_metadata?.clientId;
-                    if (!userClientId) {
-                        state.projects = [];
-                        renderDashboard();
-                        return;
-                    }
+                    if (!userClientId) { state.projects = []; renderDashboard(); return; }
                     projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
                 }
                 
@@ -411,10 +333,10 @@
                 
                 const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
 
-                if (projectsResult.error) { console.error("Erro ao buscar projetos:", projectsResult.error); }
+                if (projectsResult.error) { console.error("Erro ao buscar projetos:", projectsResult.error); ToastManager.error('Erro ao buscar projetos', projectsResult.error.message); } 
                 else { state.projects = projectsResult.data; }
 
-                if (clientsResult.error) { console.error("Erro ao buscar clientes:", clientsResult.error); }
+                if (clientsResult.error) { console.error("Erro ao buscar clientes:", clientsResult.error); ToastManager.error('Erro ao buscar clientes', clientsResult.error.message); } 
                 else { state.clients = clientsResult.data; }
                 
                 renderDashboard();
@@ -431,158 +353,83 @@
             // --- BLOCO DE EVENT LISTENERS ---
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) {
-                    alert('Erro no login: ' + error.message);
-                } else {
-                    state.user = data.user;
-                    initApp();
-                }
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
+                if (error) { ToastManager.error('Erro no login', error.message); } 
+                else { state.user = data.user; initApp(); }
             });
 
-            logoutButton.addEventListener('click', async () => {
-                await supabaseClient.auth.signOut();
-                window.location.reload();
-            });
-
+            logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.reload(); });
             backToDashboardButton.addEventListener('click', () => showView('dashboard-view'));
-
             projectsListDiv.addEventListener('click', (e) => {
                 const card = e.target.closest('.project-card');
-                if (card) {
-                    const projectId = card.dataset.projectId;
-                    renderProjectDetail(projectId);
-                    showView('project-detail-view');
-                }
+                if (card) { renderProjectDetail(card.dataset.projectId); showView('project-detail-view'); }
             });
-
-            adminButton.addEventListener('click', () => {
-                populateClientDropdowns();
-                showView('admin-view');
-            });
-
+            adminButton.addEventListener('click', () => { populateClientDropdowns(); populatePhaseTemplatesDropdown(); showView('admin-view'); });
             backToDashboardFromAdminButton.addEventListener('click', () => showView('dashboard-view'));
 
             createClientForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const button = document.getElementById('create-client-button');
-                button.disabled = true;
-                button.innerText = 'Criando...';
-
-                const clientName = document.getElementById('new-client-name').value;
-
+                const button = document.getElementById('create-client-button'); button.disabled = true; button.innerText = 'Criando...';
                 try {
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_CLIENTE, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ clientName })
-                    });
+                    const response = await fetch(N8N_WEBHOOKS.CRIAR_CLIENTE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientName: document.getElementById('new-client-name').value }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    
                     const result = await response.json();
-                    alert(result.status || 'Cliente criado com sucesso!');
+                    ToastManager.success('Cliente criado!', result.status);
                     createClientForm.reset();
-                    
-                    await fetchAllData();
-                    populateClientDropdowns();
-
-                } catch (error) {
-                    console.error('Erro ao criar cliente:', error);
-                    alert('Ocorreu um erro ao criar o cliente.');
-                } finally {
-                    button.disabled = false;
-                    button.innerText = 'Criar Cliente';
-                }
+                    await fetchAllData(); populateClientDropdowns();
+                } catch (error) { ToastManager.error('Erro ao criar cliente', error.message); } 
+                finally { button.disabled = false; button.innerText = 'Criar Cliente'; }
             });
 
             createUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const button = document.getElementById('create-user-button');
-                button.disabled = true;
-                button.innerText = 'Criando...';
-
-                const clientId = clientSelect.value;
-                const email = document.getElementById('new-user-email').value;
-                const password = document.getElementById('new-user-password').value;
-
+                const button = document.getElementById('create-user-button'); button.disabled = true; button.innerText = 'Criando...';
                 try {
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ clientId, email, password })
-                    });
+                    const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: clientSelect.value, email: document.getElementById('new-user-email').value, password: document.getElementById('new-user-password').value }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
                     const result = await response.json();
-                    alert(result.status || 'Usuário criado com sucesso!');
+                    ToastManager.success('Usuário criado!', result.status);
                     createUserForm.reset();
-                } catch (error) {
-                    console.error('Erro ao criar usuário:', error);
-                    alert('Ocorreu um erro ao criar o usuário.');
-                } finally {
-                    button.disabled = false;
-                    button.innerText = 'Criar Usuário';
-                }
+                } catch (error) { ToastManager.error('Erro ao criar usuário', error.message); } 
+                finally { button.disabled = false; button.innerText = 'Criar Usuário'; }
             });
-
+            
             createProjectForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const button = document.getElementById('create-project-button');
-                button.disabled = true;
-                button.innerText = 'Criando...';
-
-                const clientId = projectClientSelect.value;
-                const projectName = document.getElementById('new-project-name').value;
-                const description = document.getElementById('new-project-description').value;
-                const phases = document.getElementById('new-project-phases').value.split('\n').filter(phase => phase.trim() !== '');
-
+                const button = document.getElementById('create-project-button'); button.disabled = true; button.innerText = 'Criando...';
                 try {
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_PROJETO, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ clientId, projectName, description, phases })
-                    });
+                    const phases = newProjectPhasesTextarea.value.split('\n').filter(phase => phase.trim() !== '');
+                    const response = await fetch(N8N_WEBHOOKS.CRIAR_PROJETO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: projectClientSelect.value, projectName: document.getElementById('new-project-name').value, description: document.getElementById('new-project-description').value, phases }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    
                     const result = await response.json();
-                    alert(result.status || 'Projeto criado com sucesso!');
+                    ToastManager.success('Projeto Criado!', 'O novo projeto já aparece no dashboard.');
                     createProjectForm.reset();
-                    
                     await fetchAllData();
-                } catch (error) {
-                    console.error('Erro ao criar projeto:', error);
-                    alert('Ocorreu um erro ao criar o projeto.');
-                } finally {
-                    button.disabled = false;
-                    button.innerText = 'Criar Projeto';
-                }
+                    showView('dashboard-view');
+                } catch (error) { ToastManager.error('Erro ao criar projeto', error.message); } 
+                finally { button.disabled = false; button.innerText = 'Criar Projeto'; }
             });
+
+            phaseTemplateSelect.addEventListener('change', updatePhasePreview);
 
             // --- BLOCO DE INICIALIZAÇÃO ---
             async function initApp() {
-                loginSection.classList.add('hidden');
-                appContainer.classList.remove('hidden');
+                loginSection.classList.add('hidden'); appContainer.classList.remove('hidden');
                 userEmailSpan.innerText = state.user.email;
-
                 if (state.user?.user_metadata?.role === 'admin') {
                     adminButton.classList.remove('hidden');
+                } else {
+                    const clientName = state.user?.user_metadata?.clientName || state.user?.user_metadata?.client_name;
+                    if(clientName) clientNameHeader.innerText = `| ${clientName}`;
                 }
-
                 await fetchAllData();
                 showView('dashboard-view');
             }
 
             async function checkSession() {
                 const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    state.user = session.user;
-                    initApp();
-                } else {
-                    loginSection.classList.remove('hidden');
-                    appContainer.classList.add('hidden');
-                }
+                if (session) { state.user = session.user; initApp(); } 
+                else { loginSection.classList.remove('hidden'); appContainer.classList.add('hidden'); }
             }
             
             checkSession();
