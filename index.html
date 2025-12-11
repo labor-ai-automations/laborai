@@ -66,7 +66,7 @@
             color: var(--text-secondary);
             margin-bottom: 32px;
         }
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             margin-bottom: 16px;
@@ -76,8 +76,10 @@
             background-color: #374151;
             color: var(--text-primary);
             font-size: 16px;
+            font-family: 'Inter', sans-serif;
         }
-        input::placeholder { color: #6b7280; }
+        input::placeholder, textarea::placeholder { color: #6b7280; }
+        textarea { resize: vertical; }
         
         button {
             width: 100%;
@@ -158,7 +160,7 @@
             margin-bottom: 8px;
             font-weight: 500;
         }
-        #create-user-button, #create-client-button {
+        #create-user-button, #create-client-button, #create-project-button {
             margin-top: 10px;
         }
     </style>
@@ -216,6 +218,25 @@
                 <h2>Painel Administrativo</h2>
 
                 <div class="admin-section-card">
+                    <h3>Criar Novo Projeto</h3>
+                    <form id="create-project-form">
+                        <label for="project-client-select">Associar a qual cliente?</label>
+                        <select id="project-client-select" required></select>
+                        
+                        <label for="new-project-name">Nome do Projeto:</label>
+                        <input type="text" id="new-project-name" placeholder="Ex: Dashboard de Produção V1" required>
+
+                        <label for="new-project-description">Descrição Breve:</label>
+                        <textarea id="new-project-description" rows="3" placeholder="Resumo do que o projeto fará..."></textarea>
+                        
+                        <label for="new-project-phases">Fases do Projeto (uma por linha):</label>
+                        <textarea id="new-project-phases" rows="4" placeholder="Fase 1: Levantamento&#10;Fase 2: Desenvolvimento&#10;Fase 3: Testes" required></textarea>
+                        
+                        <button type="submit" id="create-project-button">Criar Projeto</button>
+                    </form>
+                </div>
+
+                <div class="admin-section-card">
                     <h3>Criar Novo Cliente</h3>
                     <form id="create-client-form">
                         <label for="new-client-name">Nome do Cliente (Empresa):</label>
@@ -256,16 +277,18 @@
             // --- BLOCO DE CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
+            
+            const N8N_BASE_URL = 'SUA_URL_BASE_DO_N8N_AQUI'; // <<<---- ÚNICA COISA QUE VOCÊ PRECISA SUBSTITUIR
 
             const N8N_WEBHOOKS = {
-                CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
-                CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
-                CRIAR_PROJETO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-projeto',
-                ADD_ATUALIZACAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-fase',
-                ATUALIZAR_STATUS_FASE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-status-fase',
-                CRIAR_NOVA_VERSAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-versao',
-                CRIAR_NOVA_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-colecao',
-                ADD_ATIVO_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-ativo-colecao',
+                CRIAR_CLIENTE: `${N8N_BASE_URL}/webhook/criar-novo-cliente`,
+                CRIAR_USUARIO: `${N8N_BASE_URL}/webhook/criar-novo-usuario`,
+                CRIAR_PROJETO: `${N8N_BASE_URL}/webhook/criar-novo-projeto`,
+                ADD_ATUALIZACAO: `${N8N_BASE_URL}/webhook/adicionar-atualizacao-fase`,
+                ATUALIZAR_STATUS_FASE: `${N8N_BASE_URL}/webhook/atualizar-status-fase`,
+                CRIAR_NOVA_VERSAO: `${N8N_BASE_URL}/webhook/criar-nova-versao`,
+                CRIAR_NOVA_COLECAO: `${N8N_BASE_URL}/webhook/criar-nova-colecao`,
+                ADD_ATIVO_COLECAO: `${N8N_BASE_URL}/webhook/adicionar-ativo-colecao`,
             };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -285,7 +308,9 @@
             const backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button');
             const createClientForm = document.getElementById('create-client-form');
             const createUserForm = document.getElementById('create-user-form');
+            const createProjectForm = document.getElementById('create-project-form');
             const clientSelect = document.getElementById('client-select');
+            const projectClientSelect = document.getElementById('project-client-select');
 
             // --- BLOCO DE ESTADO DA APLICAÇÃO ---
             let state = {
@@ -354,13 +379,15 @@
                 });
             }
 
-            function populateClientDropdown() {
+            function populateClientDropdowns() {
                 clientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
+                projectClientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
                 state.clients.forEach(client => {
                     const option = document.createElement('option');
                     option.value = client.id;
                     option.innerText = client.name;
-                    clientSelect.appendChild(option);
+                    clientSelect.appendChild(option.cloneNode(true));
+                    projectClientSelect.appendChild(option);
                 });
             }
 
@@ -435,7 +462,7 @@
             });
 
             adminButton.addEventListener('click', () => {
-                populateClientDropdown();
+                populateClientDropdowns();
                 showView('admin-view');
             });
 
@@ -462,7 +489,7 @@
                     createClientForm.reset();
                     
                     await fetchAllData();
-                    populateClientDropdown();
+                    populateClientDropdowns();
 
                 } catch (error) {
                     console.error('Erro ao criar cliente:', error);
@@ -499,6 +526,39 @@
                 } finally {
                     button.disabled = false;
                     button.innerText = 'Criar Usuário';
+                }
+            });
+
+            createProjectForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const button = document.getElementById('create-project-button');
+                button.disabled = true;
+                button.innerText = 'Criando...';
+
+                const clientId = projectClientSelect.value;
+                const projectName = document.getElementById('new-project-name').value;
+                const description = document.getElementById('new-project-description').value;
+                const phases = document.getElementById('new-project-phases').value.split('\n').filter(phase => phase.trim() !== '');
+
+                try {
+                    const response = await fetch(N8N_WEBHOOKS.CRIAR_PROJETO, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ clientId, projectName, description, phases })
+                    });
+                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
+                    
+                    const result = await response.json();
+                    alert(result.status || 'Projeto criado com sucesso!');
+                    createProjectForm.reset();
+                    
+                    await fetchAllData();
+                } catch (error) {
+                    console.error('Erro ao criar projeto:', error);
+                    alert('Ocorreu um erro ao criar o projeto.');
+                } finally {
+                    button.disabled = false;
+                    button.innerText = 'Criar Projeto';
                 }
             });
 
