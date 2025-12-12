@@ -169,6 +169,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- BLOCO DE CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
@@ -187,6 +188,7 @@
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+            // --- BLOCO DE SELETORES DE DOM ---
             const loginSection = document.getElementById('login-section'), appContainer = document.getElementById('app-container'),
                   loginForm = document.getElementById('login-form'), logoutButton = document.getElementById('logout-button'),
                   userEmailSpan = document.getElementById('user-email'), projectsListDiv = document.getElementById('projects-list'),
@@ -523,7 +525,7 @@
                     
                     const project = state.projects.find(p => p.id === state.currentProjectId);
                     const version = project.laborai_project_versions.find(v => v.id === state.currentVersionId);
-                    version.progress_percentage = newProgress;
+                    if (version) { version.progress_percentage = newProgress; }
 
                     updateProgressDisplay(newProgress);
                     renderDashboard();
