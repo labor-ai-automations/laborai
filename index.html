@@ -20,48 +20,36 @@
         .hidden { display: none !important; }
         #login-section { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .login-card { background: var(--surface-dark); padding: 40px; border-radius: 12px; border: 1px solid var(--border-dark); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; }
-        .login-card h2 { font-size: 24px; margin-top: 0; margin-bottom: 8px; }
-        .login-card p { color: var(--text-secondary); margin-bottom: 32px; }
         input, select, textarea { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-dark); border-radius: 6px; box-sizing: border-box; background-color: #374151; color: var(--text-primary); font-size: 16px; font-family: 'Inter', sans-serif; }
-        input::placeholder, textarea::placeholder { color: #6b7280; }
-        textarea { resize: vertical; }
         button { width: 100%; padding: 12px; border: none; border-radius: 6px; background-color: var(--primary-accent); color: white; font-weight: 500; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
         button:hover { background-color: var(--primary-accent-hover); }
         button:disabled { background-color: #4b5563; cursor: not-allowed; }
         #app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border-dark); margin-bottom: 24px; }
-        #app-header strong { font-size: 1.2em; }
         #client-name-header { font-weight: 500; color: var(--text-secondary); margin-left: 8px; }
         .project-card { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-dark); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
         .project-card:hover { transform: translateY(-3px); border-color: var(--primary-accent); }
         .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: var(--surface-dark); }
-        .phase-header.completed { border-color: var(--success-color); background: linear-gradient(to right, var(--success-bg), var(--surface-dark)); }
-        .phase-header.in-progress { border-color: var(--primary-accent); background: linear-gradient(to right, #1e3a8a, var(--surface-dark)); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); animation: pulse-border 3s ease-in-out infinite; }
+        .phase-header.completed { border-color: var(--success-color); }
+        .phase-header.in-progress { border-color: var(--primary-accent); animation: pulse-border 3s ease-in-out infinite; }
         @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); } 50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2); } }
         .update { margin-left: 20px; margin-bottom: 12px; padding: 12px; padding-left: 20px; background: var(--background-dark); border-left: 2px solid var(--border-dark); }
-        #admin-view { background: var(--surface-dark); padding: 20px; border-radius: 8px; border: 1px solid var(--border-dark); }
-        .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; }
+        #admin-view, .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; background: var(--surface-dark); }
         label { display: block; margin-bottom: 8px; font-weight: 500; text-align: left; }
         .admin-controls { margin-top: 10px; display: flex; gap: 10px; }
         .admin-controls button { width: auto; padding: 4px 10px; font-size: 0.8em; background-color: var(--border-dark); }
-        .admin-controls button:hover { background-color: var(--text-secondary); }
-        .add-update-section { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-top: 24px; border: 1px solid var(--border-dark); }
-        #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; }
-        .toast { display: flex; align-items: flex-start; gap: 0.875rem; padding: 1rem 1.25rem; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25); border-left: 4px solid; animation: slideIn 0.3s ease-out; position: relative; overflow: hidden; }
+        #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 10000; display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; }
+        .toast { display: flex; align-items: flex-start; gap: 0.875rem; padding: 1rem 1.25rem; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); border-left: 4px solid; animation: slideIn 0.3s ease-out; position: relative; overflow: hidden; background-color: var(--surface-dark); }
         .toast::after { content: ''; position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; animation: shrink 4s linear forwards; }
-        .toast.success { border-color: var(--success-color); background-color: var(--surface-dark); }
-        .toast.error { border-color: var(--error-color); background-color: var(--surface-dark); }
-        .toast.info { border-color: var(--primary-accent); background-color: var(--surface-dark); }
-        .toast-title { font-weight: 600; font-size: 0.9375rem; margin-bottom: 0.25rem; color: var(--text-primary); }
-        .toast-message { font-size: 0.875rem; color: var(--text-secondary); }
+        .toast.success { border-color: var(--success-color); } .toast.error { border-color: var(--error-color); } .toast.info { border-color: var(--primary-accent); }
         @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideOut { to { transform: translateX(120%); opacity: 0; } }
         @keyframes shrink { from { width: 100%; } to { width: 0%; } }
         .toast.removing { animation: slideOut 0.3s ease-in forwards; }
         .progress-bar-wrapper { width: 100%; height: 8px; background: #374151; border-radius: 4px; overflow: hidden; margin: 8px 0; }
         .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
-        .progress-bar-fill.low { background: var(--error-color); }
-        .progress-bar-fill.medium { background: var(--warning-color); }
-        .progress-bar-fill.high { background: var(--success-color); }
+        .progress-bar-fill.low { background: var(--error-color); } .progress-bar-fill.medium { background: var(--warning-color); } .progress-bar-fill.high { background: var(--success-color); }
+        .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; }
+        .modal-content { background: var(--surface-dark); padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; border: 1px solid var(--border-dark); }
     </style>
 </head>
 <body>
@@ -95,6 +83,7 @@
             <div id="project-detail-view" class="hidden">
                 <button id="back-to-dashboard-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2 id="project-detail-name"></h2>
+                <div id="project-actions-admin" class="admin-section-card hidden"></div>
                 <div id="progress-control-container" class="admin-section-card hidden">
                     <h3>📊 Controle de Progresso</h3>
                     <div id="progress-display"></div>
@@ -103,7 +92,7 @@
                     <button id="save-progress-button" style="width: auto; padding: 8px 16px; margin-top: 10px;">Salvar Progresso</button>
                 </div>
                 <div id="project-detail-content"></div>
-                <div id="add-update-form-container" class="add-update-section hidden">
+                <div id="add-update-form-container" class="admin-section-card hidden">
                     <h3>Adicionar Nova Atualização</h3>
                     <form id="add-update-form">
                         <label for="update-phase-select">Para qual fase?</label>
@@ -175,10 +164,25 @@
         </main>
     </div>
 
+    <div id="new-version-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Iniciar Nova Versão</h3>
+            <form id="new-version-form">
+                <label for="new-version-number">Número da Nova Versão:</label>
+                <input type="text" id="new-version-number" placeholder="Ex: V2.0" required>
+                <label for="new-version-summary">Resumo das Mudanças:</label>
+                <textarea id="new-version-summary" rows="3" placeholder="O que há de novo nesta versão?" required></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" id="cancel-new-version-button" style="background-color: var(--border-dark);">Cancelar</button>
+                    <button type="submit">Criar Versão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- BLOCO DE CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
@@ -197,7 +201,6 @@
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // --- BLOCO DE SELETORES DE DOM ---
             const loginSection = document.getElementById('login-section'), appContainer = document.getElementById('app-container'),
                   loginForm = document.getElementById('login-form'), logoutButton = document.getElementById('logout-button'),
                   userEmailSpan = document.getElementById('user-email'), projectsListDiv = document.getElementById('projects-list'),
@@ -212,16 +215,16 @@
                   updateTypeSelect = document.getElementById('update-type-select'),
                   progressControlContainer = document.getElementById('progress-control-container'), progressSlider = document.getElementById('progress-slider'),
                   progressDisplay = document.getElementById('progress-display'), saveProgressButton = document.getElementById('save-progress-button'),
-                  sliderValueSpan = document.getElementById('slider-value');
+                  sliderValueSpan = document.getElementById('slider-value'),
+                  projectActionsAdmin = document.getElementById('project-actions-admin'), newVersionModal = document.getElementById('new-version-modal'),
+                  cancelNewVersionButton = document.getElementById('cancel-new-version-button'), newVersionForm = document.getElementById('new-version-form');
 
-            // --- BLOCO DE ESTADO DA APLICAÇÃO ---
             let state = { user: null, projects: [], clients: [], phaseTemplates: [
                 { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
                 { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Desenho da Solução", "Desenvolvimento", "Homologação", "Go-Live"] },
                 { name: "Customizado", phases: [] }
             ], currentProjectId: null, currentVersionId: null };
 
-            // --- SISTEMA DE TOAST NOTIFICATION ---
             const ToastManager = {
                 container: document.getElementById('toast-container'),
                 show(type, title, message, duration = 4000) {
@@ -232,22 +235,17 @@
                     this.container.appendChild(toast);
                     if (duration > 0) { setTimeout(() => this.remove(toast), duration); }
                 },
-                remove(toast) {
-                    if (toast && toast.parentElement) { toast.classList.add('removing'); setTimeout(() => { if (toast.parentElement) toast.parentElement.removeChild(toast); }, 300); }
-                },
+                remove(toast) { if (toast && toast.parentElement) { toast.classList.add('removing'); setTimeout(() => { if (toast.parentElement) toast.parentElement.removeChild(toast); }, 300); } },
                 success(title, message, duration) { this.show('success', title, message, duration); },
                 error(title, message, duration) { this.show('error', title, message, duration); },
                 info(title, message, duration) { this.show('info', title, message, duration); }
             };
 
-            // --- BLOCO DE FUNÇÕES DE RENDERIZAÇÃO ---
             const STATUS_LABELS = { 'pending': 'Pendente', 'in_progress': 'Em Desenvolvimento', 'completed': 'Concluído', 'evolving': 'Em Evolução', 'archived': 'Arquivado' };
             
             function renderDashboard() {
                 projectsListDiv.innerHTML = '';
-                if (!state.projects || state.projects.length === 0) {
-                    projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>'; return;
-                }
+                if (!state.projects || state.projects.length === 0) { projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>'; return; }
                 state.projects.forEach(project => {
                     const card = document.createElement('div'); card.className = 'project-card'; card.dataset.projectId = project.id;
                     const versions = project.laborai_project_versions;
@@ -257,12 +255,7 @@
                     let progressColorClass = 'low';
                     if (progress > 30) progressColorClass = 'medium';
                     if (progress > 70) progressColorClass = 'high';
-                    card.innerHTML = `
-                        <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
-                        <p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel} - ${progress}%</span></p>
-                        <div class="progress-bar-wrapper"><div class="progress-bar-fill ${progressColorClass}" style="width: ${progress}%;"></div></div>
-                        <p style="font-size: 0.9em; color: var(--text-secondary);">Última atualização: ${new Date(project.updated_at).toLocaleDateString('pt-BR')}</p>
-                    `;
+                    card.innerHTML = `<h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4><p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel} - ${progress}%</span></p><div class="progress-bar-wrapper"><div class="progress-bar-fill ${progressColorClass}" style="width: ${progress}%;"></div></div><p style="font-size: 0.9em; color: var(--text-secondary);">Última atualização: ${new Date(project.updated_at).toLocaleDateString('pt-BR')}</p>`;
                     projectsListDiv.appendChild(card);
                 });
             }
@@ -275,7 +268,7 @@
                 document.getElementById('project-detail-name').innerText = project.name;
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
-                const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                const versions = project.laborai_project_versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                 versions.forEach(version => {
                     state.currentVersionId = version.id;
                     const versionContainer = document.createElement('div');
@@ -312,12 +305,16 @@
                 });
 
                 if (userIsAdmin) {
+                    projectActionsAdmin.classList.toggle('hidden', project.status !== 'completed');
+                    projectActionsAdmin.innerHTML = `<button id="start-new-version-button" style="width: auto; padding: 8px 16px;">🚀 Iniciar Nova Versão</button>`;
+                    document.getElementById('start-new-version-button')?.addEventListener('click', () => { newVersionModal.classList.remove('hidden'); });
+
                     progressControlContainer.classList.remove('hidden');
                     const latestVersion = versions[0];
                     if (latestVersion) {
                         const savedProgress = latestVersion.progress_percentage || 0;
-                        updateProgressDisplay(savedProgress); // Atualiza o "Progresso Atual"
-                        updateSliderPreview(savedProgress); // Sincroniza o slider com o valor salvo
+                        updateProgressDisplay(savedProgress);
+                        updateSliderPreview(savedProgress);
                     }
                     
                     addUpdateFormContainer.classList.remove('hidden');
@@ -326,12 +323,12 @@
                     project.laborai_project_versions.forEach(version => {
                         version.laborai_project_phases.forEach(phase => {
                             const option = document.createElement('option');
-                            option.value = phase.id;
-                            option.innerText = `[${version.version_number}] ${phase.name}`;
+                            option.value = phase.id; option.innerText = `[${version.version_number}] ${phase.name}`;
                             phaseSelect.appendChild(option);
                         });
                     });
                 } else {
+                    projectActionsAdmin.classList.add('hidden');
                     progressControlContainer.classList.add('hidden');
                     addUpdateFormContainer.classList.add('hidden');
                 }
@@ -341,10 +338,7 @@
                 let colorClass = 'low';
                 if (progress > 30) colorClass = 'medium';
                 if (progress > 70) colorClass = 'high';
-                progressDisplay.innerHTML = `
-                    <p style="margin-bottom: 5px;">Progresso Atual: ${progress}%</p>
-                    <div class="progress-bar-wrapper"><div class="progress-bar-fill ${colorClass}" style="width: ${progress}%;"></div></div>
-                `;
+                progressDisplay.innerHTML = `<p style="margin-bottom: 5px;">Progresso Atual: ${progress}%</p><div class="progress-bar-wrapper"><div class="progress-bar-fill ${colorClass}" style="width: ${progress}%;"></div></div>`;
             }
 
             function updateSliderPreview(value) {
@@ -497,7 +491,6 @@
                 const title = document.getElementById('update-title').value;
                 const description = document.getElementById('update-description').value;
                 try {
-                    let contentUrl = '';
                     if (type === 'image') {
                         const fileInput = document.getElementById('update-file');
                         if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de imagem.');
@@ -507,6 +500,7 @@
                         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: file });
                         if (!uploadResponse.ok) throw new Error('Falha no upload do arquivo para o n8n.');
                     } else { 
+                        let contentUrl = '';
                         if (type === 'link') { contentUrl = document.getElementById('update-link').value; }
                         const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -521,11 +515,11 @@
                 } catch (error) { ToastManager.error('Erro ao adicionar atualização', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Adicionar Atualização'; }
             });
-            
+
             progressSlider.addEventListener('input', (e) => {
                 updateSliderPreview(e.target.value);
             });
-
+            
             saveProgressButton.addEventListener('click', async () => {
                 const button = saveProgressButton; button.disabled = true; button.innerText = 'Salvando...';
                 try {
@@ -537,10 +531,35 @@
                     if (!response.ok) throw new Error('Falha ao salvar progresso.');
                     ToastManager.success('Progresso salvo!');
                     await fetchAllData();
-                    // Após salvar, o "Progresso Atual" precisa ser atualizado na tela
                     updateProgressDisplay(newProgress);
                 } catch(error) { ToastManager.error('Erro ao salvar', error.message); }
                 finally { button.disabled = false; button.innerText = 'Salvar Progresso'; }
+            });
+            
+            cancelNewVersionButton.addEventListener('click', () => { newVersionModal.classList.add('hidden'); });
+
+            newVersionForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const button = e.submitter; button.disabled = true; button.innerText = 'Criando...';
+                const project = state.projects.find(p => p.id === state.currentProjectId);
+                const latestVersion = project.laborai_project_versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                try {
+                    const response = await fetch(N8N_WEBHOOKS.CRIAR_NOVA_VERSAO, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            projectId: state.currentProjectId,
+                            newVersionNumber: document.getElementById('new-version-number').value,
+                            summary: document.getElementById('new-version-summary').value,
+                            copyPhasesFromVersionId: latestVersion.id
+                        })
+                    });
+                    if (!response.ok) throw new Error('Falha ao criar nova versão.');
+                    ToastManager.success('Nova versão iniciada!');
+                    newVersionModal.classList.add('hidden'); newVersionForm.reset();
+                    await fetchAllData();
+                    renderProjectDetail(state.currentProjectId);
+                } catch (error) { ToastManager.error('Erro', error.message); } 
+                finally { button.disabled = false; button.innerText = 'Criar Versão'; }
             });
 
             phaseTemplateSelect.addEventListener('change', updatePhasePreview);
