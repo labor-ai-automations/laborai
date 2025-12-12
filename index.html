@@ -257,7 +257,6 @@
                     let progressColorClass = 'low';
                     if (progress > 30) progressColorClass = 'medium';
                     if (progress > 70) progressColorClass = 'high';
-
                     card.innerHTML = `
                         <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
                         <p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel} - ${progress}%</span></p>
@@ -277,7 +276,6 @@
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-                
                 versions.forEach(version => {
                     state.currentVersionId = version.id;
                     const versionContainer = document.createElement('div');
@@ -290,13 +288,7 @@
                         const phaseStatusLabel = STATUS_LABELS[phase.status] || phase.status;
                         let adminControlsHTML = '';
                         if (userIsAdmin) {
-                            adminControlsHTML = `
-                                <div class="admin-controls">
-                                    <button onclick="updatePhaseStatus('${phase.id}', 'in_progress')">Iniciar</button>
-                                    <button onclick="updatePhaseStatus('${phase.id}', 'completed')">Concluir</button>
-                                    <button onclick="updatePhaseStatus('${phase.id}', 'pending')">Resetar</button>
-                                </div>
-                            `;
+                            adminControlsHTML = `<div class="admin-controls"><button onclick="updatePhaseStatus('${phase.id}', 'in_progress')">Iniciar</button><button onclick="updatePhaseStatus('${phase.id}', 'completed')">Concluir</button><button onclick="updatePhaseStatus('${phase.id}', 'pending')">Resetar</button></div>`;
                         }
                         phaseDiv.innerHTML = `<h4>${phase.name} (${phaseStatusLabel})</h4>${adminControlsHTML}`;
                         const updatesContainer = document.createElement('div');
@@ -310,11 +302,7 @@
                             } else if (update.content_url) {
                                 contentHTML += `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>`;
                             }
-                            updateDiv.innerHTML = `
-                                <div class="update-header"><strong>${update.title}</strong></div>
-                                <div class="update-content">${contentHTML}</div>
-                                <div class="update-meta">${new Date(update.created_at).toLocaleString('pt-BR')}</div>
-                            `;
+                            updateDiv.innerHTML = `<div class="update-header"><strong>${update.title}</strong></div><div class="update-content">${contentHTML}</div><div class="update-meta">${new Date(update.created_at).toLocaleString('pt-BR')}</div>`;
                             updatesContainer.appendChild(updateDiv);
                         });
                         versionContainer.appendChild(phaseDiv);
@@ -326,7 +314,11 @@
                 if (userIsAdmin) {
                     progressControlContainer.classList.remove('hidden');
                     const latestVersion = versions[0];
-                    if (latestVersion) updateProgressPreview(latestVersion.progress_percentage || 0);
+                    if (latestVersion) {
+                        const savedProgress = latestVersion.progress_percentage || 0;
+                        updateProgressDisplay(savedProgress); // Atualiza o "Progresso Atual"
+                        updateSliderPreview(savedProgress); // Sincroniza o slider com o valor salvo
+                    }
                     
                     addUpdateFormContainer.classList.remove('hidden');
                     const phaseSelect = document.getElementById('update-phase-select');
@@ -345,10 +337,7 @@
                 }
             }
             
-            function updateProgressPreview(value) {
-                const progress = parseInt(value) || 0;
-                progressSlider.value = progress;
-                sliderValueSpan.textContent = `${progress}%`;
+            function updateProgressDisplay(progress) {
                 let colorClass = 'low';
                 if (progress > 30) colorClass = 'medium';
                 if (progress > 70) colorClass = 'high';
@@ -356,6 +345,12 @@
                     <p style="margin-bottom: 5px;">Progresso Atual: ${progress}%</p>
                     <div class="progress-bar-wrapper"><div class="progress-bar-fill ${colorClass}" style="width: ${progress}%;"></div></div>
                 `;
+            }
+
+            function updateSliderPreview(value) {
+                const progress = parseInt(value) || 0;
+                progressSlider.value = progress;
+                sliderValueSpan.textContent = `${progress}%`;
             }
 
             function populateClientDropdowns() {
@@ -418,7 +413,7 @@
             }
 
             window.updatePhaseStatus = async (phaseId, newStatus) => {
-                ToastManager.info('Atualizando status...', 'Aguarde um momento.', 2000);
+                ToastManager.info('Atualizando status...', null, 2000);
                 try {
                     const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_STATUS_FASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phaseId, newStatus }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
@@ -451,7 +446,7 @@
                     const response = await fetch(N8N_WEBHOOKS.CRIAR_CLIENTE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientName: document.getElementById('new-client-name').value }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
                     const result = await response.json();
-                    ToastManager.success('Cliente criado!', 'O novo cliente já está disponível nos formulários.');
+                    ToastManager.success('Cliente criado!', 'Já disponível nos formulários.');
                     createClientForm.reset();
                     await fetchAllData(); populateClientDropdowns();
                 } catch (error) { ToastManager.error('Erro ao criar cliente', error.message); } 
@@ -479,7 +474,7 @@
                     const response = await fetch(N8N_WEBHOOKS.CRIAR_PROJETO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: projectClientSelect.value, projectName: document.getElementById('new-project-name').value, description: document.getElementById('new-project-description').value, phases }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
                     const result = await response.json();
-                    ToastManager.success('Projeto Criado!', 'O novo projeto já aparece no dashboard.');
+                    ToastManager.success('Projeto Criado!', 'O novo projeto já está no dashboard.');
                     createProjectForm.reset();
                     await fetchAllData();
                     showView('dashboard-view');
@@ -501,19 +496,16 @@
                 const type = document.getElementById('update-type-select').value;
                 const title = document.getElementById('update-title').value;
                 const description = document.getElementById('update-description').value;
-
                 try {
                     let contentUrl = '';
                     if (type === 'image') {
                         const fileInput = document.getElementById('update-file');
                         if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de imagem.');
                         const file = fileInput.files[0];
-                        ToastManager.info('Fazendo upload da imagem...', 'Aguarde...');
+                        ToastManager.info('Fazendo upload da imagem...');
                         const uploadUrl = `${N8N_WEBHOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&type=${type}&title=${encodeURIComponent(title)}&fileName=${encodeURIComponent(file.name)}`;
                         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: file });
                         if (!uploadResponse.ok) throw new Error('Falha no upload do arquivo para o n8n.');
-                        const uploadResult = await uploadResponse.json();
-                        contentUrl = uploadResult.url; // n8n retorna a URL do Drive
                     } else { 
                         if (type === 'link') { contentUrl = document.getElementById('update-link').value; }
                         const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
@@ -529,11 +521,11 @@
                 } catch (error) { ToastManager.error('Erro ao adicionar atualização', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Adicionar Atualização'; }
             });
-
-            progressSlider.addEventListener('input', (e) => {
-                updateProgressPreview(e.target.value);
-            });
             
+            progressSlider.addEventListener('input', (e) => {
+                updateSliderPreview(e.target.value);
+            });
+
             saveProgressButton.addEventListener('click', async () => {
                 const button = saveProgressButton; button.disabled = true; button.innerText = 'Salvando...';
                 try {
@@ -545,7 +537,8 @@
                     if (!response.ok) throw new Error('Falha ao salvar progresso.');
                     ToastManager.success('Progresso salvo!');
                     await fetchAllData();
-                    renderProjectDetail(state.currentProjectId);
+                    // Após salvar, o "Progresso Atual" precisa ser atualizado na tela
+                    updateProgressDisplay(newProgress);
                 } catch(error) { ToastManager.error('Erro ao salvar', error.message); }
                 finally { button.disabled = false; button.innerText = 'Salvar Progresso'; }
             });
