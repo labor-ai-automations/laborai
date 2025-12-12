@@ -324,10 +324,11 @@
             }
             
             function updateProgressDisplay(progress) {
+                const p = parseInt(progress) || 0;
                 let colorClass = 'low';
-                if (progress > 30) colorClass = 'medium';
-                if (progress > 70) colorClass = 'high';
-                progressDisplay.innerHTML = `<p style="margin-bottom: 5px;">Progresso Atual: ${progress}%</p><div class="progress-bar-wrapper"><div class="progress-bar-fill ${colorClass}" style="width: ${progress}%;"></div></div>`;
+                if (p > 30) colorClass = 'medium';
+                if (p > 70) colorClass = 'high';
+                progressDisplay.innerHTML = `<p style="margin-bottom: 5px;">Progresso Atual: ${p}%</p><div class="progress-bar-wrapper"><div class="progress-bar-fill ${colorClass}" style="width: ${p}%;"></div></div>`;
             }
 
             function updateSliderPreview(value) {
@@ -353,7 +354,7 @@
                     const option = document.createElement('option');
                     option.value = template.name; option.innerText = template.name;
                     phaseTemplateSelect.appendChild(option);
-});
+                });
                 updatePhasePreview();
             }
 
@@ -520,13 +521,12 @@
                     if (!response.ok) throw new Error('Falha ao salvar progresso.');
                     ToastManager.success('Progresso salvo!');
                     
-                    // Atualiza o estado localmente antes de buscar tudo de novo
                     const project = state.projects.find(p => p.id === state.currentProjectId);
                     const version = project.laborai_project_versions.find(v => v.id === state.currentVersionId);
                     version.progress_percentage = newProgress;
 
                     updateProgressDisplay(newProgress);
-                    renderDashboard(); // Re-renderiza o dashboard com o novo percentual
+                    renderDashboard();
                 } catch(error) { ToastManager.error('Erro ao salvar', error.message); }
                 finally { button.disabled = false; button.innerText = 'Salvar Progresso'; }
             });
