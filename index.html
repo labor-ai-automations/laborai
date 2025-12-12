@@ -8,37 +8,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <!-- ======================================================= -->
-    <!-- ESTILOS (CSS) - V2 com Melhorias de UX                  -->
-    <!-- ======================================================= -->
     <style>
         :root {
-            --background-dark: #111827;
-            --surface-dark: #1f2937;
-            --border-dark: #374151;
-            --primary-accent: #3b82f6;
-            --primary-accent-hover: #60a5fa;
-            --text-primary: #f9fafb;
-            --text-secondary: #9ca3af;
-            --success-color: #22c55e;
-            --success-bg: #102d20;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
-            --error-bg: #3f1212;
+            --background-dark: #111827; --surface-dark: #1f2937; --border-dark: #374151;
+            --primary-accent: #3b82f6; --primary-accent-hover: #60a5fa; --text-primary: #f9fafb;
+            --text-secondary: #9ca3af; --success-color: #22c55e; --success-bg: #102d20;
+            --warning-color: #f59e0b; --error-color: #ef4444; --error-bg: #3f1212;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background-dark);
-            color: var(--text-primary);
-            margin: 0;
-            line-height: 1.6;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-dark); color: var(--text-primary); margin: 0; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .hidden { display: none !important; }
-
-        /* --- Seção de Login --- */
         #login-section { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .login-card { background: var(--surface-dark); padding: 40px; border-radius: 12px; border: 1px solid var(--border-dark); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; }
         .login-card h2 { font-size: 24px; margin-top: 0; margin-bottom: 8px; }
@@ -46,38 +25,26 @@
         input, select, textarea { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-dark); border-radius: 6px; box-sizing: border-box; background-color: #374151; color: var(--text-primary); font-size: 16px; font-family: 'Inter', sans-serif; }
         input::placeholder, textarea::placeholder { color: #6b7280; }
         textarea { resize: vertical; }
-        
         button { width: 100%; padding: 12px; border: none; border-radius: 6px; background-color: var(--primary-accent); color: white; font-weight: 500; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
         button:hover { background-color: var(--primary-accent-hover); }
         button:disabled { background-color: #4b5563; cursor: not-allowed; }
-
-        /* --- App Header com Nome do Cliente --- */
         #app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border-dark); margin-bottom: 24px; }
         #app-header strong { font-size: 1.2em; }
         #client-name-header { font-weight: 500; color: var(--text-secondary); margin-left: 8px; }
-
-        /* --- Cards e Componentes --- */
         .project-card { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-dark); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
         .project-card:hover { transform: translateY(-3px); border-color: var(--primary-accent); }
-
-        /* --- Nova Timeline Visual Aprimorada --- */
         .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: var(--surface-dark); }
         .phase-header.completed { border-color: var(--success-color); background: linear-gradient(to right, var(--success-bg), var(--surface-dark)); }
         .phase-header.in-progress { border-color: var(--primary-accent); background: linear-gradient(to right, #1e3a8a, var(--surface-dark)); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); animation: pulse-border 3s ease-in-out infinite; }
         @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); } 50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2); } }
-        
         .update { margin-left: 20px; margin-bottom: 12px; padding: 12px; padding-left: 20px; background: var(--background-dark); border-left: 2px solid var(--border-dark); }
-        
-        /* --- Painel de Admin --- */
         #admin-view { background: var(--surface-dark); padding: 20px; border-radius: 8px; border: 1px solid var(--border-dark); }
         .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 500; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; text-align: left; }
         .admin-controls { margin-top: 10px; display: flex; gap: 10px; }
         .admin-controls button { width: auto; padding: 4px 10px; font-size: 0.8em; background-color: var(--border-dark); }
         .admin-controls button:hover { background-color: var(--text-secondary); }
         .add-update-section { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-top: 24px; border: 1px solid var(--border-dark); }
-
-        /* --- Toast Notifications --- */
         #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; }
         .toast { display: flex; align-items: flex-start; gap: 0.875rem; padding: 1rem 1.25rem; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25); border-left: 4px solid; animation: slideIn 0.3s ease-out; position: relative; overflow: hidden; }
         .toast::after { content: ''; position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; animation: shrink 4s linear forwards; }
@@ -90,6 +57,11 @@
         @keyframes slideOut { to { transform: translateX(120%); opacity: 0; } }
         @keyframes shrink { from { width: 100%; } to { width: 0%; } }
         .toast.removing { animation: slideOut 0.3s ease-in forwards; }
+        .progress-bar-wrapper { width: 100%; height: 8px; background: #374151; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .progress-bar-fill.low { background: var(--error-color); }
+        .progress-bar-fill.medium { background: var(--warning-color); }
+        .progress-bar-fill.high { background: var(--success-color); }
     </style>
 </head>
 <body>
@@ -126,6 +98,13 @@
             <div id="project-detail-view" class="hidden">
                 <button id="back-to-dashboard-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2 id="project-detail-name"></h2>
+                <div id="progress-control-container" class="admin-section-card hidden">
+                    <h3>📊 Controle de Progresso</h3>
+                    <div id="progress-display"></div>
+                    <label for="progress-slider">Ajustar Progresso:</label>
+                    <input type="range" min="0" max="100" value="0" id="progress-slider" style="width: 100%;">
+                    <button id="save-progress-button" style="width: auto; padding: 8px 16px; margin-top: 10px;">Salvar Progresso</button>
+                </div>
                 <div id="project-detail-content"></div>
                 <div id="add-update-form-container" class="add-update-section hidden">
                     <h3>Adicionar Nova Atualização</h3>
@@ -146,7 +125,7 @@
                         </div>
                         <div id="update-field-file" class="hidden">
                             <label for="update-file">Arquivo:</label>
-                            <input type="file" id="update-file" accept="image/*">
+                            <input type="file" id="update-file" accept="image/*,application/pdf">
                         </div>
                         <div id="update-field-link" class="hidden">
                             <label for="update-link">URL do Link:</label>
@@ -207,6 +186,8 @@
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
             const N8N_WEBHOOKS = {
+                ATUALIZAR_PROGRESSO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-progresso-projeto',
+                ADD_ATUALIZACAO_ARQUIVO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-com-arquivo',
                 CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
                 CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
                 CRIAR_PROJETO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-projeto',
@@ -231,14 +212,16 @@
                   projectClientSelect = document.getElementById('project-client-select'), phaseTemplateSelect = document.getElementById('phase-template-select'),
                   newProjectPhasesTextarea = document.getElementById('new-project-phases'), clientNameHeader = document.getElementById('client-name-header'),
                   addUpdateFormContainer = document.getElementById('add-update-form-container'), addUpdateForm = document.getElementById('add-update-form'),
-                  updateTypeSelect = document.getElementById('update-type-select');
+                  updateTypeSelect = document.getElementById('update-type-select'),
+                  progressControlContainer = document.getElementById('progress-control-container'), progressSlider = document.getElementById('progress-slider'),
+                  progressDisplay = document.getElementById('progress-display'), saveProgressButton = document.getElementById('save-progress-button');
 
             // --- BLOCO DE ESTADO DA APLICAÇÃO ---
             let state = { user: null, projects: [], clients: [], phaseTemplates: [
                 { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
                 { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Desenho da Solução", "Desenvolvimento", "Homologação", "Go-Live"] },
                 { name: "Customizado", phases: [] }
-            ]};
+            ], currentProjectId: null, currentVersionId: null };
 
             // --- SISTEMA DE TOAST NOTIFICATION ---
             const ToastManager = {
@@ -278,9 +261,16 @@
                     const versions = project.laborai_project_versions;
                     const latestVersion = versions && versions.length > 0 ? versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0] : null;
                     const statusLabel = STATUS_LABELS[project.status] || project.status.replace('_', ' ').toUpperCase();
+                    
+                    let progress = latestVersion?.progress_percentage || 0;
+                    let progressColorClass = 'low';
+                    if (progress > 30) progressColorClass = 'medium';
+                    if (progress > 70) progressColorClass = 'high';
+
                     card.innerHTML = `
                         <h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4>
-                        <p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel}</span></p>
+                        <p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel} - ${progress}%</span></p>
+                        <div class="progress-bar-wrapper"><div class="progress-bar-fill ${progressColorClass}" style="width: ${progress}%;"></div></div>
                         <p style="font-size: 0.9em; color: var(--text-secondary);">Última atualização: ${new Date(project.updated_at).toLocaleDateString('pt-BR')}</p>
                     `;
                     projectsListDiv.appendChild(card);
@@ -290,12 +280,14 @@
             function renderProjectDetail(projectId) {
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
+                state.currentProjectId = projectId;
                 const userIsAdmin = state.user?.user_metadata?.role === 'admin';
                 document.getElementById('project-detail-name').innerText = project.name;
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
                 versions.forEach(version => {
+                    state.currentVersionId = version.id; // Salva o ID da versão atual para uso
                     const versionContainer = document.createElement('div');
                     const versionStatusLabel = (STATUS_LABELS[version.status] || version.status).toUpperCase();
                     versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${versionStatusLabel}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
@@ -320,9 +312,15 @@
                         updates.forEach(update => {
                             const updateDiv = document.createElement('div');
                             updateDiv.className = 'update';
+                            let contentHTML = `<p>${update.description || ''}</p>`;
+                            if (update.update_type === 'image' && update.content_url) {
+                                contentHTML += `<img src="${update.content_url}" alt="${update.title}" style="max-width: 100%; border-radius: 6px; margin-top: 10px;">`;
+                            } else if (update.content_url) {
+                                contentHTML += `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>`;
+                            }
                             updateDiv.innerHTML = `
                                 <div class="update-header"><strong>${update.title}</strong></div>
-                                <div class="update-content"><p>${update.description || ''}</p>${update.content_url ? `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>` : ''}</div>
+                                <div class="update-content">${contentHTML}</div>
                                 <div class="update-meta">${new Date(update.created_at).toLocaleString('pt-BR')}</div>
                             `;
                             updatesContainer.appendChild(updateDiv);
@@ -334,6 +332,10 @@
                 });
 
                 if (userIsAdmin) {
+                    progressControlContainer.classList.remove('hidden');
+                    const latestVersion = versions[0];
+                    if (latestVersion) updateProgressPreview(latestVersion.progress_percentage || 0);
+                    
                     addUpdateFormContainer.classList.remove('hidden');
                     const phaseSelect = document.getElementById('update-phase-select');
                     phaseSelect.innerHTML = '';
@@ -346,8 +348,21 @@
                         });
                     });
                 } else {
+                    progressControlContainer.classList.add('hidden');
                     addUpdateFormContainer.classList.add('hidden');
                 }
+            }
+            
+            function updateProgressPreview(value) {
+                const progress = parseInt(value);
+                progressSlider.value = progress;
+                let colorClass = 'low';
+                if (progress > 30) colorClass = 'medium';
+                if (progress > 70) colorClass = 'high';
+                progressDisplay.innerHTML = `
+                    <p style="margin-bottom: 5px;">Progresso Atual: ${progress}%</p>
+                    <div class="progress-bar-wrapper"><div class="progress-bar-fill ${colorClass}" style="width: ${progress}%;"></div></div>
+                `;
             }
 
             function populateClientDropdowns() {
@@ -382,16 +397,15 @@
                 else { newProjectPhasesTextarea.value = ''; newProjectPhasesTextarea.placeholder = "Fase 1:...\nFase 2:..."; }
             }
             
-            // --- BLOCO DE FUNÇÕES DE DADOS ---
             async function fetchAllData() {
                 const userIsAdmin = state.user?.user_metadata?.role === 'admin';
                 let projectsQuery;
                 if (userIsAdmin) {
-                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`);
+                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
                 } else {
                     const userClientId = state.user?.user_metadata?.clientId;
                     if (!userClientId) { state.projects = []; renderDashboard(); return; }
-                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
+                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId).order('created_at', { ascending: false });
                 }
                 const projectsPromise = projectsQuery;
                 const clientsPromise = userIsAdmin ? supabaseClient.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
@@ -403,7 +417,6 @@
                 renderDashboard();
             }
 
-            // --- BLOCO DE CONTROLE DE UI ---
             function showView(viewId) {
                 dashboardView.classList.add('hidden');
                 projectDetailView.classList.add('hidden');
@@ -411,15 +424,10 @@
                 document.getElementById(viewId).classList.remove('hidden');
             }
 
-            // --- FUNÇÃO GLOBAL PARA BOTÕES DE ADMIN ---
             window.updatePhaseStatus = async (phaseId, newStatus) => {
                 ToastManager.info('Atualizando status...', 'Aguarde um momento.', 2000);
                 try {
-                    const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_STATUS_FASE, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phaseId, newStatus })
-                    });
+                    const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_STATUS_FASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phaseId, newStatus }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
                     ToastManager.success('Status atualizado!', 'Recarregando dados do projeto.');
                     const currentProjectId = state.projects.find(p => p.laborai_project_versions.some(v => v.laborai_project_phases.some(ph => ph.id === phaseId)))?.id;
@@ -428,7 +436,6 @@
                 } catch (error) { ToastManager.error('Erro ao atualizar', error.message); }
             };
 
-            // --- BLOCO DE EVENT LISTENERS ---
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
@@ -509,24 +516,28 @@
                         const fileInput = document.getElementById('update-file');
                         if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de imagem.');
                         const file = fileInput.files[0];
-                        const filePath = `project-updates/${state.user.id}/${Date.now()}-${file.name}`;
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        
                         ToastManager.info('Fazendo upload da imagem...', 'Aguarde...');
-                        const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('assets').upload(filePath, file);
-                        if (uploadError) throw uploadError;
-                        const { data: urlData } = supabaseClient.storage.from('assets').getPublicUrl(uploadData.path);
-                        contentUrl = urlData.publicUrl;
-                    } else if (type === 'link') {
-                        contentUrl = document.getElementById('update-link').value;
+                        
+                        const uploadUrl = `${N8N_WEBHOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&type=${type}&title=${encodeURIComponent(title)}&fileName=${encodeURIComponent(file.name)}`;
+                        const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: file });
+                        
+                        if (!uploadResponse.ok) throw new Error('Falha no upload do arquivo para o n8n.');
+                        const uploadResult = await uploadResponse.json();
+                        contentUrl = uploadResult.url;
+
+                    } else { // Para 'text' ou 'link'
+                        if (type === 'link') { contentUrl = document.getElementById('update-link').value; }
+                        const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phaseId, type, title, description, contentUrl })
+                        });
+                        if (!response.ok) throw new Error('Falha na resposta do servidor n8n.');
                     }
-
-                    const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phaseId, type, title, description, contentUrl })
-                    });
-                    if (!response.ok) throw new Error('Falha na resposta do servidor n8n.');
-
-                    const result = await response.json();
-                    ToastManager.success('Atualização adicionada!', result.status);
+                    
+                    ToastManager.success('Atualização adicionada!');
                     addUpdateForm.reset();
                     
                     const currentProjectId = state.projects.find(p => p.laborai_project_versions.some(v => v.laborai_project_phases.some(ph => ph.id === phaseId)))?.id;
@@ -535,6 +546,25 @@
 
                 } catch (error) { ToastManager.error('Erro ao adicionar atualização', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Adicionar Atualização'; }
+            });
+            
+            saveProgressButton.addEventListener('click', async () => {
+                const button = saveProgressButton;
+                button.disabled = true;
+                button.innerText = 'Salvando...';
+                try {
+                    const newProgress = parseInt(progressSlider.value);
+                    const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_PROGRESSO, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ versionId: state.currentVersionId, newProgress })
+                    });
+                    if (!response.ok) throw new Error('Falha ao salvar progresso.');
+                    
+                    ToastManager.success('Progresso salvo!');
+                    await fetchAllData();
+                    renderProjectDetail(state.currentProjectId);
+                } catch(error) { ToastManager.error('Erro ao salvar', error.message); }
+                finally { button.disabled = false; button.innerText = 'Salvar Progresso'; }
             });
 
             phaseTemplateSelect.addEventListener('change', updatePhasePreview);
