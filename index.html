@@ -75,11 +75,12 @@
         .admin-controls { margin-top: 10px; display: flex; gap: 10px; }
         .admin-controls button { width: auto; padding: 4px 10px; font-size: 0.8em; background-color: var(--border-dark); }
         .admin-controls button:hover { background-color: var(--text-secondary); }
+        .add-update-section { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-top: 24px; border: 1px solid var(--border-dark); }
 
         /* --- Toast Notifications --- */
         #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; }
         .toast { display: flex; align-items: flex-start; gap: 0.875rem; padding: 1rem 1.25rem; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25); border-left: 4px solid; animation: slideIn 0.3s ease-out; position: relative; overflow: hidden; }
-        .toast::after { content: ''; position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; animation: shrink 3s linear forwards; }
+        .toast::after { content: ''; position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; animation: shrink 4s linear forwards; }
         .toast.success { border-color: var(--success-color); background-color: var(--surface-dark); }
         .toast.error { border-color: var(--error-color); background-color: var(--surface-dark); }
         .toast.info { border-color: var(--primary-accent); background-color: var(--surface-dark); }
@@ -124,7 +125,36 @@
             <div id="dashboard-view"><h3>Meus Projetos</h3><div id="projects-list"></div></div>
             <div id="project-detail-view" class="hidden">
                 <button id="back-to-dashboard-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
-                <h2 id="project-detail-name"></h2><div id="project-detail-content"></div>
+                <h2 id="project-detail-name"></h2>
+                <div id="project-detail-content"></div>
+                <div id="add-update-form-container" class="add-update-section hidden">
+                    <h3>Adicionar Nova Atualização</h3>
+                    <form id="add-update-form">
+                        <label for="update-phase-select">Para qual fase?</label>
+                        <select id="update-phase-select" required></select>
+                        <label for="update-type-select">Tipo de Atualização:</label>
+                        <select id="update-type-select" required>
+                            <option value="text">Texto</option>
+                            <option value="image">Imagem</option>
+                            <option value="link">Link</option>
+                        </select>
+                        <label for="update-title">Título:</label>
+                        <input type="text" id="update-title" required>
+                        <div id="update-field-description">
+                            <label for="update-description">Descrição:</label>
+                            <textarea id="update-description" rows="3"></textarea>
+                        </div>
+                        <div id="update-field-file" class="hidden">
+                            <label for="update-file">Arquivo:</label>
+                            <input type="file" id="update-file" accept="image/*">
+                        </div>
+                        <div id="update-field-link" class="hidden">
+                            <label for="update-link">URL do Link:</label>
+                            <input type="url" id="update-link" placeholder="https://...">
+                        </div>
+                        <button type="submit" id="add-update-button">Adicionar Atualização</button>
+                    </form>
+                </div>
             </div>
             <div id="admin-view" class="hidden">
                 <button id="back-to-dashboard-from-admin-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
@@ -175,7 +205,7 @@
             // --- BLOCO DE CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
-
+            
             const N8N_WEBHOOKS = {
                 CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
                 CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
@@ -199,7 +229,9 @@
                   createClientForm = document.getElementById('create-client-form'), createUserForm = document.getElementById('create-user-form'),
                   createProjectForm = document.getElementById('create-project-form'), clientSelect = document.getElementById('client-select'),
                   projectClientSelect = document.getElementById('project-client-select'), phaseTemplateSelect = document.getElementById('phase-template-select'),
-                  newProjectPhasesTextarea = document.getElementById('new-project-phases'), clientNameHeader = document.getElementById('client-name-header');
+                  newProjectPhasesTextarea = document.getElementById('new-project-phases'), clientNameHeader = document.getElementById('client-name-header'),
+                  addUpdateFormContainer = document.getElementById('add-update-form-container'), addUpdateForm = document.getElementById('add-update-form'),
+                  updateTypeSelect = document.getElementById('update-type-select');
 
             // --- BLOCO DE ESTADO DA APLICAÇÃO ---
             let state = { user: null, projects: [], clients: [], phaseTemplates: [
@@ -239,8 +271,7 @@
             function renderDashboard() {
                 projectsListDiv.innerHTML = '';
                 if (!state.projects || state.projects.length === 0) {
-                    projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>';
-                    return;
+                    projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>'; return;
                 }
                 state.projects.forEach(project => {
                     const card = document.createElement('div'); card.className = 'project-card'; card.dataset.projectId = project.id;
@@ -301,6 +332,22 @@
                     });
                     contentDiv.appendChild(versionContainer);
                 });
+
+                if (userIsAdmin) {
+                    addUpdateFormContainer.classList.remove('hidden');
+                    const phaseSelect = document.getElementById('update-phase-select');
+                    phaseSelect.innerHTML = '';
+                    project.laborai_project_versions.forEach(version => {
+                        version.laborai_project_phases.forEach(phase => {
+                            const option = document.createElement('option');
+                            option.value = phase.id;
+                            option.innerText = `[${version.version_number}] ${phase.name}`;
+                            phaseSelect.appendChild(option);
+                        });
+                    });
+                } else {
+                    addUpdateFormContainer.classList.add('hidden');
+                }
             }
 
             function populateClientDropdowns() {
@@ -346,18 +393,13 @@
                     if (!userClientId) { state.projects = []; renderDashboard(); return; }
                     projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId);
                 }
-                
                 const projectsPromise = projectsQuery;
                 const clientsPromise = userIsAdmin ? supabaseClient.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
-                
                 const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
-
                 if (projectsResult.error) { console.error("Erro ao buscar projetos:", projectsResult.error); ToastManager.error('Erro ao buscar projetos', projectsResult.error.message); } 
                 else { state.projects = projectsResult.data; }
-
                 if (clientsResult.error) { console.error("Erro ao buscar clientes:", clientsResult.error); ToastManager.error('Erro ao buscar clientes', clientsResult.error.message); } 
                 else { state.clients = clientsResult.data; }
-                
                 renderDashboard();
             }
 
@@ -379,17 +421,11 @@
                         body: JSON.stringify({ phaseId, newStatus })
                     });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    
                     ToastManager.success('Status atualizado!', 'Recarregando dados do projeto.');
-                    
                     const currentProjectId = state.projects.find(p => p.laborai_project_versions.some(v => v.laborai_project_phases.some(ph => ph.id === phaseId)))?.id;
                     await fetchAllData();
-                    if (currentProjectId) {
-                        renderProjectDetail(currentProjectId);
-                    }
-                } catch (error) {
-                    ToastManager.error('Erro ao atualizar', error.message);
-                }
+                    if (currentProjectId) { renderProjectDetail(currentProjectId); }
+                } catch (error) { ToastManager.error('Erro ao atualizar', error.message); }
             };
 
             // --- BLOCO DE EVENT LISTENERS ---
@@ -452,6 +488,55 @@
                 finally { button.disabled = false; button.innerText = 'Criar Projeto'; }
             });
 
+            updateTypeSelect.addEventListener('change', (e) => {
+                const type = e.target.value;
+                document.getElementById('update-field-description').classList.toggle('hidden', type === 'image' || type === 'link');
+                document.getElementById('update-field-file').classList.toggle('hidden', type !== 'image');
+                document.getElementById('update-field-link').classList.toggle('hidden', type !== 'link');
+            });
+
+            addUpdateForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const button = document.getElementById('add-update-button'); button.disabled = true; button.innerText = 'Enviando...';
+                const phaseId = document.getElementById('update-phase-select').value;
+                const type = document.getElementById('update-type-select').value;
+                const title = document.getElementById('update-title').value;
+                const description = document.getElementById('update-description').value;
+                let contentUrl = '';
+
+                try {
+                    if (type === 'image') {
+                        const fileInput = document.getElementById('update-file');
+                        if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de imagem.');
+                        const file = fileInput.files[0];
+                        const filePath = `project-updates/${state.user.id}/${Date.now()}-${file.name}`;
+                        ToastManager.info('Fazendo upload da imagem...', 'Aguarde...');
+                        const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('assets').upload(filePath, file);
+                        if (uploadError) throw uploadError;
+                        const { data: urlData } = supabaseClient.storage.from('assets').getPublicUrl(uploadData.path);
+                        contentUrl = urlData.publicUrl;
+                    } else if (type === 'link') {
+                        contentUrl = document.getElementById('update-link').value;
+                    }
+
+                    const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phaseId, type, title, description, contentUrl })
+                    });
+                    if (!response.ok) throw new Error('Falha na resposta do servidor n8n.');
+
+                    const result = await response.json();
+                    ToastManager.success('Atualização adicionada!', result.status);
+                    addUpdateForm.reset();
+                    
+                    const currentProjectId = state.projects.find(p => p.laborai_project_versions.some(v => v.laborai_project_phases.some(ph => ph.id === phaseId)))?.id;
+                    await fetchAllData();
+                    if(currentProjectId) renderProjectDetail(currentProjectId);
+
+                } catch (error) { ToastManager.error('Erro ao adicionar atualização', error.message); } 
+                finally { button.disabled = false; button.innerText = 'Adicionar Atualização'; }
+            });
+
             phaseTemplateSelect.addEventListener('change', updatePhasePreview);
 
             // --- BLOCO DE INICIALIZAÇÃO ---
@@ -461,7 +546,6 @@
                 if (state.user?.user_metadata?.role === 'admin') {
                     adminButton.classList.remove('hidden');
                 } else {
-                    // Tenta buscar o nome do cliente de ambos os padrões de metadados
                     const clientName = state.user?.user_metadata?.clientName || state.user?.user_metadata?.client_name;
                     if(clientName) clientNameHeader.innerText = `| ${clientName}`;
                 }
