@@ -50,6 +50,7 @@
         .progress-bar-fill.low { background: var(--error-color); } .progress-bar-fill.medium { background: var(--warning-color); } .progress-bar-fill.high { background: var(--success-color); }
         .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; }
         .modal-content { background: var(--surface-dark); padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; border: 1px solid var(--border-dark); }
+        #client-logo-header { max-height: 24px; margin-right: 12px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -70,6 +71,7 @@
         <header id="app-header">
             <div><strong>LaborAI</strong><span id="client-name-header"></span></div>
             <div>
+                <img id="client-logo-header" class="hidden" alt="Logo do Cliente">
                 <span id="user-email" style="color: var(--text-secondary);"></span>
                 <button id="admin-button" class="hidden" style="width: auto; padding: 8px 12px; margin-left: 16px; background-color: var(--warning-color);">Admin</button>
                 <button id="logout-button" style="width: auto; padding: 8px 12px; margin-left: 16px; background: none; border: 1px solid var(--border-dark);">Sair</button>
@@ -110,6 +112,16 @@
             <div id="admin-view" class="hidden">
                 <button id="back-to-dashboard-from-admin-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2>Painel Administrativo</h2>
+                <div class="admin-section-card">
+                    <h3>Adicionar/Atualizar Logo do Cliente</h3>
+                    <form id="upload-logo-form">
+                        <label for="logo-client-select">Para qual cliente?</label>
+                        <select id="logo-client-select" required></select>
+                        <label for="logo-file-input">Arquivo da Logo (PNG, JPG, SVG):</label>
+                        <input type="file" id="logo-file-input" accept="image/png, image/jpeg, image/svg+xml" required>
+                        <button type="submit" id="upload-logo-button">Salvar Logo</button>
+                    </form>
+                </div>
                 <div class="admin-section-card">
                     <h3>Criar Novo Projeto</h3>
                     <form id="create-project-form">
@@ -169,11 +181,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- BLOCO DE CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
             const N8N_WEBHOOKS = {
+                ATUALIZAR_LOGO_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-logo-cliente',
                 ATUALIZAR_PROGRESSO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-progresso-projeto',
                 ADD_ATUALIZACAO_ARQUIVO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-com-arquivo',
                 CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
@@ -182,13 +194,10 @@
                 ADD_ATUALIZACAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-fase',
                 ATUALIZAR_STATUS_FASE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-status-fase',
                 CRIAR_NOVA_VERSAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-versao',
-                CRIAR_NOVA_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-colecao',
-                ADD_ATIVO_COLECAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-ativo-colecao',
             };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // --- BLOCO DE SELETORES DE DOM ---
             const loginSection = document.getElementById('login-section'), appContainer = document.getElementById('app-container'),
                   loginForm = document.getElementById('login-form'), logoutButton = document.getElementById('logout-button'),
                   userEmailSpan = document.getElementById('user-email'), projectsListDiv = document.getElementById('projects-list'),
@@ -205,7 +214,9 @@
                   progressDisplay = document.getElementById('progress-display'), saveProgressButton = document.getElementById('save-progress-button'),
                   sliderValueSpan = document.getElementById('slider-value'),
                   projectActionsAdmin = document.getElementById('project-actions-admin'), newVersionModal = document.getElementById('new-version-modal'),
-                  cancelNewVersionButton = document.getElementById('cancel-new-version-button'), newVersionForm = document.getElementById('new-version-form');
+                  cancelNewVersionButton = document.getElementById('cancel-new-version-button'), newVersionForm = document.getElementById('new-version-form'),
+                  uploadLogoForm = document.getElementById('upload-logo-form'), logoClientSelect = document.getElementById('logo-client-select'),
+                  clientLogoHeader = document.getElementById('client-logo-header');
 
             let state = { user: null, projects: [], clients: [], phaseTemplates: [
                 { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
@@ -257,10 +268,8 @@
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-                
                 const activeVersion = versions.find(v => v.status === 'in_progress' || v.status === 'active') || versions[0];
                 if (activeVersion) { state.currentVersionId = activeVersion.id; }
-
                 versions.forEach(version => {
                     const versionContainer = document.createElement('div');
                     const versionStatusLabel = (STATUS_LABELS[version.status] || version.status).toUpperCase();
@@ -282,7 +291,7 @@
                             updateDiv.className = 'update';
                             let contentHTML = `<p>${update.description || ''}</p>`;
                             if (update.update_type === 'image' && update.content_url) {
-                                contentHTML += `<img src="${update.content_url}" alt="${update.title}" style="max-width: 100%; border-radius: 6px; margin-top: 10px;">`;
+                                contentHTML += `<img src="${update.content_url.replace('/view', '/uc')}" alt="${update.title}" style="max-width: 100%; border-radius: 6px; margin-top: 10px;">`;
                             } else if (update.content_url) {
                                 contentHTML += `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>`;
                             }
@@ -342,11 +351,13 @@
             function populateClientDropdowns() {
                 clientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
                 projectClientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
+                logoClientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
                 state.clients.forEach(client => {
                     const option = document.createElement('option');
                     option.value = client.id; option.innerText = client.name;
                     clientSelect.appendChild(option.cloneNode(true));
-                    projectClientSelect.appendChild(option);
+                    projectClientSelect.appendChild(option.cloneNode(true));
+                    logoClientSelect.appendChild(option);
                 });
             }
             
@@ -375,11 +386,11 @@
                 const userIsAdmin = state.user?.user_metadata?.role === 'admin';
                 let projectsQuery;
                 if (userIsAdmin) {
-                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
+                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
                 } else {
                     const userClientId = state.user?.user_metadata?.clientId;
                     if (!userClientId) { state.projects = []; renderDashboard(); return; }
-                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId).order('created_at', { ascending: false });
+                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId).order('created_at', { ascending: false });
                 }
                 const projectsPromise = projectsQuery;
                 const clientsPromise = userIsAdmin ? supabaseClient.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
@@ -443,7 +454,8 @@
                 e.preventDefault();
                 const button = document.getElementById('create-user-button'); button.disabled = true; button.innerText = 'Criando...';
                 try {
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: clientSelect.value, email: document.getElementById('new-user-email').value, password: document.getElementById('new-user-password').value }) });
+                    const clientName = clientSelect.options[clientSelect.selectedIndex].text;
+                    const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: clientSelect.value, clientName: clientName, email: document.getElementById('new-user-email').value, password: document.getElementById('new-user-password').value }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
                     const result = await response.json();
                     ToastManager.success('Usuário criado!', result.status);
@@ -488,7 +500,7 @@
                         if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de imagem.');
                         const file = fileInput.files[0];
                         ToastManager.info('Fazendo upload da imagem...');
-                        const uploadUrl = `${N8N_WEBHOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&type=${type}&title=${encodeURIComponent(title)}&fileName=${encodeURIComponent(file.name)}`;
+                        const uploadUrl = `${N8N_WEBHOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&type=${type}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&fileName=${encodeURIComponent(file.name)}`;
                         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: file });
                         if (!uploadResponse.ok) throw new Error('Falha no upload do arquivo para o n8n.');
                     } else { 
@@ -559,6 +571,26 @@
                 finally { button.disabled = false; button.innerText = 'Criar Versão'; }
             });
 
+            uploadLogoForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const button = document.getElementById('upload-logo-button');
+                button.disabled = true; button.innerText = 'Enviando...';
+                const clientId = logoClientSelect.value;
+                const fileInput = document.getElementById('logo-file-input');
+                try {
+                    if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de logo.');
+                    const file = fileInput.files[0];
+                    ToastManager.info('Fazendo upload da logo...');
+                    const uploadUrl = `${N8N_WEBHOOKS.ATUALIZAR_LOGO_CLIENTE}?clientId=${clientId}&fileName=logo-${clientId}.${file.name.split('.').pop()}`;
+                    const response = await fetch(uploadUrl, { method: 'POST', body: file });
+                    if (!response.ok) throw new Error('Falha no upload da logo para o n8n.');
+                    ToastManager.success('Logo atualizada com sucesso!');
+                    uploadLogoForm.reset();
+                    await fetchAllData();
+                } catch (error) { ToastManager.error('Erro ao enviar logo', error.message); } 
+                finally { button.disabled = false; button.innerText = 'Salvar Logo'; }
+            });
+
             phaseTemplateSelect.addEventListener('change', updatePhasePreview);
 
             async function initApp() {
@@ -568,7 +600,17 @@
                     adminButton.classList.remove('hidden');
                 } else {
                     const clientName = state.user?.user_metadata?.clientName || state.user?.user_metadata?.client_name;
+                    const userClientId = state.user?.user_metadata?.clientId;
+
                     if(clientName) clientNameHeader.innerText = `| ${clientName}`;
+
+                    if (userClientId) {
+                        const { data: clientData, error } = await supabaseClient.from('laborai_clients').select('logo_url').eq('id', userClientId).single();
+                        if (clientData && clientData.logo_url) {
+                            clientLogoHeader.src = clientData.logo_url.replace('/view', '/uc');
+                            clientLogoHeader.classList.remove('hidden');
+                        }
+                    }
                 }
                 await fetchAllData();
                 showView('dashboard-view');
