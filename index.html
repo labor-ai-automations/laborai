@@ -67,7 +67,6 @@
 <body>
 
     <div id="toast-container"></div>
-
     <div id="login-section">
         <div class="login-card">
             <h2>Portal LaborAI</h2>
@@ -79,7 +78,6 @@
             </form>
         </div>
     </div>
-
     <div id="app-container" class="container hidden">
         <header id="app-header">
             <div>
@@ -92,7 +90,6 @@
                 <button id="logout-button" style="width: auto; padding: 8px 12px; margin-left: 16px; background: none; border: 1px solid var(--border-dark);">Sair</button>
             </div>
         </header>
-
         <main id="main-content">
             <div id="dashboard-view"><h3>Meus Projetos</h3><div id="projects-list"></div></div>
             <div id="project-detail-view" class="hidden">
@@ -101,7 +98,7 @@
                 <div id="progress-control-container" class="admin-section-card hidden">
                     <h3>📊 Controle de Progresso</h3>
                     <div id="progress-display"></div>
-                    <label for="progress-slider">Ajustar Progresso:</label>
+                    <label for="progress-slider">Ajustar Progresso: <span id="slider-value" style="font-weight: bold;">0%</span></label>
                     <input type="range" min="0" max="100" value="0" id="progress-slider" style="width: 100%;">
                     <button id="save-progress-button" style="width: auto; padding: 8px 16px; margin-top: 10px;">Salvar Progresso</button>
                 </div>
@@ -214,7 +211,8 @@
                   addUpdateFormContainer = document.getElementById('add-update-form-container'), addUpdateForm = document.getElementById('add-update-form'),
                   updateTypeSelect = document.getElementById('update-type-select'),
                   progressControlContainer = document.getElementById('progress-control-container'), progressSlider = document.getElementById('progress-slider'),
-                  progressDisplay = document.getElementById('progress-display'), saveProgressButton = document.getElementById('save-progress-button');
+                  progressDisplay = document.getElementById('progress-display'), saveProgressButton = document.getElementById('save-progress-button'),
+                  sliderValueSpan = document.getElementById('slider-value');
 
             // --- BLOCO DE ESTADO DA APLICAÇÃO ---
             let state = { user: null, projects: [], clients: [], phaseTemplates: [
@@ -225,13 +223,8 @@
 
             // --- SISTEMA DE TOAST NOTIFICATION ---
             const ToastManager = {
-                container: null,
-                init() {
-                    this.container = document.getElementById('toast-container');
-                    if (!this.container) { this.container = document.createElement('div'); this.container.id = 'toast-container'; document.body.appendChild(this.container); }
-                },
+                container: document.getElementById('toast-container'),
                 show(type, title, message, duration = 4000) {
-                    if (!this.container) this.init();
                     const icons = { success: '✅', error: '❌', info: 'ℹ️' };
                     const toast = document.createElement('div');
                     toast.className = `toast ${type}`;
@@ -246,7 +239,6 @@
                 error(title, message, duration) { this.show('error', title, message, duration); },
                 info(title, message, duration) { this.show('info', title, message, duration); }
             };
-            ToastManager.init();
 
             // --- BLOCO DE FUNÇÕES DE RENDERIZAÇÃO ---
             const STATUS_LABELS = { 'pending': 'Pendente', 'in_progress': 'Em Desenvolvimento', 'completed': 'Concluído', 'evolving': 'Em Evolução', 'archived': 'Arquivado' };
@@ -261,7 +253,6 @@
                     const versions = project.laborai_project_versions;
                     const latestVersion = versions && versions.length > 0 ? versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0] : null;
                     const statusLabel = STATUS_LABELS[project.status] || project.status.replace('_', ' ').toUpperCase();
-                    
                     let progress = latestVersion?.progress_percentage || 0;
                     let progressColorClass = 'low';
                     if (progress > 30) progressColorClass = 'medium';
@@ -286,8 +277,9 @@
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                
                 versions.forEach(version => {
-                    state.currentVersionId = version.id; // Salva o ID da versão atual para uso
+                    state.currentVersionId = version.id;
                     const versionContainer = document.createElement('div');
                     const versionStatusLabel = (STATUS_LABELS[version.status] || version.status).toUpperCase();
                     versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${versionStatusLabel}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
@@ -354,8 +346,9 @@
             }
             
             function updateProgressPreview(value) {
-                const progress = parseInt(value);
+                const progress = parseInt(value) || 0;
                 progressSlider.value = progress;
+                sliderValueSpan.textContent = `${progress}%`;
                 let colorClass = 'low';
                 if (progress > 30) colorClass = 'medium';
                 if (progress > 70) colorClass = 'high';
@@ -429,10 +422,9 @@
                 try {
                     const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_STATUS_FASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phaseId, newStatus }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    ToastManager.success('Status atualizado!', 'Recarregando dados do projeto.');
-                    const currentProjectId = state.projects.find(p => p.laborai_project_versions.some(v => v.laborai_project_phases.some(ph => ph.id === phaseId)))?.id;
+                    ToastManager.success('Status atualizado!');
                     await fetchAllData();
-                    if (currentProjectId) { renderProjectDetail(currentProjectId); }
+                    renderProjectDetail(state.currentProjectId);
                 } catch (error) { ToastManager.error('Erro ao atualizar', error.message); }
             };
 
@@ -509,26 +501,20 @@
                 const type = document.getElementById('update-type-select').value;
                 const title = document.getElementById('update-title').value;
                 const description = document.getElementById('update-description').value;
-                let contentUrl = '';
 
                 try {
+                    let contentUrl = '';
                     if (type === 'image') {
                         const fileInput = document.getElementById('update-file');
                         if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de imagem.');
                         const file = fileInput.files[0];
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        
                         ToastManager.info('Fazendo upload da imagem...', 'Aguarde...');
-                        
                         const uploadUrl = `${N8N_WEBHOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&type=${type}&title=${encodeURIComponent(title)}&fileName=${encodeURIComponent(file.name)}`;
                         const uploadResponse = await fetch(uploadUrl, { method: 'POST', body: file });
-                        
                         if (!uploadResponse.ok) throw new Error('Falha no upload do arquivo para o n8n.');
                         const uploadResult = await uploadResponse.json();
-                        contentUrl = uploadResult.url;
-
-                    } else { // Para 'text' ou 'link'
+                        contentUrl = uploadResult.url; // n8n retorna a URL do Drive
+                    } else { 
                         if (type === 'link') { contentUrl = document.getElementById('update-link').value; }
                         const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -536,22 +522,20 @@
                         });
                         if (!response.ok) throw new Error('Falha na resposta do servidor n8n.');
                     }
-                    
                     ToastManager.success('Atualização adicionada!');
                     addUpdateForm.reset();
-                    
-                    const currentProjectId = state.projects.find(p => p.laborai_project_versions.some(v => v.laborai_project_phases.some(ph => ph.id === phaseId)))?.id;
                     await fetchAllData();
-                    if(currentProjectId) renderProjectDetail(currentProjectId);
-
+                    renderProjectDetail(state.currentProjectId);
                 } catch (error) { ToastManager.error('Erro ao adicionar atualização', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Adicionar Atualização'; }
             });
+
+            progressSlider.addEventListener('input', (e) => {
+                updateProgressPreview(e.target.value);
+            });
             
             saveProgressButton.addEventListener('click', async () => {
-                const button = saveProgressButton;
-                button.disabled = true;
-                button.innerText = 'Salvando...';
+                const button = saveProgressButton; button.disabled = true; button.innerText = 'Salvando...';
                 try {
                     const newProgress = parseInt(progressSlider.value);
                     const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_PROGRESSO, {
@@ -559,7 +543,6 @@
                         body: JSON.stringify({ versionId: state.currentVersionId, newProgress })
                     });
                     if (!response.ok) throw new Error('Falha ao salvar progresso.');
-                    
                     ToastManager.success('Progresso salvo!');
                     await fetchAllData();
                     renderProjectDetail(state.currentProjectId);
@@ -569,7 +552,6 @@
 
             phaseTemplateSelect.addEventListener('change', updatePhasePreview);
 
-            // --- BLOCO DE INICIALIZAÇÃO ---
             async function initApp() {
                 loginSection.classList.add('hidden'); appContainer.classList.remove('hidden');
                 userEmailSpan.innerText = state.user.email;
