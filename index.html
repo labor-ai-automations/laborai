@@ -68,10 +68,7 @@
     </div>
     <div id="app-container" class="container hidden">
         <header id="app-header">
-            <div>
-                <strong>LaborAI</strong>
-                <span id="client-name-header"></span>
-            </div>
+            <div><strong>LaborAI</strong><span id="client-name-header"></span></div>
             <div>
                 <span id="user-email" style="color: var(--text-secondary);"></span>
                 <button id="admin-button" class="hidden" style="width: auto; padding: 8px 12px; margin-left: 16px; background-color: var(--warning-color);">Admin</button>
@@ -99,24 +96,13 @@
                         <select id="update-phase-select" required></select>
                         <label for="update-type-select">Tipo de Atualização:</label>
                         <select id="update-type-select" required>
-                            <option value="text">Texto</option>
-                            <option value="image">Imagem</option>
-                            <option value="link">Link</option>
+                            <option value="text">Texto</option><option value="image">Imagem</option><option value="link">Link</option>
                         </select>
                         <label for="update-title">Título:</label>
                         <input type="text" id="update-title" required>
-                        <div id="update-field-description">
-                            <label for="update-description">Descrição:</label>
-                            <textarea id="update-description" rows="3"></textarea>
-                        </div>
-                        <div id="update-field-file" class="hidden">
-                            <label for="update-file">Arquivo:</label>
-                            <input type="file" id="update-file" accept="image/*,application/pdf">
-                        </div>
-                        <div id="update-field-link" class="hidden">
-                            <label for="update-link">URL do Link:</label>
-                            <input type="url" id="update-link" placeholder="https://...">
-                        </div>
+                        <div id="update-field-description"><label for="update-description">Descrição:</label><textarea id="update-description" rows="3"></textarea></div>
+                        <div id="update-field-file" class="hidden"><label for="update-file">Arquivo:</label><input type="file" id="update-file" accept="image/*,application/pdf"></div>
+                        <div id="update-field-link" class="hidden"><label for="update-link">URL do Link:</label><input type="url" id="update-link" placeholder="https://..."></div>
                         <button type="submit" id="add-update-button">Adicionar Atualização</button>
                     </form>
                 </div>
@@ -241,7 +227,7 @@
                 info(title, message, duration) { this.show('info', title, message, duration); }
             };
 
-            const STATUS_LABELS = { 'pending': 'Pendente', 'in_progress': 'Em Desenvolvimento', 'completed': 'Concluído', 'evolving': 'Em Evolução', 'archived': 'Arquivado' };
+            const STATUS_LABELS = { 'pending': 'Pendente', 'in_progress': 'Em Desenvolvimento', 'completed': 'Concluído', 'evolving': 'Em Evolução', 'archived': 'Arquivado', 'active': 'Ativo' };
             
             function renderDashboard() {
                 projectsListDiv.innerHTML = '';
@@ -269,11 +255,14 @@
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                const activeVersion = versions.find(v => v.status === 'in_progress' || v.status === 'active') || versions[0];
+                if (activeVersion) { state.currentVersionId = activeVersion.id; }
+
                 versions.forEach(version => {
-                    state.currentVersionId = version.id;
                     const versionContainer = document.createElement('div');
                     const versionStatusLabel = (STATUS_LABELS[version.status] || version.status).toUpperCase();
-                    versionContainer.innerHTML = `<h3>Versão ${version.version_number} - <span style="color: var(--text-secondary)">${versionStatusLabel}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
+                    versionContainer.innerHTML = `<h3 style="border-top: 1px solid var(--border-dark); padding-top: 20px; margin-top: 20px;">Versão ${version.version_number} - <span style="color: var(--text-secondary)">${versionStatusLabel}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
                     const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
                     phases.forEach(phase => {
                         const phaseDiv = document.createElement('div');
@@ -307,12 +296,12 @@
                 if (userIsAdmin) {
                     projectActionsAdmin.classList.toggle('hidden', project.status !== 'completed');
                     projectActionsAdmin.innerHTML = `<button id="start-new-version-button" style="width: auto; padding: 8px 16px;">🚀 Iniciar Nova Versão</button>`;
-                    document.getElementById('start-new-version-button')?.addEventListener('click', () => { newVersionModal.classList.remove('hidden'); });
+                    const startNewVersionBtn = document.getElementById('start-new-version-button');
+                    if (startNewVersionBtn) { startNewVersionBtn.addEventListener('click', () => { newVersionModal.classList.remove('hidden'); }); }
 
                     progressControlContainer.classList.remove('hidden');
-                    const latestVersion = versions[0];
-                    if (latestVersion) {
-                        const savedProgress = latestVersion.progress_percentage || 0;
+                    if (activeVersion) {
+                        const savedProgress = activeVersion.progress_percentage || 0;
                         updateProgressDisplay(savedProgress);
                         updateSliderPreview(savedProgress);
                     }
@@ -320,13 +309,13 @@
                     addUpdateFormContainer.classList.remove('hidden');
                     const phaseSelect = document.getElementById('update-phase-select');
                     phaseSelect.innerHTML = '';
-                    project.laborai_project_versions.forEach(version => {
-                        version.laborai_project_phases.forEach(phase => {
+                    if (activeVersion) {
+                        activeVersion.laborai_project_phases.forEach(phase => {
                             const option = document.createElement('option');
-                            option.value = phase.id; option.innerText = `[${version.version_number}] ${phase.name}`;
+                            option.value = phase.id; option.innerText = `[${activeVersion.version_number}] ${phase.name}`;
                             phaseSelect.appendChild(option);
                         });
-                    });
+                    }
                 } else {
                     projectActionsAdmin.classList.add('hidden');
                     progressControlContainer.classList.add('hidden');
@@ -364,7 +353,7 @@
                     const option = document.createElement('option');
                     option.value = template.name; option.innerText = template.name;
                     phaseTemplateSelect.appendChild(option);
-                });
+});
                 updatePhasePreview();
             }
 
@@ -530,8 +519,14 @@
                     });
                     if (!response.ok) throw new Error('Falha ao salvar progresso.');
                     ToastManager.success('Progresso salvo!');
-                    await fetchAllData();
+                    
+                    // Atualiza o estado localmente antes de buscar tudo de novo
+                    const project = state.projects.find(p => p.id === state.currentProjectId);
+                    const version = project.laborai_project_versions.find(v => v.id === state.currentVersionId);
+                    version.progress_percentage = newProgress;
+
                     updateProgressDisplay(newProgress);
+                    renderDashboard(); // Re-renderiza o dashboard com o novo percentual
                 } catch(error) { ToastManager.error('Erro ao salvar', error.message); }
                 finally { button.disabled = false; button.innerText = 'Salvar Progresso'; }
             });
