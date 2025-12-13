@@ -26,8 +26,13 @@
         button:disabled { background-color: #4b5563; cursor: not-allowed; }
         #app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border-dark); margin-bottom: 24px; }
         #client-name-header { font-weight: 500; color: var(--text-secondary); margin-left: 8px; }
-        .project-card { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-dark); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
-        .project-card:hover { transform: translateY(-3px); border-color: var(--primary-accent); }
+        
+        /* Cards Styles */
+        .project-card, .client-card { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-dark); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+        .project-card:hover, .client-card:hover { transform: translateY(-3px); border-color: var(--primary-accent); }
+        .client-card { display: flex; align-items: center; justify-content: space-between; }
+        .client-logo-thumb { max-height: 50px; max-width: 120px; object-fit: contain; }
+        
         .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: var(--surface-dark); }
         .phase-header.completed { border-color: var(--success-color); }
         .phase-header.in-progress { border-color: var(--primary-accent); animation: pulse-border 3s ease-in-out infinite; }
@@ -78,9 +83,22 @@
             </div>
         </header>
         <main id="main-content">
-            <div id="dashboard-view"><h3>Meus Projetos</h3><div id="projects-list"></div></div>
+            <!-- VIEW 1: Lista de Clientes (Antigo Dashboard) -->
+            <div id="client-list-view">
+                <h3>Meus Clientes</h3>
+                <div id="clients-list"></div>
+            </div>
+
+            <!-- VIEW 2: Lista de Projetos (NOVA) -->
+            <div id="project-list-view" class="hidden">
+                <button id="back-to-clients-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar para Clientes</button>
+                <h2 id="project-list-client-name"></h2>
+                <div id="project-list-content"></div>
+            </div>
+
+            <!-- VIEW 3: Detalhes do Projeto -->
             <div id="project-detail-view" class="hidden">
-                <button id="back-to-dashboard-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
+                <button id="back-to-project-list-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2 id="project-detail-name"></h2>
                 <div id="project-actions-admin" class="admin-section-card hidden"></div>
                 <div id="progress-control-container" class="admin-section-card hidden">
@@ -109,6 +127,8 @@
                     </form>
                 </div>
             </div>
+
+            <!-- VIEW 4: Admin Forms -->
             <div id="admin-view" class="hidden">
                 <button id="back-to-dashboard-from-admin-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2>Painel Administrativo</h2>
@@ -200,9 +220,19 @@
 
             const loginSection = document.getElementById('login-section'), appContainer = document.getElementById('app-container'),
                   loginForm = document.getElementById('login-form'), logoutButton = document.getElementById('logout-button'),
-                  userEmailSpan = document.getElementById('user-email'), projectsListDiv = document.getElementById('projects-list'),
-                  dashboardView = document.getElementById('dashboard-view'), projectDetailView = document.getElementById('project-detail-view'),
-                  backToDashboardButton = document.getElementById('back-to-dashboard-button'), adminButton = document.getElementById('admin-button'),
+                  userEmailSpan = document.getElementById('user-email'), 
+                  
+                  // Refatoração: Variáveis de View
+                  clientListView = document.getElementById('client-list-view'), 
+                  clientsListDiv = document.getElementById('clients-list'),
+                  projectListView = document.getElementById('project-list-view'),
+                  projectListContent = document.getElementById('project-list-content'),
+                  projectListClientName = document.getElementById('project-list-client-name'),
+                  backToClientsButton = document.getElementById('back-to-clients-button'),
+
+                  projectDetailView = document.getElementById('project-detail-view'),
+                  backToProjectListButton = document.getElementById('back-to-project-list-button'), 
+                  adminButton = document.getElementById('admin-button'),
                   adminView = document.getElementById('admin-view'), backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button'),
                   createClientForm = document.getElementById('create-client-form'), createUserForm = document.getElementById('create-user-form'),
                   createProjectForm = document.getElementById('create-project-form'), clientSelect = document.getElementById('client-select'),
@@ -218,11 +248,19 @@
                   uploadLogoForm = document.getElementById('upload-logo-form'), logoClientSelect = document.getElementById('logo-client-select'),
                   clientLogoHeader = document.getElementById('client-logo-header');
 
-            let state = { user: null, projects: [], clients: [], phaseTemplates: [
-                { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
-                { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Desenho da Solução", "Desenvolvimento", "Homologação", "Go-Live"] },
-                { name: "Customizado", phases: [] }
-            ], currentProjectId: null, currentVersionId: null };
+            let state = { 
+                user: null, 
+                projects: [], 
+                clients: [], 
+                phaseTemplates: [
+                    { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
+                    { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Desenho da Solução", "Desenvolvimento", "Homologação", "Go-Live"] },
+                    { name: "Customizado", phases: [] }
+                ], 
+                currentProjectId: null, 
+                currentVersionId: null,
+                currentClientId: null // Novo estado para controlar cliente selecionado
+            };
 
             const ToastManager = {
                 container: document.getElementById('toast-container'),
@@ -242,11 +280,57 @@
 
             const STATUS_LABELS = { 'pending': 'Pendente', 'in_progress': 'Em Desenvolvimento', 'completed': 'Concluído', 'evolving': 'Em Evolução', 'archived': 'Arquivado', 'active': 'Ativo' };
             
-            function renderDashboard() {
-                projectsListDiv.innerHTML = '';
-                if (!state.projects || state.projects.length === 0) { projectsListDiv.innerHTML = '<p>Nenhum projeto encontrado.</p>'; return; }
-                state.projects.forEach(project => {
-                    const card = document.createElement('div'); card.className = 'project-card'; card.dataset.projectId = project.id;
+            // Nova Função: Renderizar Lista de Clientes (Antiga renderDashboard renomeada)
+            function renderClientList() {
+                clientsListDiv.innerHTML = '';
+                if (!state.clients || state.clients.length === 0) { 
+                    clientsListDiv.innerHTML = '<p>Nenhum cliente encontrado.</p>'; 
+                    return; 
+                }
+                
+                state.clients.forEach(client => {
+                    const card = document.createElement('div'); 
+                    card.className = 'client-card'; 
+                    card.dataset.clientId = client.id; // Importante: ID do cliente para navegação
+
+                    let logoHtml = '';
+                    if (client.logo_url) {
+                        logoHtml = `<img src="${client.logo_url.replace('/view', '/uc')}" class="client-logo-thumb" alt="${client.name}">`;
+                    } else {
+                        logoHtml = `<div style="background: #374151; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">${client.name.substring(0,2).toUpperCase()}</div>`;
+                    }
+
+                    card.innerHTML = `
+                        <div>
+                            <h4>${client.name}</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.9em;">ID: ${client.id.split('-')[0]}...</p>
+                        </div>
+                        ${logoHtml}
+                    `;
+                    clientsListDiv.appendChild(card);
+                });
+            }
+
+            // Nova Função: Renderizar Lista de Projetos de um Cliente
+            function renderProjectList(clientId) {
+                state.currentClientId = clientId;
+                const client = state.clients.find(c => c.id === clientId) || { name: 'Cliente' };
+                projectListClientName.innerText = `Projetos de: ${client.name}`;
+                projectListContent.innerHTML = '';
+
+                // Filtra projetos do cliente selecionado
+                const clientProjects = state.projects.filter(p => p.client_id === clientId);
+
+                if (clientProjects.length === 0) {
+                    projectListContent.innerHTML = '<p>Nenhum projeto encontrado para este cliente.</p>';
+                    return;
+                }
+
+                clientProjects.forEach(project => {
+                    const card = document.createElement('div'); 
+                    card.className = 'project-card'; 
+                    card.dataset.projectId = project.id;
+                    
                     const versions = project.laborai_project_versions;
                     const latestVersion = versions && versions.length > 0 ? versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0] : null;
                     const statusLabel = STATUS_LABELS[project.status] || project.status.replace('_', ' ').toUpperCase();
@@ -254,8 +338,9 @@
                     let progressColorClass = 'low';
                     if (progress > 30) progressColorClass = 'medium';
                     if (progress > 70) progressColorClass = 'high';
+                    
                     card.innerHTML = `<h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4><p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel} - ${progress}%</span></p><div class="progress-bar-wrapper"><div class="progress-bar-fill ${progressColorClass}" style="width: ${progress}%;"></div></div><p style="font-size: 0.9em; color: var(--text-secondary);">Última atualização: ${new Date(project.updated_at).toLocaleDateString('pt-BR')}</p>`;
-                    projectsListDiv.appendChild(card);
+                    projectListContent.appendChild(card);
                 });
             }
 
@@ -391,21 +476,27 @@
                     projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
                 } else {
                     const userClientId = state.user?.user_metadata?.clientId;
-                    if (!userClientId) { state.projects = []; renderDashboard(); return; }
+                    if (!userClientId) { state.projects = []; return; } // Removido renderDashboard direto aqui
                     projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId).order('created_at', { ascending: false });
                 }
                 const projectsPromise = projectsQuery;
+                // Fetch clientes é importante para o Admin popular a lista, e para o dropdown.
                 const clientsPromise = userIsAdmin ? supabaseClient.from('laborai_clients').select('*') : Promise.resolve({ data: [] });
+                
                 const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
+                
                 if (projectsResult.error) { console.error("Erro ao buscar projetos:", projectsResult.error); ToastManager.error('Erro ao buscar projetos', projectsResult.error.message); } 
                 else { state.projects = projectsResult.data; }
+                
                 if (clientsResult.error) { console.error("Erro ao buscar clientes:", clientsResult.error); ToastManager.error('Erro ao buscar clientes', clientsResult.error.message); } 
                 else { state.clients = clientsResult.data; }
-                renderDashboard();
+                
+                // renderClientList(); // Chamada removida daqui, movida para initApp para controle de fluxo
             }
 
             function showView(viewId) {
-                dashboardView.classList.add('hidden');
+                clientListView.classList.add('hidden'); // Antigo dashboardView
+                projectListView.classList.add('hidden'); // NOVA view
                 projectDetailView.classList.add('hidden');
                 adminView.classList.add('hidden');
                 document.getElementById(viewId).classList.remove('hidden');
@@ -430,13 +521,32 @@
             });
 
             logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.reload(); });
-            backToDashboardButton.addEventListener('click', () => showView('dashboard-view'));
-            projectsListDiv.addEventListener('click', (e) => {
+            
+            // Navegação: Botão Voltar da View de Detalhes -> Vai para Lista de Projetos
+            backToProjectListButton.addEventListener('click', () => showView('project-list-view'));
+            
+            // Navegação: Botão Voltar da View de Projetos -> Vai para Lista de Clientes (Admin)
+            backToClientsButton.addEventListener('click', () => showView('client-list-view'));
+
+            // Navegação: Clique no Card do Cliente -> Vai para Lista de Projetos
+            clientsListDiv.addEventListener('click', (e) => {
+                const card = e.target.closest('.client-card');
+                if (card) { 
+                    renderProjectList(card.dataset.clientId); 
+                    showView('project-list-view'); 
+                }
+            });
+
+            // Navegação: Clique no Card do Projeto (Dentro da view de Lista de Projetos)
+            projectListContent.addEventListener('click', (e) => {
                 const card = e.target.closest('.project-card');
                 if (card) { renderProjectDetail(card.dataset.projectId); showView('project-detail-view'); }
             });
+
             adminButton.addEventListener('click', () => { populateClientDropdowns(); populatePhaseTemplatesDropdown(); showView('admin-view'); });
-            backToDashboardFromAdminButton.addEventListener('click', () => showView('dashboard-view'));
+            
+            // Do admin voltar para o início. Se admin, lista de clientes.
+            backToDashboardFromAdminButton.addEventListener('click', () => showView('client-list-view'));
 
             createClientForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -448,6 +558,8 @@
                     ToastManager.success('Cliente criado!', 'Já disponível nos formulários.');
                     createClientForm.reset();
                     await fetchAllData(); populateClientDropdowns();
+                    // Se estiver na lista de clientes, atualiza
+                    if (state.user?.user_metadata?.role === 'admin') renderClientList();
                 } catch (error) { ToastManager.error('Erro ao criar cliente', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Criar Cliente'; }
             });
@@ -474,10 +586,12 @@
                     const response = await fetch(N8N_WEBHOOKS.CRIAR_PROJETO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: projectClientSelect.value, projectName: document.getElementById('new-project-name').value, description: document.getElementById('new-project-description').value, phases }) });
                     if (!response.ok) throw new Error('Falha na resposta do servidor.');
                     const result = await response.json();
-                    ToastManager.success('Projeto Criado!', 'O novo projeto já está no dashboard.');
+                    ToastManager.success('Projeto Criado!');
                     createProjectForm.reset();
                     await fetchAllData();
-                    showView('dashboard-view');
+                    // Redireciona para a lista de projetos do cliente associado
+                    renderProjectList(projectClientSelect.value);
+                    showView('project-list-view');
                 } catch (error) { ToastManager.error('Erro ao criar projeto', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Criar Projeto'; }
             });
@@ -542,7 +656,8 @@
                     if (version) { version.progress_percentage = newProgress; }
 
                     updateProgressDisplay(newProgress);
-                    renderDashboard();
+                    // Atualiza a lista de projetos em background caso o usuário volte
+                    renderProjectList(state.currentClientId);
                 } catch(error) { ToastManager.error('Erro ao salvar', error.message); }
                 finally { button.disabled = false; button.innerText = 'Salvar Progresso'; }
             });
@@ -589,6 +704,7 @@
                     ToastManager.success('Logo atualizada com sucesso!');
                     uploadLogoForm.reset();
                     await fetchAllData();
+                    if (state.user?.user_metadata?.role === 'admin') renderClientList();
                 } catch (error) { ToastManager.error('Erro ao enviar logo', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Salvar Logo'; }
             });
@@ -598,9 +714,15 @@
             async function initApp() {
                 loginSection.classList.add('hidden'); appContainer.classList.remove('hidden');
                 userEmailSpan.innerText = state.user.email;
+                await fetchAllData();
+
                 if (state.user?.user_metadata?.role === 'admin') {
                     adminButton.classList.remove('hidden');
+                    // Admin: Fluxo começa na Lista de Clientes
+                    renderClientList();
+                    showView('client-list-view');
                 } else {
+                    // Usuário Cliente: Fluxo começa direto na Lista de Projetos dele
                     const clientName = state.user?.user_metadata?.clientName || state.user?.user_metadata?.client_name;
                     const userClientId = state.user?.user_metadata?.clientId;
                     if(clientName) clientNameHeader.innerText = `| ${clientName}`;
@@ -610,10 +732,14 @@
                             clientLogoHeader.src = clientData.logo_url.replace('/view', '/uc');
                             clientLogoHeader.classList.remove('hidden');
                         }
+                        // Pula lista de clientes, vai para projetos do usuário
+                        state.currentClientId = userClientId;
+                        // Esconde botão de voltar para clientes já que ele não tem acesso à lista
+                        backToClientsButton.classList.add('hidden');
+                        renderProjectList(userClientId);
+                        showView('project-list-view');
                     }
                 }
-                await fetchAllData();
-                showView('dashboard-view');
             }
 
             async function checkSession() {
