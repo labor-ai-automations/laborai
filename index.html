@@ -12,78 +12,83 @@
         :root {
             --background-dark: #111827; --surface-dark: #1f2937; --border-dark: #374151;
             --primary-accent: #3b82f6; --primary-accent-hover: #60a5fa; --text-primary: #f9fafb;
-            --text-secondary: #9ca3af; --success-color: #22c55e; --success-bg: #102d20;
-            --warning-color: #f59e0b; --error-color: #ef4444; --error-bg: #3f1212;
+            --text-secondary: #9ca3af; --success-color: #22c55e; --warning-color: #f59e0b; --error-color: #ef4444;
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--background-dark); color: var(--text-primary); margin: 0; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .hidden { display: none !important; }
+        
+        /* Login */
         #login-section { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-card { background: var(--surface-dark); padding: 40px; border-radius: 12px; border: 1px solid var(--border-dark); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; }
+        .login-card { background: var(--surface-dark); padding: 40px; border-radius: 12px; border: 1px solid var(--border-dark); width: 100%; max-width: 400px; text-align: center; }
+        
+        /* Inputs & Buttons */
         input, select, textarea { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border-dark); border-radius: 6px; box-sizing: border-box; background-color: #374151; color: var(--text-primary); font-size: 16px; font-family: 'Inter', sans-serif; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; background-color: var(--primary-accent); color: white; font-weight: 500; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; background-color: var(--primary-accent); color: white; font-weight: 500; font-size: 16px; cursor: pointer; transition: background-color 0.2s; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
         button:hover { background-color: var(--primary-accent-hover); }
         button:disabled { background-color: #4b5563; cursor: not-allowed; }
-        button.secondary { background-color: var(--surface-dark); border: 1px solid var(--border-dark); color: var(--text-secondary); }
-        button.secondary:hover { background-color: var(--border-dark); color: var(--text-primary); }
+        button.secondary { background: transparent; border: 1px solid var(--border-dark); color: var(--text-primary); }
+        button.secondary:hover { background: var(--border-dark); }
+        button.danger { background-color: rgba(239, 68, 68, 0.2); color: var(--error-color); border: 1px solid var(--error-color); }
+        button.danger:hover { background-color: rgba(239, 68, 68, 0.3); }
+        button.icon-btn { width: auto; padding: 6px 10px; font-size: 14px; }
         
+        /* Header */
         #app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border-dark); margin-bottom: 24px; }
-        #client-name-header { font-weight: 500; color: var(--text-secondary); margin-left: 8px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .client-logo-header-img { height: 32px; object-fit: contain; }
         
-        /* Clients Grid & Modern Cards */
-        .clients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-        .client-card-modern { background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; height: 100%; }
-        .client-card-modern:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-color: var(--primary-accent); }
-        
-        .card-header { height: 140px; background: #1a202c; display: flex; align-items: center; justify-content: center; padding: 20px; border-bottom: 1px solid var(--border-dark); position: relative; }
-        .card-logo { max-height: 80px; max-width: 80%; object-fit: contain; }
-        .card-placeholder { width: 60px; height: 60px; background: #374151; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: var(--text-secondary); }
-        
-        .card-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-title { font-size: 1.25rem; font-weight: 700; margin: 0 0 8px 0; color: var(--text-primary); }
-        .card-desc { font-size: 0.9rem; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 16px; flex-grow: 1; }
-        
-        .card-footer { padding: 16px 20px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--border-dark); display: flex; gap: 12px; }
-        .btn-view { flex: 1; background-color: var(--primary-accent); font-size: 0.9rem; padding: 8px; }
-        .btn-edit { width: 40px; background-color: var(--surface-dark); border: 1px solid var(--border-dark); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 0; }
-        .btn-edit:hover { background-color: var(--border-dark); color: white; }
+        /* Toggle Switch */
+        .toggle-container { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        /* Project Cards */
-        .project-card { background: var(--surface-dark); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-dark); cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
-        .project-card:hover { transform: translateY(-3px); border-color: var(--primary-accent); }
-
-        .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: var(--surface-dark); }
-        .phase-header.completed { border-color: var(--success-color); }
-        .phase-header.in-progress { border-color: var(--primary-accent); animation: pulse-border 3s ease-in-out infinite; }
-        @keyframes pulse-border { 0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); } 50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2); } }
-        .update { margin-left: 20px; margin-bottom: 12px; padding: 12px; padding-left: 20px; background: var(--background-dark); border-left: 2px solid var(--border-dark); }
-        #admin-view, .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; background: var(--surface-dark); }
-        label { display: block; margin-bottom: 8px; font-weight: 500; text-align: left; }
-        .admin-controls { margin-top: 10px; display: flex; gap: 10px; }
-        .admin-controls button { width: auto; padding: 4px 10px; font-size: 0.8em; background-color: var(--border-dark); }
+        /* Cards */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+        .project-card, .client-card { background: var(--surface-dark); padding: 20px; border-radius: 8px; border: 1px solid var(--border-dark); cursor: pointer; transition: transform 0.2s, border-color 0.2s; position: relative; }
+        .project-card:hover, .client-card:hover { transform: translateY(-3px); border-color: var(--primary-accent); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .client-logo-thumb { height: 40px; max-width: 100px; object-fit: contain; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 4px; }
+        
+        /* Timeline/Details */
+        .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: var(--surface-dark); display: flex; justify-content: space-between; align-items: center; }
+        .phase-header.active { border-color: var(--primary-accent); animation: pulse-border 3s infinite; }
+        .update { margin-left: 20px; margin-bottom: 12px; padding: 15px; background: var(--background-dark); border-left: 3px solid var(--border-dark); border-radius: 0 8px 8px 0; position: relative; }
+        .update-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; opacity: 0.7; }
+        .update-actions:hover { opacity: 1; }
+        
+        /* Admin Sections */
+        .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; background: var(--surface-dark); }
+        .admin-toolbar { display: flex; gap: 8px; margin-top: 10px; }
+        
+        /* Toast */
         #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 10000; display: flex; flex-direction: column; gap: 0.75rem; max-width: 420px; }
-        .toast { display: flex; align-items: flex-start; gap: 0.875rem; padding: 1rem 1.25rem; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); border-left: 4px solid; animation: slideIn 0.3s ease-out; position: relative; overflow: hidden; background-color: var(--surface-dark); }
-        .toast::after { content: ''; position: absolute; bottom: 0; left: 0; height: 3px; background: currentColor; animation: shrink 4s linear forwards; }
+        .toast { padding: 1rem 1.25rem; border-radius: 8px; background-color: var(--surface-dark); border-left: 4px solid; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s; }
         .toast.success { border-color: var(--success-color); } .toast.error { border-color: var(--error-color); } .toast.info { border-color: var(--primary-accent); }
-        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideOut { to { transform: translateX(120%); opacity: 0; } }
-        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
-        .toast.removing { animation: slideOut 0.3s ease-in forwards; }
-        .progress-bar-wrapper { width: 100%; height: 8px; background: #374151; border-radius: 4px; overflow: hidden; margin: 8px 0; }
-        .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
-        .progress-bar-fill.low { background: var(--error-color); } .progress-bar-fill.medium { background: var(--warning-color); } .progress-bar-fill.high { background: var(--success-color); }
-        .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; }
-        .modal-content { background: var(--surface-dark); padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; border: 1px solid var(--border-dark); }
-        #client-logo-header { max-height: 24px; margin-right: 12px; vertical-align: middle; }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+
+        /* Modals */
+        .modal { position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; }
+        .modal-content { background: var(--surface-dark); padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; border: 1px solid var(--border-dark); max-height: 90vh; overflow-y: auto; }
+        
+        /* Contacts List in Modal */
+        .contact-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-dark); }
+        .contact-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
+
+    <!-- TELA DE LOGIN -->
     <div id="login-section">
         <div class="login-card">
             <h2>Portal LaborAI</h2>
-            <p>Acesse seus projetos e acompanhe o andamento.</p>
+            <p>Acesse para gerenciar seus projetos.</p>
             <form id="login-form">
                 <input type="email" id="login-email" placeholder="Seu e-mail" required>
                 <input type="password" id="login-password" placeholder="Sua senha" required>
@@ -91,812 +96,888 @@
             </form>
         </div>
     </div>
+
+    <!-- APLICAÇÃO PRINCIPAL -->
     <div id="app-container" class="container hidden">
         <header id="app-header">
-            <div><strong>LaborAI</strong><span id="client-name-header"></span></div>
-            <div>
-                <img id="client-logo-header" class="hidden" alt="Logo do Cliente">
-                <span id="user-email" style="color: var(--text-secondary);"></span>
-                <button id="admin-button" class="hidden" style="width: auto; padding: 8px 12px; margin-left: 16px; background-color: var(--warning-color);">Admin</button>
-                <button id="logout-button" style="width: auto; padding: 8px 12px; margin-left: 16px; background: none; border: 1px solid var(--border-dark);">Sair</button>
+            <div class="header-left">
+                <!-- Logo do Cliente (Carregada Dinamicamente) -->
+                <img id="header-client-logo" class="client-logo-header-img hidden" alt="Logo">
+                <div>
+                    <strong style="font-size: 1.2rem;">LaborAI</strong>
+                    <span id="header-client-name" style="color: var(--text-secondary); margin-left: 8px;"></span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center;">
+                
+                <!-- Toggle "Ver como Cliente" (Apenas Admin) -->
+                <div id="admin-simulation-toggle" class="toggle-container hidden">
+                    <span style="font-size: 0.9em; color: var(--text-secondary);">Ver como Cliente</span>
+                    <label class="switch">
+                        <input type="checkbox" id="client-view-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <span id="user-email" style="font-size: 0.9em; margin-right: 16px; color: var(--text-secondary);"></span>
+                
+                <!-- Botão Painel Admin (Apenas Admin) -->
+                <button id="admin-panel-button" class="hidden" style="width: auto; padding: 6px 12px; margin-right: 10px; background-color: var(--surface-dark); border: 1px solid var(--warning-color); color: var(--warning-color);">
+                    ⚙️ Painel & Criação
+                </button>
+                
+                <button id="logout-button" class="secondary" style="width: auto; padding: 6px 12px;">Sair</button>
             </div>
         </header>
+
         <main id="main-content">
-            <!-- VIEW 1: Lista de Clientes (Grid Moderno) -->
-            <div id="client-list-view">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                    <h3>Meus Clientes</h3>
-                    <!-- Botão de atalho para criar cliente (opcional, para conveniência) -->
-                    <button onclick="document.getElementById('admin-button').click()" style="width: auto; padding: 8px 16px; font-size: 0.9em;">+ Novo Cliente</button>
-                </div>
-                <div id="clients-list" class="clients-grid"></div>
+            <!-- VIEW 1: Lista de Clientes (Home do Admin) -->
+            <div id="client-list-view" class="hidden">
+                <h3>Meus Clientes</h3>
+                <div id="clients-list" class="card-grid"></div>
             </div>
 
-            <!-- VIEW 2: Lista de Projetos -->
+            <!-- VIEW 2: Lista de Projetos (Home do Cliente / Navegação Admin) -->
             <div id="project-list-view" class="hidden">
-                <button id="back-to-clients-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar para Clientes</button>
-                <h2 id="project-list-client-name"></h2>
-                <div id="project-list-content"></div>
+                <button id="back-to-clients-button" class="secondary hidden" style="margin-bottom: 20px;">&larr; Voltar para Clientes</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 id="project-list-title">Projetos</h2>
+                </div>
+                <div id="project-list-content" class="card-grid"></div>
             </div>
 
-            <!-- VIEW 3: Detalhes do Projeto -->
+            <!-- VIEW 3: Detalhes do Projeto (Timeline) -->
             <div id="project-detail-view" class="hidden">
-                <button id="back-to-project-list-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
-                <h2 id="project-detail-name"></h2>
-                <div id="project-actions-admin" class="admin-section-card hidden"></div>
+                <button id="back-to-projects-button" class="secondary" style="margin-bottom: 20px;">&larr; Voltar para Projetos</button>
+                
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h2 id="project-detail-name">Nome do Projeto</h2>
+                </div>
+
+                <!-- Admin Controls: Progresso -->
                 <div id="progress-control-container" class="admin-section-card hidden">
                     <h3>📊 Controle de Progresso</h3>
                     <div id="progress-display"></div>
-                    <label for="progress-slider">Ajustar Progresso: <span id="slider-value" style="font-weight: bold;">0%</span></label>
-                    <input type="range" min="0" max="100" value="0" id="progress-slider" style="width: 100%;">
-                    <button id="save-progress-button" style="width: auto; padding: 8px 16px; margin-top: 10px;">Salvar Progresso</button>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                        <input type="range" min="0" max="100" value="0" id="progress-slider" style="flex: 1;">
+                        <span id="slider-value" style="font-weight: bold; width: 40px;">0%</span>
+                        <button id="save-progress-button" style="width: auto;">Salvar</button>
+                    </div>
                 </div>
-                <div id="project-detail-content"></div>
+
+                <!-- Conteúdo da Timeline -->
+                <div id="project-detail-content" style="margin-top: 24px;"></div>
+
+                <!-- Admin Controls: Adicionar Atualização -->
                 <div id="add-update-form-container" class="admin-section-card hidden">
-                    <h3>Adicionar Nova Atualização</h3>
+                    <h3>Nova Atualização</h3>
                     <form id="add-update-form">
-                        <label for="update-phase-select">Para qual fase?</label>
                         <select id="update-phase-select" required></select>
-                        <label for="update-type-select">Tipo de Atualização:</label>
                         <select id="update-type-select" required>
-                            <option value="text">Texto</option><option value="image">Imagem</option><option value="link">Link</option>
+                            <option value="text">Texto</option>
+                            <option value="image">Imagem</option>
+                            <option value="link">Link</option>
                         </select>
-                        <label for="update-title">Título:</label>
-                        <input type="text" id="update-title" required>
-                        <div id="update-field-description"><label for="update-description">Descrição:</label><textarea id="update-description" rows="3"></textarea></div>
-                        <div id="update-field-file" class="hidden"><label for="update-file">Arquivo de Imagem:</label><input type="file" id="update-file" accept="image/png, image/jpeg, image/gif"></div>
-                        <div id="update-field-link" class="hidden"><label for="update-link">URL do Link:</label><input type="url" id="update-link" placeholder="https://..."></div>
-                        <button type="submit" id="add-update-button">Adicionar Atualização</button>
+                        <input type="text" id="update-title" placeholder="Título da atualização" required>
+                        <div id="update-field-description">
+                            <textarea id="update-description" rows="3" placeholder="Descrição detalhada..."></textarea>
+                        </div>
+                        <div id="update-field-file" class="hidden">
+                            <input type="file" id="update-file" accept="image/*,application/pdf">
+                        </div>
+                        <div id="update-field-link" class="hidden">
+                            <input type="url" id="update-link" placeholder="https://...">
+                        </div>
+                        <button type="submit" id="add-update-button">Publicar Atualização</button>
                     </form>
                 </div>
             </div>
 
-            <!-- VIEW 4: Admin Forms -->
-            <div id="admin-view" class="hidden">
-                <button id="back-to-dashboard-from-admin-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
-                <h2>Painel Administrativo</h2>
+            <!-- VIEW 4: Painel Administrativo (Formulários de Criação) -->
+            <div id="admin-forms-view" class="hidden">
+                <button id="back-from-admin-panel" class="secondary" style="margin-bottom: 20px;">&larr; Voltar</button>
+                <h2>Painel de Gestão & Criação</h2>
                 
-                <!-- Mantido para compatibilidade, mas o modal de edição é preferível -->
-                <div class="admin-section-card">
-                    <h3>Adicionar/Atualizar Logo do Cliente</h3>
-                    <form id="upload-logo-form">
-                        <label for="logo-client-select">Para qual cliente?</label>
-                        <select id="logo-client-select" required></select>
-                        <label for="logo-file-input">Arquivo da Logo (PNG, JPG, SVG):</label>
-                        <input type="file" id="logo-file-input" accept="image/png, image/jpeg, image/svg+xml" required>
-                        <button type="submit" id="upload-logo-button">Salvar Logo (Via Supabase)</button>
-                    </form>
+                <div class="card-grid">
+                    <!-- Upload de Logo -->
+                    <div class="admin-section-card" style="margin-top: 0;">
+                        <h3>🖼️ Logo do Cliente</h3>
+                        <form id="upload-logo-form">
+                            <label>Cliente:</label>
+                            <select id="logo-client-select" required></select>
+                            <label>Arquivo (PNG/JPG/SVG):</label>
+                            <input type="file" id="logo-file-input" accept="image/png, image/jpeg, image/svg+xml" required>
+                            <button type="submit" id="upload-logo-button">Salvar Logo</button>
+                        </form>
+                    </div>
+
+                    <!-- Criar Cliente -->
+                    <div class="admin-section-card" style="margin-top: 0;">
+                        <h3>🏢 Novo Cliente</h3>
+                        <form id="create-client-form">
+                            <label>Nome da Empresa:</label>
+                            <input type="text" id="new-client-name" placeholder="Ex: Molas Fama" required>
+                            <button type="submit" id="create-client-button">Criar Cliente</button>
+                        </form>
+                    </div>
+
+                    <!-- Criar Usuário -->
+                    <div class="admin-section-card" style="margin-top: 0;">
+                        <h3>👤 Novo Usuário</h3>
+                        <form id="create-user-form">
+                            <label>Associar ao Cliente:</label>
+                            <select id="user-client-select" required></select>
+                            <label>E-mail:</label>
+                            <input type="email" id="new-user-email" required>
+                            <label>Senha Provisória:</label>
+                            <input type="password" id="new-user-password" required>
+                            <button type="submit" id="create-user-button">Criar Usuário</button>
+                        </form>
+                    </div>
                 </div>
 
+                <!-- Criar Projeto -->
                 <div class="admin-section-card">
-                    <h3>Criar Novo Projeto</h3>
+                    <h3>🚀 Novo Projeto</h3>
                     <form id="create-project-form">
-                        <label for="project-client-select">Associar a qual cliente?</label>
+                        <label>Cliente:</label>
                         <select id="project-client-select" required></select>
-                        <label for="new-project-name">Nome do Projeto:</label>
-                        <input type="text" id="new-project-name" placeholder="Ex: Dashboard de Produção V1" required>
-                        <label for="new-project-description">Descrição Breve:</label>
-                        <textarea id="new-project-description" rows="2" placeholder="Resumo do que o projeto fará..."></textarea>
-                        <label for="phase-template-select">Template de Fases:</label>
+                        <label>Nome do Projeto:</label>
+                        <input type="text" id="new-project-name" required>
+                        <label>Descrição:</label>
+                        <textarea id="new-project-description" rows="2"></textarea>
+                        <label>Template de Fases:</label>
                         <select id="phase-template-select" required></select>
-                        <label for="new-project-phases" class="hidden">Fases do Projeto (uma por linha):</label>
-                        <textarea id="new-project-phases" rows="4" class="hidden" placeholder="Fase 1: Levantamento&#10;Fase 2: Desenvolvimento&#10;Fase 3: Testes"></textarea>
+                        <textarea id="new-project-phases" rows="4" class="hidden" placeholder="Fase 1..."></textarea>
                         <button type="submit" id="create-project-button">Criar Projeto</button>
-                    </form>
-                </div>
-                <div class="admin-section-card">
-                    <h3>Criar Novo Cliente</h3>
-                    <form id="create-client-form">
-                        <label for="new-client-name">Nome do Cliente (Empresa):</label>
-                        <input type="text" id="new-client-name" placeholder="Ex: Molas Fama" required>
-                        <button type="submit" id="create-client-button">Criar Cliente</button>
-                    </form>
-                </div>
-                <div class="admin-section-card">
-                    <h3>Criar Novo Usuário de Cliente</h3>
-                    <form id="create-user-form">
-                        <label for="client-select">Associar a qual cliente?</label>
-                        <select id="client-select" required></select>
-                        <label for="new-user-email">Email do novo usuário:</label>
-                        <input type="email" id="new-user-email" placeholder="email@cliente.com" required>
-                        <label for="new-user-password">Senha temporária:</label>
-                        <input type="password" id="new-user-password" placeholder="Crie uma senha forte" required>
-                        <button type="submit" id="create-user-button">Criar Usuário</button>
                     </form>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal Nova Versão -->
+    <!-- MODAL: Nova Versão -->
     <div id="new-version-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Iniciar Nova Versão</h3>
             <form id="new-version-form">
-                <label for="new-version-number">Número da Nova Versão:</label>
                 <input type="text" id="new-version-number" placeholder="Ex: V2.0" required>
-                <label for="new-version-summary">Resumo das Mudanças:</label>
-                <textarea id="new-version-summary" rows="3" placeholder="O que há de novo nesta versão?" required></textarea>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="button" id="cancel-new-version-button" class="secondary">Cancelar</button>
+                <textarea id="new-version-summary" rows="3" placeholder="Resumo das mudanças..." required></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="secondary" onclick="document.getElementById('new-version-modal').classList.add('hidden')">Cancelar</button>
                     <button type="submit">Criar Versão</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Editar Cliente -->
-    <div id="edit-client-modal" class="modal hidden">
+    <!-- MODAL: Gerenciar Contatos -->
+    <div id="contacts-modal" class="modal hidden">
         <div class="modal-content">
-            <h3>Editar Cliente</h3>
-            <form id="edit-client-form">
-                <input type="hidden" id="edit-client-id">
-                <label for="edit-client-name">Nome do Cliente:</label>
-                <input type="text" id="edit-client-name" required>
-                <label for="edit-client-desc">Descrição Curta:</label>
-                <textarea id="edit-client-desc" rows="3" placeholder="Descrição da empresa..."></textarea>
-                
-                <label for="edit-client-logo">Atualizar Logo (Opcional):</label>
-                <input type="file" id="edit-client-logo" accept="image/png, image/jpeg, image/svg+xml">
-                
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="button" id="cancel-edit-client-button" class="secondary">Cancelar</button>
-                    <button type="submit" id="save-edit-client-button">Salvar Alterações</button>
-                </div>
+            <h3>Gerenciar Contatos</h3>
+            <p id="contacts-modal-client-name" style="color: var(--text-secondary); margin-bottom: 15px;"></p>
+            
+            <!-- Lista -->
+            <div id="contacts-list" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-dark); border-radius: 6px;">
+                <!-- Itens inseridos via JS -->
+            </div>
+
+            <!-- Adicionar Novo -->
+            <h4 style="border-top: 1px solid var(--border-dark); padding-top: 15px;">Adicionar Novo</h4>
+            <form id="add-contact-form">
+                <input type="text" id="contact-name" placeholder="Nome" required style="margin-bottom: 8px;">
+                <input type="text" id="contact-role" placeholder="Cargo" style="margin-bottom: 8px;">
+                <input type="text" id="contact-whatsapp" placeholder="WhatsApp (55119...)" required style="margin-bottom: 8px;">
+                <button type="submit" id="add-contact-btn">Adicionar Contato</button>
             </form>
+            <button class="secondary" onclick="document.getElementById('contacts-modal').classList.add('hidden')" style="margin-top: 15px; width: 100%;">Fechar</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
-            const N8N_WEBHOOKS = {
-                // Removemos o endpoint de LOGO, pois agora vai direto pro Supabase
-                // ATUALIZAR_LOGO_CLIENTE: '...', 
-                ATUALIZAR_PROGRESSO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-progresso-projeto',
-                // O upload de arquivos de imagem em atualizações agora vai pro Supabase, mantemos o de texto para notificações
-                ADD_ATUALIZACAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-fase',
-                CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
-                CRIAR_USUARIO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-usuario',
-                CRIAR_PROJETO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-projeto',
-                ATUALIZAR_STATUS_FASE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-status-fase',
-                CRIAR_NOVA_VERSAO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-nova-versao',
+            // Webhooks do N8N
+            const N8N_BASE = 'https://n8n-n8n.znxk1t.easypanel.host/webhook';
+            const HOOKS = {
+                // Uploads e Criação
+                ATUALIZAR_LOGO: `${N8N_BASE}/atualizar-logo-cliente`,
+                CRIAR_CLIENTE: `${N8N_BASE}/criar-novo-cliente`,
+                CRIAR_USUARIO: `${N8N_BASE}/criar-novo-usuario`,
+                CRIAR_PROJETO: `${N8N_BASE}/criar-novo-projeto`,
+                ADD_ATUALIZACAO: `${N8N_BASE}/adicionar-atualizacao-fase`,
+                ADD_ATUALIZACAO_ARQUIVO: `${N8N_BASE}/adicionar-atualizacao-com-arquivo`,
+                
+                // Gestão de Projeto
+                ATUALIZAR_PROGRESSO: `${N8N_BASE}/atualizar-progresso-projeto`,
+                ATUALIZAR_STATUS_FASE: `${N8N_BASE}/atualizar-status-fase`,
+                CRIAR_NOVA_VERSAO: `${N8N_BASE}/criar-nova-versao`,
+                NOTIFICAR_WHATSAPP: `${N8N_BASE}/notificar-whatsapp`,
+                
+                // CRUD e Gestão (Novos)
+                CRIAR_CONTATO: `${N8N_BASE}/criar-contato-cliente`,
+                EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`, // Params: contactId
+                EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, // Params: projectId, field, value
+                EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`, // Params: projectId
+                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao` // Params: updateId
             };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const loginSection = document.getElementById('login-section'), appContainer = document.getElementById('app-container'),
-                  loginForm = document.getElementById('login-form'), logoutButton = document.getElementById('logout-button'),
-                  userEmailSpan = document.getElementById('user-email'), 
-                  
-                  clientListView = document.getElementById('client-list-view'), 
-                  clientsListDiv = document.getElementById('clients-list'),
-                  projectListView = document.getElementById('project-list-view'),
-                  projectListContent = document.getElementById('project-list-content'),
-                  projectListClientName = document.getElementById('project-list-client-name'),
-                  backToClientsButton = document.getElementById('back-to-clients-button'),
-
-                  projectDetailView = document.getElementById('project-detail-view'),
-                  backToProjectListButton = document.getElementById('back-to-project-list-button'), 
-                  adminButton = document.getElementById('admin-button'),
-                  adminView = document.getElementById('admin-view'), backToDashboardFromAdminButton = document.getElementById('back-to-dashboard-from-admin-button'),
-                  createClientForm = document.getElementById('create-client-form'), createUserForm = document.getElementById('create-user-form'),
-                  createProjectForm = document.getElementById('create-project-form'), clientSelect = document.getElementById('client-select'),
-                  projectClientSelect = document.getElementById('project-client-select'), phaseTemplateSelect = document.getElementById('phase-template-select'),
-                  newProjectPhasesTextarea = document.getElementById('new-project-phases'), clientNameHeader = document.getElementById('client-name-header'),
-                  addUpdateFormContainer = document.getElementById('add-update-form-container'), addUpdateForm = document.getElementById('add-update-form'),
-                  updateTypeSelect = document.getElementById('update-type-select'),
-                  progressControlContainer = document.getElementById('progress-control-container'), progressSlider = document.getElementById('progress-slider'),
-                  progressDisplay = document.getElementById('progress-display'), saveProgressButton = document.getElementById('save-progress-button'),
-                  sliderValueSpan = document.getElementById('slider-value'),
-                  projectActionsAdmin = document.getElementById('project-actions-admin'), newVersionModal = document.getElementById('new-version-modal'),
-                  cancelNewVersionButton = document.getElementById('cancel-new-version-button'), newVersionForm = document.getElementById('new-version-form'),
-                  uploadLogoForm = document.getElementById('upload-logo-form'), logoClientSelect = document.getElementById('logo-client-select'),
-                  clientLogoHeader = document.getElementById('client-logo-header'),
-                  
-                  // Novos Elementos Modal Edit
-                  editClientModal = document.getElementById('edit-client-modal'),
-                  editClientForm = document.getElementById('edit-client-form'),
-                  cancelEditClientButton = document.getElementById('cancel-edit-client-button');
-
-            let state = { 
-                user: null, 
-                projects: [], 
-                clients: [], 
-                phaseTemplates: [
-                    { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
-                    { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Desenho da Solução", "Desenvolvimento", "Homologação", "Go-Live"] },
-                    { name: "Customizado", phases: [] }
-                ], 
-                currentProjectId: null, 
+            // --- ESTADO GLOBAL ---
+            let state = {
+                user: null,
+                isAdmin: false,
+                isSimulatingClient: false, // Controle do "Ver como Cliente"
+                clients: [],
+                projects: [],
+                contacts: [], // Cache temporário
+                currentClientId: null,
+                currentProjectId: null,
                 currentVersionId: null,
-                currentClientId: null
+                phaseTemplates: [
+                    { name: "Padrão (3 Fases)", phases: ["Levantamento", "Desenvolvimento", "Validação"] },
+                    { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Design", "Dev", "Homologação", "Go-Live"] },
+                    { name: "Customizado", phases: [] }
+                ]
             };
 
-            const ToastManager = {
+            // --- UTILS ---
+            const Toast = {
                 container: document.getElementById('toast-container'),
-                show(type, title, message, duration = 4000) {
-                    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
-                    const toast = document.createElement('div');
-                    toast.className = `toast ${type}`;
-                    toast.innerHTML = `<div style="font-size: 1.5rem; margin-top: 4px;">${icons[type]}</div><div><div class="toast-title">${title}</div>${message ? `<div class="toast-message">${message}</div>` : ''}</div>`;
-                    this.container.appendChild(toast);
-                    if (duration > 0) { setTimeout(() => this.remove(toast), duration); }
+                show(type, msg) {
+                    const el = document.createElement('div'); el.className = `toast ${type}`;
+                    el.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span><span>${msg}</span>`;
+                    this.container.appendChild(el);
+                    setTimeout(() => el.remove(), 4000);
                 },
-                remove(toast) { if (toast && toast.parentElement) { toast.classList.add('removing'); setTimeout(() => { if (toast.parentElement) toast.parentElement.removeChild(toast); }, 300); } },
-                success(title, message, duration) { this.show('success', title, message, duration); },
-                error(title, message, duration) { this.show('error', title, message, duration); },
-                info(title, message, duration) { this.show('info', title, message, duration); }
+                success(m) { this.show('success', m); }, error(m) { this.show('error', m); }, info(m) { this.show('info', m); }
             };
 
-            const STATUS_LABELS = { 'pending': 'Pendente', 'in_progress': 'Em Desenvolvimento', 'completed': 'Concluído', 'evolving': 'Em Evolução', 'archived': 'Arquivado', 'active': 'Ativo' };
-            
-            // Função Helper para Upload Supabase
-            async function uploadFileToSupabase(bucket, path, file) {
-                const { data, error } = await supabaseClient.storage.from(bucket).upload(path, file, { upsert: true });
-                if (error) throw error;
-                const { data: publicData } = supabaseClient.storage.from(bucket).getPublicUrl(path);
-                return publicData.publicUrl;
+            const Views = {
+                login: document.getElementById('login-section'),
+                app: document.getElementById('app-container'),
+                clientList: document.getElementById('client-list-view'),
+                projectList: document.getElementById('project-list-view'),
+                projectDetail: document.getElementById('project-detail-view'),
+                adminForms: document.getElementById('admin-forms-view')
+            };
+
+            function showView(viewName) {
+                Object.values(Views).forEach(el => { if(el && el !== Views.app) el.classList.add('hidden'); });
+                if (viewName !== 'login') Views.app.classList.remove('hidden');
+                if (Views[viewName]) Views[viewName].classList.remove('hidden');
             }
 
-            // Refatoração: Renderizar Lista de Clientes com Cards Modernos
-            function renderClientList() {
-                clientsListDiv.innerHTML = '';
-                if (!state.clients || state.clients.length === 0) { 
-                    clientsListDiv.innerHTML = '<p>Nenhum cliente encontrado.</p>'; 
-                    return; 
+            // --- DATA FETCHING (LEITURA via Supabase, ESCRITA via Webhook) ---
+            async function loadData() {
+                try {
+                    // 1. Carregar Projetos (Admin vê tudo, Cliente vê os seus)
+                    let query = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
+                    
+                    if (!state.isAdmin) {
+                        const clientId = state.user.user_metadata.clientId;
+                        if (clientId) query = query.eq('client_id', clientId);
+                    }
+                    
+                    const { data: projData, error: projError } = await query;
+                    if (projError) throw projError;
+                    state.projects = projData;
+
+                    // 2. Carregar Clientes (Apenas Admin precisa da lista completa)
+                    if (state.isAdmin) {
+                        const { data: clientData, error: clientError } = await supabaseClient.from('laborai_clients').select('*').order('name');
+                        if (clientError) throw clientError;
+                        state.clients = clientData;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    Toast.error('Erro ao carregar dados: ' + e.message);
                 }
+            }
+
+            // --- RENDERIZAÇÃO ---
+
+            // 1. HEADER
+            function renderHeader() {
+                document.getElementById('user-email').textContent = state.user.email;
+                const adminPanelBtn = document.getElementById('admin-panel-button');
+                const toggleContainer = document.getElementById('admin-simulation-toggle');
+                
+                if (state.isAdmin) {
+                    adminPanelBtn.classList.remove('hidden');
+                    toggleContainer.classList.remove('hidden');
+                    // Admin não tem logo fixa no header, depende do contexto
+                    document.getElementById('header-client-logo').classList.add('hidden');
+                    document.getElementById('header-client-name').textContent = state.isSimulatingClient ? " (Modo Visualização)" : " | Admin";
+                } else {
+                    adminPanelBtn.classList.add('hidden');
+                    toggleContainer.classList.add('hidden');
+                    
+                    // Exibir logo do cliente logado
+                    const clientId = state.user.user_metadata.clientId;
+                    if (clientId) {
+                        // Tentar pegar do projeto carregado ou fetch simples se vazio
+                        const clientName = state.user.user_metadata.clientName;
+                        document.getElementById('header-client-name').textContent = `| ${clientName}`;
+                        
+                        // Buscar URL da logo se não tivermos no state
+                        const p = state.projects.find(p => p.client_id === clientId);
+                        if (p && p.laborai_clients && p.laborai_clients.logo_url) {
+                            const img = document.getElementById('header-client-logo');
+                            img.src = p.laborai_clients.logo_url.replace('/view', '/uc'); // Ajuste para Supabase Storage display
+                            img.classList.remove('hidden');
+                        }
+                    }
+                }
+            }
+
+            // 2. LISTA DE CLIENTES (ADMIN HOME)
+            function renderClientList() {
+                const container = document.getElementById('clients-list');
+                container.innerHTML = '';
                 
                 state.clients.forEach(client => {
-                    const card = document.createElement('div'); 
-                    card.className = 'client-card-modern'; 
-                    // Removido dataset do card inteiro para evitar conflito de cliques
-                    
-                    let logoHtml = '';
-                    if (client.logo_url) {
-                        logoHtml = `<img src="${client.logo_url.replace('/view', '/uc')}" class="card-logo" alt="${client.name}">`;
-                    } else {
-                        logoHtml = `<div class="card-placeholder">${client.name.substring(0,2).toUpperCase()}</div>`;
-                    }
+                    const card = document.createElement('div');
+                    card.className = 'client-card';
+                    card.onclick = (e) => {
+                        // Evita disparar ao clicar nos botões de ação
+                        if (e.target.tagName === 'BUTTON') return;
+                        openClientProjects(client.id);
+                    };
 
-                    const descriptionText = client.description || "Sem descrição disponível.";
+                    const logoHtml = client.logo_url 
+                        ? `<img src="${client.logo_url.replace('/view', '/uc')}" class="client-logo-thumb">`
+                        : `<div style="width:40px; height:40px; background:#374151; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold;">${client.name.substring(0,2).toUpperCase()}</div>`;
+
+                    // Botão Gerenciar Contatos (Apenas Admin Real)
+                    const manageContactsBtn = (!state.isSimulatingClient) 
+                        ? `<button class="secondary icon-btn" onclick="openContactsModal('${client.id}', '${client.name}')">👥 Contatos</button>` 
+                        : '';
 
                     card.innerHTML = `
                         <div class="card-header">
+                            <div>
+                                <h4 style="margin:0;">${client.name}</h4>
+                                <small style="color:var(--text-secondary)">ID: ${client.id.split('-')[0]}...</small>
+                            </div>
                             ${logoHtml}
                         </div>
-                        <div class="card-body">
-                            <h4 class="card-title">${client.name}</h4>
-                            <p class="card-desc">${descriptionText}</p>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn-view" onclick="openClientProjects('${client.id}')">Ver Projetos</button>
-                            <button class="btn-edit" onclick="openEditClientModal('${client.id}')" title="Editar Cliente">✏️</button>
+                        <div style="margin-top:10px; display:flex; gap:8px;">
+                            ${manageContactsBtn}
+                            <button class="secondary icon-btn" onclick="openClientProjects('${client.id}')">📂 Ver Projetos &rarr;</button>
                         </div>
                     `;
-                    clientsListDiv.appendChild(card);
+                    container.appendChild(card);
                 });
             }
 
-            // Função global para ser chamada pelo HTML onclick
-            window.openClientProjects = (clientId) => {
-                renderProjectList(clientId);
-                showView('project-list-view');
-            };
-
-            // Função para abrir modal de edição
-            window.openEditClientModal = (clientId) => {
-                const client = state.clients.find(c => c.id === clientId);
-                if (!client) return;
+            // 3. LISTA DE PROJETOS
+            function renderProjectList(clientId = null) {
+                const container = document.getElementById('project-list-content');
+                container.innerHTML = '';
                 
-                document.getElementById('edit-client-id').value = client.id;
-                document.getElementById('edit-client-name').value = client.name;
-                document.getElementById('edit-client-desc').value = client.description || '';
-                document.getElementById('edit-client-logo').value = ''; // Limpa input de arquivo
-                
-                editClientModal.classList.remove('hidden');
-            };
+                let filteredProjects = state.projects;
+                let title = "Meus Projetos";
 
-            window.closeEditClientModal = () => {
-                editClientModal.classList.add('hidden');
-                editClientForm.reset();
-            };
+                if (state.isAdmin) {
+                    // Admin navegando
+                    if (clientId) {
+                        filteredProjects = state.projects.filter(p => p.client_id === clientId);
+                        const client = state.clients.find(c => c.id === clientId);
+                        if (client) title = `Projetos: ${client.name}`;
+                        document.getElementById('back-to-clients-button').classList.remove('hidden');
+                    } else {
+                        // Admin vendo tudo (não usado no fluxo principal, mas possível)
+                        document.getElementById('back-to-clients-button').classList.add('hidden');
+                    }
+                } else {
+                    // Cliente Logado
+                    document.getElementById('back-to-clients-button').classList.add('hidden');
+                }
 
-            function renderProjectList(clientId) {
-                state.currentClientId = clientId;
-                const client = state.clients.find(c => c.id === clientId) || { name: 'Cliente' };
-                projectListClientName.innerText = `Projetos de: ${client.name}`;
-                projectListContent.innerHTML = '';
+                document.getElementById('project-list-title').textContent = title;
 
-                const clientProjects = state.projects.filter(p => p.client_id === clientId);
-
-                if (clientProjects.length === 0) {
-                    projectListContent.innerHTML = '<p>Nenhum projeto encontrado para este cliente.</p>';
+                if (filteredProjects.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1/-1;">Nenhum projeto encontrado.</p>';
                     return;
                 }
 
-                clientProjects.forEach(project => {
-                    const card = document.createElement('div'); 
-                    card.className = 'project-card'; 
-                    card.dataset.projectId = project.id;
+                filteredProjects.forEach(project => {
+                    const latestVersion = project.laborai_project_versions?.[0]; // Assumindo ordem decrescente do backend
+                    const progress = latestVersion?.progress_percentage || 0;
                     
-                    const versions = project.laborai_project_versions;
-                    const latestVersion = versions && versions.length > 0 ? versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0] : null;
-                    const statusLabel = STATUS_LABELS[project.status] || project.status.replace('_', ' ').toUpperCase();
-                    let progress = latestVersion?.progress_percentage || 0;
-                    let progressColorClass = 'low';
-                    if (progress > 30) progressColorClass = 'medium';
-                    if (progress > 70) progressColorClass = 'high';
-                    
-                    card.innerHTML = `<h4>${project.name} ${latestVersion ? `(${latestVersion.version_number})` : ''}</h4><p style="color: var(--text-secondary);">Status: <span style="font-weight: 500; color: ${project.status === 'completed' ? 'var(--success-color)' : 'var(--warning-color)'}">${statusLabel} - ${progress}%</span></p><div class="progress-bar-wrapper"><div class="progress-bar-fill ${progressColorClass}" style="width: ${progress}%;"></div></div><p style="font-size: 0.9em; color: var(--text-secondary);">Última atualização: ${new Date(project.updated_at).toLocaleDateString('pt-BR')}</p>`;
-                    projectListContent.appendChild(card);
+                    // Actions Admin
+                    let adminActions = '';
+                    if (state.isAdmin && !state.isSimulatingClient) {
+                        adminActions = `
+                            <div class="admin-toolbar" style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
+                                <button class="secondary icon-btn" onclick="handleEditProject('${project.id}')">✏️ Editar</button>
+                                <button class="danger icon-btn" onclick="handleDeleteProject('${project.id}')">🗑️</button>
+                            </div>
+                        `;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'project-card';
+                    card.innerHTML = `
+                        <div onclick="openProjectDetail('${project.id}')">
+                            <h4 style="margin: 0 0 5px 0;">${project.name}</h4>
+                            <small style="color: var(--text-secondary);">${project.description || 'Sem descrição'}</small>
+                            <div style="margin: 10px 0;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.85em; margin-bottom:4px;">
+                                    <span>Progresso</span>
+                                    <span>${progress}%</span>
+                                </div>
+                                <div style="height:6px; background:#374151; border-radius:3px; overflow:hidden;">
+                                    <div style="height:100%; width:${progress}%; background: var(${progress > 99 ? '--success-color' : '--primary-accent'});"></div>
+                                </div>
+                            </div>
+                            <small style="color: var(--text-secondary);">Versão Atual: ${latestVersion ? latestVersion.version_number : 'v1.0'}</small>
+                        </div>
+                        ${adminActions}
+                    `;
+                    container.appendChild(card);
                 });
             }
 
+            // 4. DETALHES DO PROJETO (TIMELINE)
             function renderProjectDetail(projectId) {
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
+
                 state.currentProjectId = projectId;
-                const userIsAdmin = state.user?.user_metadata?.role === 'admin';
                 document.getElementById('project-detail-name').innerText = project.name;
+                
+                const versions = project.laborai_project_versions || [];
+                // Ordenar versões (mais recente primeiro) e fases
+                versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                const activeVersion = versions[0]; // Versão mais recente
+                state.currentVersionId = activeVersion ? activeVersion.id : null;
+
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
-                const versions = project.laborai_project_versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-                
-                const activeVersion = versions.find(v => v.status === 'in_progress' || v.status === 'active') || versions[0];
-                if (activeVersion) { state.currentVersionId = activeVersion.id; }
 
-                versions.forEach(version => {
-                    const versionContainer = document.createElement('div');
-                    const versionStatusLabel = (STATUS_LABELS[version.status] || version.status).toUpperCase();
-                    versionContainer.innerHTML = `<h3 style="border-top: 1px solid var(--border-dark); padding-top: 20px; margin-top: 20px;">Versão ${version.version_number} - <span style="color: var(--text-secondary)">${versionStatusLabel}</span></h3><p style="color: var(--text-secondary);">${version.summary || ''}</p>`;
-                    const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
-                    phases.forEach(phase => {
-                        const phaseDiv = document.createElement('div');
-                        phaseDiv.className = `phase-header ${phase.status.replace('_', '-')}`;
-                        const phaseStatusLabel = STATUS_LABELS[phase.status] || phase.status;
-                        let adminControlsHTML = '';
-                        if (userIsAdmin) {
-                            adminControlsHTML = `<div class="admin-controls"><button onclick="updatePhaseStatus('${phase.id}', 'in_progress')">Iniciar</button><button onclick="updatePhaseStatus('${phase.id}', 'completed')">Concluir</button><button onclick="updatePhaseStatus('${phase.id}', 'pending')">Resetar</button></div>`;
-                        }
-                        phaseDiv.innerHTML = `<h4>${phase.name} (${phaseStatusLabel})</h4>${adminControlsHTML}`;
-                        const updatesContainer = document.createElement('div');
-                        const updates = phase.laborai_phase_updates.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-                        updates.forEach(update => {
-                            const updateDiv = document.createElement('div');
-                            updateDiv.className = 'update';
-                            let contentHTML = `<p>${update.description || ''}</p>`;
-                            if (update.update_type === 'image' && update.content_url) {
-                                contentHTML += `<img src="${update.content_url}" alt="${update.title}" style="max-width: 100%; border-radius: 6px; margin-top: 10px;">`;
-                            } else if (update.content_url) {
-                                contentHTML += `<a href="${update.content_url}" target="_blank">Ver anexo &rarr;</a>`;
-                            }
-                            updateDiv.innerHTML = `<div class="update-header"><strong>${update.title}</strong></div><div class="update-content">${contentHTML}</div><div class="update-meta">${new Date(update.created_at).toLocaleString('pt-BR')}</div>`;
-                            updatesContainer.appendChild(updateDiv);
-                        });
-                        versionContainer.appendChild(phaseDiv);
-                        versionContainer.appendChild(updatesContainer);
-                    });
-                    contentDiv.appendChild(versionContainer);
+                // Controles de Admin (Visibilidade)
+                const isAdminMode = state.isAdmin && !state.isSimulatingClient;
+                const adminContainerIds = ['progress-control-container', 'add-update-form-container'];
+                adminContainerIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (isAdminMode) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
                 });
 
-                if (userIsAdmin) {
-                    projectActionsAdmin.classList.toggle('hidden', project.status !== 'completed');
-                    projectActionsAdmin.innerHTML = `<button id="start-new-version-button" style="width: auto; padding: 8px 16px;">🚀 Iniciar Nova Versão</button>`;
-                    const startNewVersionBtn = document.getElementById('start-new-version-button');
-                    if (startNewVersionBtn) { startNewVersionBtn.addEventListener('click', () => { newVersionModal.classList.remove('hidden'); }); }
-
-                    progressControlContainer.classList.remove('hidden');
-                    if (activeVersion) {
-                        const savedProgress = activeVersion.progress_percentage || 0;
-                        updateProgressDisplay(savedProgress);
-                        updateSliderPreview(savedProgress);
-                    }
+                if (isAdminMode && activeVersion) {
+                    // Update Progress Slider
+                    document.getElementById('progress-slider').value = activeVersion.progress_percentage || 0;
+                    document.getElementById('slider-value').innerText = (activeVersion.progress_percentage || 0) + '%';
                     
-                    addUpdateFormContainer.classList.remove('hidden');
+                    // Populate Phase Select for Updates
                     const phaseSelect = document.getElementById('update-phase-select');
                     phaseSelect.innerHTML = '';
-                    if (activeVersion) {
-                        activeVersion.laborai_project_phases.forEach(phase => {
-                            const option = document.createElement('option');
-                            option.value = phase.id; option.innerText = `[${activeVersion.version_number}] ${phase.name}`;
-                            phaseSelect.appendChild(option);
+                    activeVersion.laborai_project_phases.forEach(ph => {
+                        const opt = document.createElement('option');
+                        opt.value = ph.id; opt.innerText = ph.name;
+                        phaseSelect.appendChild(opt);
+                    });
+                }
+
+                // Render Timeline
+                versions.forEach(version => {
+                    const vDiv = document.createElement('div');
+                    vDiv.innerHTML = `<h3 style="color: var(--text-secondary); border-bottom: 1px solid var(--border-dark); padding-bottom: 5px; margin-top: 30px;">Versão ${version.version_number}</h3>`;
+                    
+                    const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
+                    
+                    phases.forEach(phase => {
+                        const isCompleted = phase.status === 'completed';
+                        const isInProgress = phase.status === 'in_progress';
+                        
+                        // Phase Header
+                        const pHeader = document.createElement('div');
+                        pHeader.className = `phase-header ${isInProgress ? 'active' : ''}`;
+                        pHeader.style.borderColor = isCompleted ? 'var(--success-color)' : (isInProgress ? 'var(--primary-accent)' : 'var(--border-dark)');
+                        
+                        let phaseActions = '';
+                        if (isAdminMode) {
+                            phaseActions = `
+                                <div style="display:flex; gap:5px;">
+                                    <button class="icon-btn secondary" title="Iniciar" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶️</button>
+                                    <button class="icon-btn secondary" title="Concluir" onclick="changePhaseStatus('${phase.id}', 'completed')">✅</button>
+                                </div>
+                            `;
+                        }
+
+                        pHeader.innerHTML = `
+                            <div>
+                                <h4 style="margin:0;">${phase.name}</h4>
+                                <small style="color:${isCompleted ? 'var(--success-color)' : 'var(--text-secondary)'}">
+                                    ${phase.status === 'pending' ? 'Pendente' : phase.status === 'in_progress' ? 'Em Andamento' : 'Concluído'}
+                                </small>
+                            </div>
+                            ${phaseActions}
+                        `;
+                        vDiv.appendChild(pHeader);
+
+                        // Updates
+                        const updates = phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)); // Mais novos primeiro
+                        updates.forEach(upd => {
+                            const uDiv = document.createElement('div');
+                            uDiv.className = 'update';
+                            
+                            let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
+                            if (upd.update_type === 'image' && upd.content_url) {
+                                content += `<img src="${upd.content_url.replace('/view', '/uc')}" style="max-width:100%; border-radius:6px; margin-top:10px;">`;
+                            } else if (upd.content_url) {
+                                content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:5px;">🔗 Acessar Link</a>`;
+                            }
+
+                            // Botões da Atualização (WhatsApp e Excluir)
+                            let updActions = '';
+                            if (isAdminMode) {
+                                updActions = `
+                                    <div class="update-actions">
+                                        <button class="icon-btn" style="background:#25D366; color:white;" title="Notificar WhatsApp" onclick="notifyWhatsApp('${upd.id}', '${project.id}')">📱</button>
+                                        <button class="icon-btn danger" title="Excluir" onclick="deleteUpdate('${upd.id}')">🗑️</button>
+                                    </div>
+                                `;
+                            }
+
+                            uDiv.innerHTML = `
+                                ${updActions}
+                                <strong>${upd.title}</strong>
+                                <small style="display:block; color:var(--text-secondary);">${new Date(upd.created_at).toLocaleString('pt-BR')}</small>
+                                ${content}
+                            `;
+                            vDiv.appendChild(uDiv);
                         });
-                    }
-                } else {
-                    projectActionsAdmin.classList.add('hidden');
-                    progressControlContainer.classList.add('hidden');
-                    addUpdateFormContainer.classList.add('hidden');
-                }
-            }
-            
-            function updateProgressDisplay(progress) {
-                const p = parseInt(progress) || 0;
-                let colorClass = 'low';
-                if (p > 30) colorClass = 'medium';
-                if (p > 70) colorClass = 'high';
-                progressDisplay.innerHTML = `<p style="margin-bottom: 5px;">Progresso Atual: ${p}%</p><div class="progress-bar-wrapper"><div class="progress-bar-fill ${colorClass}" style="width: ${p}%;"></div></div>`;
-            }
-
-            function updateSliderPreview(value) {
-                const progress = parseInt(value) || 0;
-                progressSlider.value = progress;
-                sliderValueSpan.textContent = `${progress}%`;
-            }
-
-            function populateClientDropdowns() {
-                clientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
-                projectClientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
-                logoClientSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
-                state.clients.forEach(client => {
-                    const option = document.createElement('option');
-                    option.value = client.id; option.innerText = client.name;
-                    clientSelect.appendChild(option.cloneNode(true));
-                    projectClientSelect.appendChild(option.cloneNode(true));
-                    logoClientSelect.appendChild(option);
+                    });
+                    contentDiv.appendChild(vDiv);
                 });
             }
-            
-            function populatePhaseTemplatesDropdown() {
-                phaseTemplateSelect.innerHTML = '';
-                state.phaseTemplates.forEach(template => {
-                    const option = document.createElement('option');
-                    option.value = template.name; option.innerText = template.name;
-                    phaseTemplateSelect.appendChild(option);
-                });
-                updatePhasePreview();
-            }
 
-            function updatePhasePreview() {
-                const selectedTemplateName = phaseTemplateSelect.value;
-                const template = state.phaseTemplates.find(t => t.name === selectedTemplateName);
-                if (!template) return;
-                const isCustom = selectedTemplateName === 'Customizado';
-                newProjectPhasesTextarea.classList.toggle('hidden', !isCustom);
-                newProjectPhasesTextarea.previousElementSibling.classList.toggle('hidden', !isCustom);
-                if (!isCustom) { newProjectPhasesTextarea.value = template.phases.join('\n'); } 
-                else { newProjectPhasesTextarea.value = ''; newProjectPhasesTextarea.placeholder = "Fase 1:...\nFase 2:..."; }
-            }
-            
-            async function fetchAllData() {
-                const userIsAdmin = state.user?.user_metadata?.role === 'admin';
-                let projectsQuery;
-                if (userIsAdmin) {
-                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
-                } else {
-                    const userClientId = state.user?.user_metadata?.clientId;
-                    if (!userClientId) { state.projects = []; return; }
-                    projectsQuery = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).eq('client_id', userClientId).order('created_at', { ascending: false });
-                }
-                const projectsPromise = projectsQuery;
-                
-                // Refatoração da Query: Incluindo 'description'
-                const clientsPromise = userIsAdmin ? supabaseClient.from('laborai_clients').select('id, name, logo_url, description') : Promise.resolve({ data: [] });
-                
-                const [projectsResult, clientsResult] = await Promise.all([projectsPromise, clientsPromise]);
-                
-                if (projectsResult.error) { console.error("Erro ao buscar projetos:", projectsResult.error); ToastManager.error('Erro ao buscar projetos', projectsResult.error.message); } 
-                else { state.projects = projectsResult.data; }
-                
-                if (clientsResult.error) { console.error("Erro ao buscar clientes:", clientsResult.error); ToastManager.error('Erro ao buscar clientes', clientsResult.error.message); } 
-                else { state.clients = clientsResult.data; }
-            }
+            // --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA ---
 
-            function showView(viewId) {
-                clientListView.classList.add('hidden');
-                projectListView.classList.add('hidden');
-                projectDetailView.classList.add('hidden');
-                adminView.classList.add('hidden');
-                document.getElementById(viewId).classList.remove('hidden');
-            }
-
-            window.updatePhaseStatus = async (phaseId, newStatus) => {
-                ToastManager.info('Atualizando status...', null, 2000);
-                try {
-                    const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_STATUS_FASE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phaseId, newStatus }) });
-                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    ToastManager.success('Status atualizado!');
-                    await fetchAllData();
-                    renderProjectDetail(state.currentProjectId);
-                } catch (error) { ToastManager.error('Erro ao atualizar', error.message); }
+            window.openClientProjects = (clientId) => {
+                state.currentClientId = clientId;
+                renderProjectList(clientId);
+                showView('projectList');
             };
 
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
-                if (error) { ToastManager.error('Erro no login', error.message); } 
-                else { state.user = data.user; initApp(); }
-            });
+            window.openProjectDetail = (projectId) => {
+                renderProjectDetail(projectId);
+                showView('projectDetail');
+            };
 
-            logoutButton.addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.reload(); });
-            backToProjectListButton.addEventListener('click', () => showView('project-list-view'));
-            backToClientsButton.addEventListener('click', () => showView('client-list-view'));
-
-            // Navegação dentro da Lista de Projetos
-            projectListContent.addEventListener('click', (e) => {
-                const card = e.target.closest('.project-card');
-                if (card) { renderProjectDetail(card.dataset.projectId); showView('project-detail-view'); }
-            });
-
-            adminButton.addEventListener('click', () => { populateClientDropdowns(); populatePhaseTemplatesDropdown(); showView('admin-view'); });
-            backToDashboardFromAdminButton.addEventListener('click', () => showView('client-list-view'));
-
-            // ------------------
-            // Refatoração Upload LOGO (Admin Form Antigo)
-            // ------------------
-            uploadLogoForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const button = document.getElementById('upload-logo-button');
-                button.disabled = true; button.innerText = 'Enviando...';
-                
-                const clientId = logoClientSelect.value;
-                const fileInput = document.getElementById('logo-file-input');
-                
-                try {
-                    if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de logo.');
-                    const file = fileInput.files[0];
-                    const fileExt = file.name.split('.').pop();
-                    const filePath = `logo-${clientId}.${fileExt}`;
-
-                    ToastManager.info('Enviando para Storage...');
-                    
-                    // Upload direto Supabase
-                    const publicUrl = await uploadFileToSupabase('client-logos', filePath, file);
-                    
-                    // Atualizar banco
-                    const { error: dbError } = await supabaseClient
-                        .from('laborai_clients')
-                        .update({ logo_url: publicUrl })
-                        .eq('id', clientId);
-
-                    if (dbError) throw dbError;
-
-                    ToastManager.success('Logo atualizada com sucesso!');
-                    uploadLogoForm.reset();
-                    await fetchAllData();
-                    if (state.user?.user_metadata?.role === 'admin') renderClientList();
-                } catch (error) { ToastManager.error('Erro ao enviar logo', error.message); } 
-                finally { button.disabled = false; button.innerText = 'Salvar Logo'; }
-            });
-
-            // ------------------
-            // Refatoração Upload IMAGEM em Atualização
-            // ------------------
-            updateTypeSelect.addEventListener('change', (e) => {
-                const type = e.target.value;
-                document.getElementById('update-field-description').classList.toggle('hidden', type === 'image' || type === 'link');
-                document.getElementById('update-field-file').classList.toggle('hidden', type !== 'image');
-                document.getElementById('update-field-link').classList.toggle('hidden', type !== 'link');
-            });
-
-            addUpdateForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const button = document.getElementById('add-update-button'); button.disabled = true; button.innerText = 'Enviando...';
-                const phaseId = document.getElementById('update-phase-select').value;
-                const type = document.getElementById('update-type-select').value;
-                const title = document.getElementById('update-title').value;
-                const description = document.getElementById('update-description').value;
-                
-                try {
-                    let contentUrl = '';
-
-                    if (type === 'image') {
-                        const fileInput = document.getElementById('update-file');
-                        if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de imagem.');
-                        const file = fileInput.files[0];
-                        const fileExt = file.name.split('.').pop();
-                        const uniqueName = `update-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-                        
-                        ToastManager.info('Fazendo upload da imagem para o Storage...');
-                        
-                        // 1. Upload Supabase Storage
-                        contentUrl = await uploadFileToSupabase('project-updates', uniqueName, file);
-                        
-                        // 2. Enviar Webhook de "Texto/Link" contendo a URL da imagem (conforme solicitado para manter webhook ADD_ATUALIZACAO)
-                        // Alternativamente, poderíamos salvar direto no banco aqui também, mas seguindo o prompt de manter o webhook:
-                        const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phaseId, type: 'image', title, description: 'Imagem enviada', contentUrl: contentUrl })
-                        });
-                        if (!response.ok) throw new Error('Falha na resposta do n8n.');
-
-                    } else { 
-                        if (type === 'link') { contentUrl = document.getElementById('update-link').value; }
-                        const response = await fetch(N8N_WEBHOOKS.ADD_ATUALIZACAO, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phaseId, type, title, description, contentUrl })
-                        });
-                        if (!response.ok) throw new Error('Falha na resposta do servidor n8n.');
-                    }
-
-                    ToastManager.success('Atualização adicionada!');
-                    addUpdateForm.reset();
-                    await fetchAllData();
+            // Toggle "Ver como Cliente"
+            document.getElementById('client-view-toggle').addEventListener('change', (e) => {
+                state.isSimulatingClient = e.target.checked;
+                // Re-renderizar header e view atual para aplicar mudanças
+                renderHeader();
+                if (!document.getElementById('project-detail-view').classList.contains('hidden')) {
                     renderProjectDetail(state.currentProjectId);
-                } catch (error) { ToastManager.error('Erro ao adicionar atualização', error.message); } 
-                finally { button.disabled = false; button.innerText = 'Adicionar Atualização'; }
-            });
-
-            // ------------------
-            // Lógica Modal Editar Cliente
-            // ------------------
-            cancelEditClientButton.addEventListener('click', closeEditClientModal);
-            
-            editClientForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const saveBtn = document.getElementById('save-edit-client-button');
-                saveBtn.disabled = true; saveBtn.innerText = 'Salvando...';
-
-                const clientId = document.getElementById('edit-client-id').value;
-                const name = document.getElementById('edit-client-name').value;
-                const description = document.getElementById('edit-client-desc').value;
-                const fileInput = document.getElementById('edit-client-logo');
-
-                try {
-                    let updateData = { name, description };
-
-                    if (fileInput.files.length > 0) {
-                        const file = fileInput.files[0];
-                        const fileExt = file.name.split('.').pop();
-                        const filePath = `logo-${clientId}.${fileExt}`;
-                        ToastManager.info('Enviando nova logo...');
-                        const publicUrl = await uploadFileToSupabase('client-logos', filePath, file);
-                        updateData.logo_url = publicUrl;
-                    }
-
-                    const { error } = await supabaseClient
-                        .from('laborai_clients')
-                        .update(updateData)
-                        .eq('id', clientId);
-
-                    if (error) throw error;
-
-                    ToastManager.success('Cliente atualizado com sucesso!');
-                    closeEditClientModal();
-                    await fetchAllData();
+                } else if (!document.getElementById('client-list-view').classList.contains('hidden')) {
                     renderClientList();
-
-                } catch(error) {
-                    ToastManager.error('Erro ao atualizar cliente', error.message);
-                } finally {
-                    saveBtn.disabled = false; saveBtn.innerText = 'Salvar Alterações';
+                } else if (!document.getElementById('project-list-view').classList.contains('hidden')) {
+                    renderProjectList(state.currentClientId);
                 }
             });
 
-            createClientForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const button = document.getElementById('create-client-button'); button.disabled = true; button.innerText = 'Criando...';
-                try {
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_CLIENTE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientName: document.getElementById('new-client-name').value }) });
-                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    ToastManager.success('Cliente criado!', 'Já disponível nos formulários.');
-                    createClientForm.reset();
-                    await fetchAllData(); populateClientDropdowns();
-                    if (state.user?.user_metadata?.role === 'admin') renderClientList();
-                } catch (error) { ToastManager.error('Erro ao criar cliente', error.message); } 
-                finally { button.disabled = false; button.innerText = 'Criar Cliente'; }
-            });
+            // --- FUNÇÕES ADMIN / ACTIONS (Via N8N) ---
 
-            createUserForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const button = document.getElementById('create-user-button'); button.disabled = true; button.innerText = 'Criando...';
+            // 1. WhatsApp Notification
+            window.notifyWhatsApp = async (updateId, projectId) => {
+                if(!confirm('Enviar notificação via WhatsApp para os contatos do cliente?')) return;
                 try {
-                    const clientName = clientSelect.options[clientSelect.selectedIndex].text;
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_USUARIO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: clientSelect.value, clientName: clientName, email: document.getElementById('new-user-email').value, password: document.getElementById('new-user-password').value }) });
-                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    const result = await response.json();
-                    ToastManager.success('Usuário criado!', result.status);
-                    createUserForm.reset();
-                } catch (error) { ToastManager.error('Erro ao criar usuário', error.message); } 
-                finally { button.disabled = false; button.innerText = 'Criar Usuário'; }
-            });
-            
-            createProjectForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const button = document.getElementById('create-project-button'); button.disabled = true; button.innerText = 'Criando...';
-                try {
-                    const phases = newProjectPhasesTextarea.value.split('\n').filter(phase => phase.trim() !== '');
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_PROJETO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: projectClientSelect.value, projectName: document.getElementById('new-project-name').value, description: document.getElementById('new-project-description').value, phases }) });
-                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
-                    ToastManager.success('Projeto Criado!');
-                    createProjectForm.reset();
-                    await fetchAllData();
-                    renderProjectList(projectClientSelect.value);
-                    showView('project-list-view');
-                } catch (error) { ToastManager.error('Erro ao criar projeto', error.message); } 
-                finally { button.disabled = false; button.innerText = 'Criar Projeto'; }
-            });
-
-            progressSlider.addEventListener('input', (e) => {
-                updateSliderPreview(e.target.value);
-            });
-            
-            saveProgressButton.addEventListener('click', async () => {
-                const button = saveProgressButton; button.disabled = true; button.innerText = 'Salvando...';
-                try {
-                    const newProgress = parseInt(progressSlider.value);
-                    const response = await fetch(N8N_WEBHOOKS.ATUALIZAR_PROGRESSO, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ versionId: state.currentVersionId, newProgress })
+                    await fetch(HOOKS.NOTIFICAR_WHATSAPP, { 
+                        method: 'POST', body: JSON.stringify({ updateId, projectId }) 
                     });
-                    if (!response.ok) throw new Error('Falha ao salvar progresso.');
-                    ToastManager.success('Progresso salvo!');
-                    
-                    const project = state.projects.find(p => p.id === state.currentProjectId);
-                    const version = project.laborai_project_versions.find(v => v.id === state.currentVersionId);
-                    if (version) { version.progress_percentage = newProgress; }
+                    Toast.success('Notificação enviada!');
+                } catch(e) { Toast.error('Erro ao notificar.'); }
+            };
 
-                    updateProgressDisplay(newProgress);
-                    renderProjectList(state.currentClientId);
-                } catch(error) { ToastManager.error('Erro ao salvar', error.message); }
-                finally { button.disabled = false; button.innerText = 'Salvar Progresso'; }
-            });
-            
-            cancelNewVersionButton.addEventListener('click', () => { newVersionModal.classList.add('hidden'); });
-
-            newVersionForm.addEventListener('submit', async (e) => {
+            // 2. Upload Logo
+            document.getElementById('upload-logo-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const button = e.submitter; button.disabled = true; button.innerText = 'Criando...';
-                const project = state.projects.find(p => p.id === state.currentProjectId);
-                const latestVersion = project.laborai_project_versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                const btn = document.getElementById('upload-logo-button');
+                const file = document.getElementById('logo-file-input').files[0];
+                const clientId = document.getElementById('logo-client-select').value;
+                
+                btn.innerText = 'Enviando...'; btn.disabled = true;
+                
                 try {
-                    const response = await fetch(N8N_WEBHOOKS.CRIAR_NOVA_VERSAO, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    // Upload Binary para webhook
+                    const url = `${HOOKS.ATUALIZAR_LOGO}?clientId=${clientId}&fileName=${encodeURIComponent(file.name)}`;
+                    const res = await fetch(url, { method: 'POST', body: file });
+                    if(!res.ok) throw new Error();
+                    
+                    Toast.success('Logo atualizada!');
+                    await loadData(); // Recarrega para pegar nova URL
+                    if(state.isAdmin) renderClientList();
+                } catch(e) { Toast.error('Erro no upload.'); }
+                finally { btn.innerText = 'Salvar Logo'; btn.disabled = false; document.getElementById('upload-logo-form').reset(); }
+            });
+
+            // 3. Gerenciar Contatos (Modal)
+            window.openContactsModal = async (clientId, clientName) => {
+                state.currentManageClientId = clientId;
+                document.getElementById('contacts-modal-client-name').innerText = clientName;
+                document.getElementById('contacts-modal').classList.remove('hidden');
+                
+                // Fetch contatos (Ler do Supabase para popular lista)
+                const listEl = document.getElementById('contacts-list');
+                listEl.innerHTML = 'Carregando...';
+                
+                const { data } = await supabaseClient.from('laborai_client_contacts').select('*').eq('client_id', clientId);
+                listEl.innerHTML = '';
+                
+                if(data) {
+                    data.forEach(c => {
+                        const item = document.createElement('div');
+                        item.className = 'contact-item';
+                        item.innerHTML = `
+                            <div><strong>${c.name}</strong> (${c.role || '-'})<br><small>${c.whatsapp}</small></div>
+                            <button class="danger icon-btn" onclick="deleteContact('${c.id}')">🗑️</button>
+                        `;
+                        listEl.appendChild(item);
+                    });
+                }
+            };
+
+            document.getElementById('add-contact-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('add-contact-btn'); btn.disabled = true;
+                try {
+                    await fetch(HOOKS.CRIAR_CONTATO, {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
                         body: JSON.stringify({
-                            projectId: state.currentProjectId,
-                            newVersionNumber: document.getElementById('new-version-number').value,
-                            summary: document.getElementById('new-version-summary').value,
-                            copyPhasesFromVersionId: latestVersion.id
+                            clientId: state.currentManageClientId,
+                            name: document.getElementById('contact-name').value,
+                            role: document.getElementById('contact-role').value,
+                            whatsapp: document.getElementById('contact-whatsapp').value
                         })
                     });
-                    if (!response.ok) throw new Error('Falha ao criar nova versão.');
-                    ToastManager.success('Nova versão iniciada!');
-                    newVersionModal.classList.add('hidden'); newVersionForm.reset();
-                    await fetchAllData();
-                    renderProjectDetail(state.currentProjectId);
-                } catch (error) { ToastManager.error('Erro', error.message); } 
-                finally { button.disabled = false; button.innerText = 'Criar Versão'; }
+                    Toast.success('Contato adicionado!');
+                    document.getElementById('add-contact-form').reset();
+                    // Reabrir modal para atualizar lista
+                    const client = state.clients.find(c => c.id === state.currentManageClientId);
+                    openContactsModal(client.id, client.name);
+                } catch(e) { Toast.error('Erro ao criar contato'); }
+                finally { btn.disabled = false; }
             });
 
-            phaseTemplateSelect.addEventListener('change', updatePhasePreview);
+            window.deleteContact = async (id) => {
+                if(!confirm('Excluir este contato?')) return;
+                await fetch(HOOKS.EXCLUIR_CONTATO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ contactId: id }) });
+                const client = state.clients.find(c => c.id === state.currentManageClientId);
+                openContactsModal(client.id, client.name);
+            };
 
-            async function initApp() {
-                loginSection.classList.add('hidden'); appContainer.classList.remove('hidden');
-                userEmailSpan.innerText = state.user.email;
-                await fetchAllData();
+            // 4. CRUD Projeto e Updates
+            window.handleEditProject = async (projectId) => {
+                const newName = prompt("Novo nome do projeto:");
+                if(newName) {
+                    await fetch(HOOKS.EDITAR_PROJETO, { 
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ projectId, field: 'name', value: newName }) 
+                    });
+                    Toast.success('Projeto atualizado');
+                    await loadData(); renderProjectList(state.currentClientId);
+                }
+            };
 
-                if (state.user?.user_metadata?.role === 'admin') {
-                    adminButton.classList.remove('hidden');
-                    renderClientList();
-                    showView('client-list-view');
-                } else {
-                    const clientName = state.user?.user_metadata?.clientName || state.user?.user_metadata?.client_name;
-                    const userClientId = state.user?.user_metadata?.clientId;
-                    if(clientName) clientNameHeader.innerText = `| ${clientName}`;
-                    if (userClientId) {
-                        const { data: clientData } = await supabaseClient.from('laborai_clients').select('logo_url').eq('id', userClientId).single();
-                        if (clientData && clientData.logo_url) {
-                            clientLogoHeader.src = clientData.logo_url.replace('/view', '/uc');
-                            clientLogoHeader.classList.remove('hidden');
-                        }
-                        state.currentClientId = userClientId;
-                        backToClientsButton.classList.add('hidden');
-                        renderProjectList(userClientId);
-                        showView('project-list-view');
+            window.handleDeleteProject = async (projectId) => {
+                if(!confirm('ATENÇÃO: Isso excluirá o projeto e todo o histórico. Continuar?')) return;
+                await fetch(HOOKS.EXCLUIR_PROJETO, { 
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ projectId }) 
+                });
+                Toast.success('Projeto excluído');
+                await loadData(); renderProjectList(state.currentClientId);
+            };
+
+            window.deleteUpdate = async (updateId) => {
+                if(!confirm('Excluir atualização?')) return;
+                await fetch(HOOKS.EXCLUIR_ATUALIZACAO, { 
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ updateId }) 
+                });
+                Toast.success('Atualização removida');
+                await loadData(); renderProjectDetail(state.currentProjectId);
+            };
+
+            window.changePhaseStatus = async (phaseId, status) => {
+                await fetch(HOOKS.ATUALIZAR_STATUS_FASE, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ phaseId, newStatus: status })
+                });
+                Toast.success('Status da fase alterado');
+                await loadData(); renderProjectDetail(state.currentProjectId);
+            };
+
+            // --- OUTROS FORMULÁRIOS (Existentes Refatorados) ---
+            
+            // Login
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+                    email: document.getElementById('login-email').value, 
+                    password: document.getElementById('login-password').value 
+                });
+                if (error) Toast.error(error.message);
+                else initApp(data.user);
+            });
+
+            document.getElementById('logout-button').addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                window.location.reload();
+            });
+
+            // Navegação Admin Panel
+            document.getElementById('admin-panel-button').addEventListener('click', () => {
+                populateDropdowns();
+                showView('adminForms');
+            });
+            document.getElementById('back-from-admin-panel').addEventListener('click', () => {
+                showView('clientList');
+            });
+
+            // Criar Cliente
+            document.getElementById('create-client-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-client-name').value;
+                await fetch(HOOKS.CRIAR_CLIENTE, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ clientName: name }) });
+                Toast.success('Cliente criado'); e.target.reset(); await loadData(); populateDropdowns();
+            });
+
+            // Criar Projeto
+            document.getElementById('phase-template-select').addEventListener('change', (e) => {
+                const isCustom = e.target.value === 'Customizado';
+                document.getElementById('new-project-phases').classList.toggle('hidden', !isCustom);
+            });
+            
+            document.getElementById('create-project-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const phasesRaw = document.getElementById('new-project-phases').value;
+                const template = state.phaseTemplates.find(t => t.name === document.getElementById('phase-template-select').value);
+                const phases = template.name === 'Customizado' ? phasesRaw.split('\n') : template.phases;
+
+                await fetch(HOOKS.CRIAR_PROJETO, { 
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ 
+                        clientId: document.getElementById('project-client-select').value,
+                        projectName: document.getElementById('new-project-name').value,
+                        description: document.getElementById('new-project-description').value,
+                        phases 
+                    })
+                });
+                Toast.success('Projeto criado'); e.target.reset(); await loadData();
+            });
+
+            // Add Update (Texto/Link/Imagem)
+            document.getElementById('update-type-select').addEventListener('change', (e) => {
+                const t = e.target.value;
+                document.getElementById('update-field-description').classList.toggle('hidden', t !== 'text');
+                document.getElementById('update-field-file').classList.toggle('hidden', t !== 'image');
+                document.getElementById('update-field-link').classList.toggle('hidden', t !== 'link');
+            });
+
+            document.getElementById('add-update-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('add-update-button'); btn.disabled = true; btn.innerText = 'Enviando...';
+                const type = document.getElementById('update-type-select').value;
+                const phaseId = document.getElementById('update-phase-select').value;
+                const title = document.getElementById('update-title').value;
+                const desc = document.getElementById('update-description').value;
+
+                try {
+                    if (type === 'image') {
+                        const file = document.getElementById('update-file').files[0];
+                        const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&type=${type}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(desc)}&fileName=${encodeURIComponent(file.name)}`;
+                        await fetch(url, { method: 'POST', body: file });
+                    } else {
+                        const link = document.getElementById('update-link').value;
+                        await fetch(HOOKS.ADD_ATUALIZACAO, {
+                            method: 'POST', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify({ phaseId, type, title, description: desc, contentUrl: link })
+                        });
                     }
+                    Toast.success('Atualização adicionada');
+                    e.target.reset();
+                    await loadData(); renderProjectDetail(state.currentProjectId);
+                } catch(err) { Toast.error('Erro ao atualizar'); }
+                finally { btn.disabled = false; btn.innerText = 'Publicar Atualização'; }
+            });
+
+            // Save Progress
+            document.getElementById('progress-slider').addEventListener('input', (e) => document.getElementById('slider-value').innerText = e.target.value + '%');
+            document.getElementById('save-progress-button').addEventListener('click', async () => {
+                const val = document.getElementById('progress-slider').value;
+                await fetch(HOOKS.ATUALIZAR_PROGRESSO, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ versionId: state.currentVersionId, newProgress: parseInt(val) })
+                });
+                Toast.success('Progresso salvo');
+            });
+            
+            // Navegação de Voltar
+            document.getElementById('back-to-clients-button').addEventListener('click', () => {
+                state.currentClientId = null;
+                showView('clientList');
+            });
+            document.getElementById('back-to-projects-button').addEventListener('click', () => {
+                renderProjectList(state.currentClientId);
+                showView('projectList');
+            });
+
+            function populateDropdowns() {
+                const logoSel = document.getElementById('logo-client-select');
+                const projSel = document.getElementById('project-client-select');
+                const userSel = document.getElementById('user-client-select');
+                [logoSel, projSel, userSel].forEach(s => s.innerHTML = '<option value="">Selecione...</option>');
+                
+                state.clients.forEach(c => {
+                    const opt = document.createElement('option'); opt.value = c.id; opt.innerText = c.name;
+                    [logoSel, projSel, userSel].forEach(s => s.appendChild(opt.cloneNode(true)));
+                });
+
+                const tmplSel = document.getElementById('phase-template-select');
+                tmplSel.innerHTML = '';
+                state.phaseTemplates.forEach(t => {
+                    const opt = document.createElement('option'); opt.value = t.name; opt.innerText = t.name;
+                    tmplSel.appendChild(opt);
+                });
+            }
+
+            // --- INIT ---
+            async function initApp(user) {
+                state.user = user;
+                state.isAdmin = user.user_metadata.role === 'admin';
+                
+                await loadData();
+                renderHeader();
+                showView('app');
+
+                if (state.isAdmin) {
+                    renderClientList();
+                    showView('clientList');
+                } else {
+                    // Cliente vai direto para lista de projetos dele
+                    renderProjectList(user.user_metadata.clientId);
+                    showView('projectList');
                 }
             }
 
-            async function checkSession() {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) { state.user = session.user; initApp(); } 
-                else { loginSection.classList.remove('hidden'); appContainer.classList.add('hidden'); }
-            }
-            
-            checkSession();
+            // Check Session
+            supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                if (session) initApp(session.user);
+                else showView('login');
+            });
         });
     </script>
 </body>
