@@ -27,10 +27,13 @@
         button { width: 100%; padding: 12px; border: none; border-radius: 6px; background-color: var(--primary-accent); color: white; font-weight: 500; font-size: 16px; cursor: pointer; transition: background-color 0.2s; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
         button:hover { background-color: var(--primary-accent-hover); }
         button:disabled { background-color: #4b5563; cursor: not-allowed; }
+        
+        /* Button Variants */
         button.secondary { background: transparent; border: 1px solid var(--border-dark); color: var(--text-primary); }
         button.secondary:hover { background: var(--border-dark); }
         button.danger { background-color: rgba(239, 68, 68, 0.2); color: var(--error-color); border: 1px solid var(--error-color); }
         button.danger:hover { background-color: rgba(239, 68, 68, 0.3); }
+        button.primary { /* Padrão, mas explicito se necessário via JS */ } 
         button.icon-btn { width: auto; padding: 6px 10px; font-size: 14px; }
         
         /* Header */
@@ -294,6 +297,19 @@
         </div>
     </div>
 
+    <!-- MODAL GENÉRICO PARA AÇÕES -->
+    <div id="generic-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 id="modal-title">Título Padrão</h3>
+            <div id="modal-body" style="margin: 20px 0;">
+                <!-- Conteúdo será injetado aqui via JS -->
+            </div>
+            <div id="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <!-- Botões serão injetados aqui via JS -->
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -318,12 +334,13 @@
                 CRIAR_NOVA_VERSAO: `${N8N_BASE}/criar-nova-versao`,
                 NOTIFICAR_WHATSAPP: `${N8N_BASE}/notificar-whatsapp`,
                 
-                // CRUD e Gestão (Novos)
+                // CRUD e Gestão
                 CRIAR_CONTATO: `${N8N_BASE}/criar-contato-cliente`,
-                EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`, // Params: contactId
-                EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, // Params: projectId, field, value
-                EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`, // Params: projectId
-                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao` // Params: updateId
+                EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`,
+                EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`,
+                EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`,
+                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`,
+                EDITAR_ATUALIZACAO: `${N8N_BASE}/editar-atualizacao`
             };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -332,10 +349,10 @@
             let state = {
                 user: null,
                 isAdmin: false,
-                isSimulatingClient: false, // Controle do "Ver como Cliente"
+                isSimulatingClient: false,
                 clients: [],
                 projects: [],
-                contacts: [], // Cache temporário
+                contacts: [],
                 currentClientId: null,
                 currentProjectId: null,
                 currentVersionId: null,
@@ -358,6 +375,65 @@
                 success(m) { this.show('success', m); }, error(m) { this.show('error', m); }, info(m) { this.show('info', m); }
             };
 
+            // Função de escape para strings em HTML
+            function escapeHtml(text) {
+                if (!text) return '';
+                return text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;")
+                    .replace(/`/g, "&#96;"); // Importante para template literals
+            }
+
+            // Sistema de Modal Genérico
+            window.showGenericModal = function({ title, bodyHtml, buttons }) {
+                const modal = document.getElementById('generic-modal');
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-body').innerHTML = bodyHtml;
+
+                const footer = document.getElementById('modal-footer');
+                footer.innerHTML = ''; // Limpa botões antigos
+
+                // Botão para fechar o modal
+                const closeModal = () => modal.classList.add('hidden');
+
+                // Adiciona um botão de "Cancelar" padrão
+                const cancelButton = document.createElement('button');
+                cancelButton.className = 'secondary';
+                cancelButton.innerText = 'Cancelar';
+                cancelButton.onclick = closeModal;
+                footer.appendChild(cancelButton);
+
+                // Adiciona botões customizados
+                buttons.forEach(btnConfig => {
+                    const button = document.createElement('button');
+                    button.innerText = btnConfig.label;
+                    if (btnConfig.classes) button.className = btnConfig.classes;
+                    
+                    button.onclick = async () => {
+                        // Desabilitar botão para evitar duplo clique
+                        const originalText = button.innerText;
+                        button.disabled = true;
+                        button.innerText = '...';
+                        try {
+                            await btnConfig.onClick();
+                            closeModal();
+                        } catch (e) {
+                            console.error(e);
+                            Toast.error("Erro na ação");
+                        } finally {
+                            button.disabled = false;
+                            button.innerText = originalText;
+                        }
+                    };
+                    footer.appendChild(button);
+                });
+
+                modal.classList.remove('hidden');
+            };
+
             const Views = {
                 login: document.getElementById('login-section'),
                 app: document.getElementById('app-container'),
@@ -376,7 +452,7 @@
             // --- DATA FETCHING (LEITURA via Supabase, ESCRITA via Webhook) ---
             async function loadData() {
                 try {
-                    // 1. Carregar Projetos (Admin vê tudo, Cliente vê os seus)
+                    // 1. Carregar Projetos
                     let query = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
                     
                     if (!state.isAdmin) {
@@ -388,7 +464,7 @@
                     if (projError) throw projError;
                     state.projects = projData;
 
-                    // 2. Carregar Clientes (Apenas Admin precisa da lista completa)
+                    // 2. Carregar Clientes (Apenas Admin)
                     if (state.isAdmin) {
                         const { data: clientData, error: clientError } = await supabaseClient.from('laborai_clients').select('*').order('name');
                         if (clientError) throw clientError;
@@ -411,32 +487,26 @@
                 if (state.isAdmin) {
                     adminPanelBtn.classList.remove('hidden');
                     toggleContainer.classList.remove('hidden');
-                    // Admin não tem logo fixa no header, depende do contexto
                     document.getElementById('header-client-logo').classList.add('hidden');
                     document.getElementById('header-client-name').textContent = state.isSimulatingClient ? " (Modo Visualização)" : " | Admin";
                 } else {
                     adminPanelBtn.classList.add('hidden');
                     toggleContainer.classList.add('hidden');
-                    
-                    // Exibir logo do cliente logado
                     const clientId = state.user.user_metadata.clientId;
                     if (clientId) {
-                        // Tentar pegar do projeto carregado ou fetch simples se vazio
                         const clientName = state.user.user_metadata.clientName;
                         document.getElementById('header-client-name').textContent = `| ${clientName}`;
-                        
-                        // Buscar URL da logo se não tivermos no state
                         const p = state.projects.find(p => p.client_id === clientId);
                         if (p && p.laborai_clients && p.laborai_clients.logo_url) {
                             const img = document.getElementById('header-client-logo');
-                            img.src = p.laborai_clients.logo_url.replace('/view', '/uc'); // Ajuste para Supabase Storage display
+                            img.src = p.laborai_clients.logo_url.replace('/view', '/uc');
                             img.classList.remove('hidden');
                         }
                     }
                 }
             }
 
-            // 2. LISTA DE CLIENTES (ADMIN HOME)
+            // 2. LISTA DE CLIENTES
             function renderClientList() {
                 const container = document.getElementById('clients-list');
                 container.innerHTML = '';
@@ -445,7 +515,6 @@
                     const card = document.createElement('div');
                     card.className = 'client-card';
                     card.onclick = (e) => {
-                        // Evita disparar ao clicar nos botões de ação
                         if (e.target.tagName === 'BUTTON') return;
                         openClientProjects(client.id);
                     };
@@ -454,9 +523,8 @@
                         ? `<img src="${client.logo_url.replace('/view', '/uc')}" class="client-logo-thumb">`
                         : `<div style="width:40px; height:40px; background:#374151; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold;">${client.name.substring(0,2).toUpperCase()}</div>`;
 
-                    // Botão Gerenciar Contatos (Apenas Admin Real)
                     const manageContactsBtn = (!state.isSimulatingClient) 
-                        ? `<button class="secondary icon-btn" onclick="openContactsModal('${client.id}', '${client.name}')">👥 Contatos</button>` 
+                        ? `<button class="secondary icon-btn" onclick="openContactsModal('${client.id}', '${escapeHtml(client.name)}')">👥 Contatos</button>` 
                         : '';
 
                     card.innerHTML = `
@@ -485,18 +553,15 @@
                 let title = "Meus Projetos";
 
                 if (state.isAdmin) {
-                    // Admin navegando
                     if (clientId) {
                         filteredProjects = state.projects.filter(p => p.client_id === clientId);
                         const client = state.clients.find(c => c.id === clientId);
                         if (client) title = `Projetos: ${client.name}`;
                         document.getElementById('back-to-clients-button').classList.remove('hidden');
                     } else {
-                        // Admin vendo tudo (não usado no fluxo principal, mas possível)
                         document.getElementById('back-to-clients-button').classList.add('hidden');
                     }
                 } else {
-                    // Cliente Logado
                     document.getElementById('back-to-clients-button').classList.add('hidden');
                 }
 
@@ -508,10 +573,9 @@
                 }
 
                 filteredProjects.forEach(project => {
-                    const latestVersion = project.laborai_project_versions?.[0]; // Assumindo ordem decrescente do backend
+                    const latestVersion = project.laborai_project_versions?.[0];
                     const progress = latestVersion?.progress_percentage || 0;
                     
-                    // Actions Admin
                     let adminActions = '';
                     if (state.isAdmin && !state.isSimulatingClient) {
                         adminActions = `
@@ -554,16 +618,14 @@
                 document.getElementById('project-detail-name').innerText = project.name;
                 
                 const versions = project.laborai_project_versions || [];
-                // Ordenar versões (mais recente primeiro) e fases
                 versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                 
-                const activeVersion = versions[0]; // Versão mais recente
+                const activeVersion = versions[0];
                 state.currentVersionId = activeVersion ? activeVersion.id : null;
 
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
 
-                // Controles de Admin (Visibilidade)
                 const isAdminMode = state.isAdmin && !state.isSimulatingClient;
                 const adminContainerIds = ['progress-control-container', 'add-update-form-container'];
                 adminContainerIds.forEach(id => {
@@ -573,11 +635,9 @@
                 });
 
                 if (isAdminMode && activeVersion) {
-                    // Update Progress Slider
                     document.getElementById('progress-slider').value = activeVersion.progress_percentage || 0;
                     document.getElementById('slider-value').innerText = (activeVersion.progress_percentage || 0) + '%';
                     
-                    // Populate Phase Select for Updates
                     const phaseSelect = document.getElementById('update-phase-select');
                     phaseSelect.innerHTML = '';
                     activeVersion.laborai_project_phases.forEach(ph => {
@@ -587,7 +647,6 @@
                     });
                 }
 
-                // Render Timeline
                 versions.forEach(version => {
                     const vDiv = document.createElement('div');
                     vDiv.innerHTML = `<h3 style="color: var(--text-secondary); border-bottom: 1px solid var(--border-dark); padding-bottom: 5px; margin-top: 30px;">Versão ${version.version_number}</h3>`;
@@ -598,7 +657,6 @@
                         const isCompleted = phase.status === 'completed';
                         const isInProgress = phase.status === 'in_progress';
                         
-                        // Phase Header
                         const pHeader = document.createElement('div');
                         pHeader.className = `phase-header ${isInProgress ? 'active' : ''}`;
                         pHeader.style.borderColor = isCompleted ? 'var(--success-color)' : (isInProgress ? 'var(--primary-accent)' : 'var(--border-dark)');
@@ -624,8 +682,7 @@
                         `;
                         vDiv.appendChild(pHeader);
 
-                        // Updates
-                        const updates = phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)); // Mais novos primeiro
+                        const updates = phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                         updates.forEach(upd => {
                             const uDiv = document.createElement('div');
                             uDiv.className = 'update';
@@ -637,11 +694,15 @@
                                 content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:5px;">🔗 Acessar Link</a>`;
                             }
 
-                            // Botões da Atualização (WhatsApp e Excluir)
                             let updActions = '';
                             if (isAdminMode) {
+                                // Sanitização para evitar quebra de HTML no onclick
+                                const safeTitle = escapeHtml(upd.title);
+                                const safeDesc = escapeHtml(upd.description || '');
+                                
                                 updActions = `
                                     <div class="update-actions">
+                                        <button class="icon-btn secondary" title="Editar" onclick="handleEditUpdate('${upd.id}', '${safeTitle}', '${safeDesc}')">✏️</button>
                                         <button class="icon-btn" style="background:#25D366; color:white;" title="Notificar WhatsApp" onclick="notifyWhatsApp('${upd.id}', '${project.id}')">📱</button>
                                         <button class="icon-btn danger" title="Excluir" onclick="deleteUpdate('${upd.id}')">🗑️</button>
                                     </div>
@@ -674,10 +735,8 @@
                 showView('projectDetail');
             };
 
-            // Toggle "Ver como Cliente"
             document.getElementById('client-view-toggle').addEventListener('change', (e) => {
                 state.isSimulatingClient = e.target.checked;
-                // Re-renderizar header e view atual para aplicar mudanças
                 renderHeader();
                 if (!document.getElementById('project-detail-view').classList.contains('hidden')) {
                     renderProjectDetail(state.currentProjectId);
@@ -688,17 +747,25 @@
                 }
             });
 
-            // --- FUNÇÕES ADMIN / ACTIONS (Via N8N) ---
+            // --- FUNÇÕES ADMIN / ACTIONS (Via N8N & Modal Customizado) ---
 
             // 1. WhatsApp Notification
             window.notifyWhatsApp = async (updateId, projectId) => {
-                if(!confirm('Enviar notificação via WhatsApp para os contatos do cliente?')) return;
-                try {
-                    await fetch(HOOKS.NOTIFICAR_WHATSAPP, { 
-                        method: 'POST', body: JSON.stringify({ updateId, projectId }) 
-                    });
-                    Toast.success('Notificação enviada!');
-                } catch(e) { Toast.error('Erro ao notificar.'); }
+                showGenericModal({
+                    title: 'Enviar Notificação',
+                    bodyHtml: '<p>Deseja enviar notificação via WhatsApp para todos os contatos deste cliente?</p>',
+                    buttons: [{
+                        label: 'Enviar',
+                        classes: 'primary', // O CSS padrão de button já é primary
+                        onClick: async () => {
+                            await fetch(HOOKS.NOTIFICAR_WHATSAPP, { 
+                                method: 'POST', body: JSON.stringify({ updateId, projectId }) 
+                            });
+                            Toast.success('Notificação enviada!');
+                            // Sem necessidade de refresh aqui, ação externa
+                        }
+                    }]
+                });
             };
 
             // 2. Upload Logo
@@ -711,25 +778,23 @@
                 btn.innerText = 'Enviando...'; btn.disabled = true;
                 
                 try {
-                    // Upload Binary para webhook
                     const url = `${HOOKS.ATUALIZAR_LOGO}?clientId=${clientId}&fileName=${encodeURIComponent(file.name)}`;
                     const res = await fetch(url, { method: 'POST', body: file });
                     if(!res.ok) throw new Error();
                     
                     Toast.success('Logo atualizada!');
-                    await loadData(); // Recarrega para pegar nova URL
+                    await loadData();
                     if(state.isAdmin) renderClientList();
                 } catch(e) { Toast.error('Erro no upload.'); }
                 finally { btn.innerText = 'Salvar Logo'; btn.disabled = false; document.getElementById('upload-logo-form').reset(); }
             });
 
-            // 3. Gerenciar Contatos (Modal)
+            // 3. Gerenciar Contatos
             window.openContactsModal = async (clientId, clientName) => {
                 state.currentManageClientId = clientId;
                 document.getElementById('contacts-modal-client-name').innerText = clientName;
                 document.getElementById('contacts-modal').classList.remove('hidden');
                 
-                // Fetch contatos (Ler do Supabase para popular lista)
                 const listEl = document.getElementById('contacts-list');
                 listEl.innerHTML = 'Carregando...';
                 
@@ -764,7 +829,6 @@
                     });
                     Toast.success('Contato adicionado!');
                     document.getElementById('add-contact-form').reset();
-                    // Reabrir modal para atualizar lista
                     const client = state.clients.find(c => c.id === state.currentManageClientId);
                     openContactsModal(client.id, client.name);
                 } catch(e) { Toast.error('Erro ao criar contato'); }
@@ -772,55 +836,127 @@
             });
 
             window.deleteContact = async (id) => {
-                if(!confirm('Excluir este contato?')) return;
-                await fetch(HOOKS.EXCLUIR_CONTATO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ contactId: id }) });
-                const client = state.clients.find(c => c.id === state.currentManageClientId);
-                openContactsModal(client.id, client.name);
+                showGenericModal({
+                    title: 'Excluir Contato',
+                    bodyHtml: '<p>Tem certeza que deseja excluir este contato?</p>',
+                    buttons: [{
+                        label: 'Excluir',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_CONTATO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ contactId: id }) });
+                            const client = state.clients.find(c => c.id === state.currentManageClientId);
+                            openContactsModal(client.id, client.name);
+                        }
+                    }]
+                });
             };
 
-            // 4. CRUD Projeto e Updates
+            // 4. CRUD Projeto
             window.handleEditProject = async (projectId) => {
-                const newName = prompt("Novo nome do projeto:");
-                if(newName) {
-                    await fetch(HOOKS.EDITAR_PROJETO, { 
-                        method: 'POST', headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify({ projectId, field: 'name', value: newName }) 
-                    });
-                    Toast.success('Projeto atualizado');
-                    await loadData(); renderProjectList(state.currentClientId);
-                }
+                showGenericModal({
+                    title: 'Editar Projeto',
+                    bodyHtml: '<label>Novo nome do projeto:</label><input type="text" id="edit-project-name-input">',
+                    buttons: [{
+                        label: 'Salvar',
+                        classes: 'primary',
+                        onClick: async () => {
+                            const newName = document.getElementById('edit-project-name-input').value;
+                            if (newName) {
+                                await fetch(HOOKS.EDITAR_PROJETO, { 
+                                    method: 'POST', headers: {'Content-Type':'application/json'},
+                                    body: JSON.stringify({ projectId, field: 'name', value: newName }) 
+                                });
+                                Toast.success('Projeto atualizado');
+                                await loadData(); 
+                                renderProjectList(state.currentClientId);
+                            }
+                        }
+                    }]
+                });
             };
 
             window.handleDeleteProject = async (projectId) => {
-                if(!confirm('ATENÇÃO: Isso excluirá o projeto e todo o histórico. Continuar?')) return;
-                await fetch(HOOKS.EXCLUIR_PROJETO, { 
-                    method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ projectId }) 
+                showGenericModal({
+                    title: 'Confirmar Exclusão',
+                    bodyHtml: '<p style="color:var(--error-color);">ATENÇÃO: Isso excluirá o projeto e todo o histórico. Esta ação não pode ser desfeita.</p>',
+                    buttons: [{
+                        label: 'Excluir Projeto',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_PROJETO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ projectId }) 
+                            });
+                            Toast.success('Projeto excluído');
+                            await loadData(); 
+                            renderProjectList(state.currentClientId);
+                        }
+                    }]
                 });
-                Toast.success('Projeto excluído');
-                await loadData(); renderProjectList(state.currentClientId);
+            };
+
+            // 5. CRUD Atualizações
+            window.handleEditUpdate = async (updateId, currentTitle, currentDescription) => {
+                showGenericModal({
+                    title: 'Editar Atualização',
+                    bodyHtml: `
+                        <label>Título:</label>
+                        <input type="text" id="edit-update-title" value="${currentTitle}" style="margin-bottom: 10px;">
+                        <label>Descrição:</label>
+                        <textarea id="edit-update-desc" rows="4">${currentDescription}</textarea>
+                    `,
+                    buttons: [{
+                        label: 'Salvar Alterações',
+                        classes: 'primary',
+                        onClick: async () => {
+                            const newTitle = document.getElementById('edit-update-title').value;
+                            const newDesc = document.getElementById('edit-update-desc').value;
+                            
+                            await fetch(HOOKS.EDITAR_ATUALIZACAO, {
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ updateId, newTitle, newDescription: newDesc })
+                            });
+                            
+                            Toast.success('Atualização salva!');
+                            await loadData();
+                            renderProjectDetail(state.currentProjectId);
+                        }
+                    }]
+                });
             };
 
             window.deleteUpdate = async (updateId) => {
-                if(!confirm('Excluir atualização?')) return;
-                await fetch(HOOKS.EXCLUIR_ATUALIZACAO, { 
-                    method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ updateId }) 
+                showGenericModal({
+                    title: 'Excluir Atualização',
+                    bodyHtml: '<p>Deseja remover esta atualização da timeline?</p>',
+                    buttons: [{
+                        label: 'Excluir',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_ATUALIZACAO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ updateId }) 
+                            });
+                            Toast.success('Atualização removida');
+                            await loadData(); 
+                            renderProjectDetail(state.currentProjectId);
+                        }
+                    }]
                 });
-                Toast.success('Atualização removida');
-                await loadData(); renderProjectDetail(state.currentProjectId);
             };
 
+            // 6. Status da Fase
             window.changePhaseStatus = async (phaseId, status) => {
                 await fetch(HOOKS.ATUALIZAR_STATUS_FASE, {
                     method: 'POST', headers: {'Content-Type':'application/json'},
                     body: JSON.stringify({ phaseId, newStatus: status })
                 });
                 Toast.success('Status da fase alterado');
-                await loadData(); renderProjectDetail(state.currentProjectId);
+                await loadData(); 
+                renderProjectDetail(state.currentProjectId);
             };
 
-            // --- OUTROS FORMULÁRIOS (Existentes Refatorados) ---
+            // --- OUTROS FORMULÁRIOS (Refatorados para Auto-Refresh) ---
             
             // Login
             document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -852,7 +988,10 @@
                 e.preventDefault();
                 const name = document.getElementById('new-client-name').value;
                 await fetch(HOOKS.CRIAR_CLIENTE, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ clientName: name }) });
-                Toast.success('Cliente criado'); e.target.reset(); await loadData(); populateDropdowns();
+                Toast.success('Cliente criado'); 
+                e.target.reset(); 
+                await loadData(); 
+                populateDropdowns();
             });
 
             // Criar Projeto
@@ -876,7 +1015,9 @@
                         phases 
                     })
                 });
-                Toast.success('Projeto criado'); e.target.reset(); await loadData();
+                Toast.success('Projeto criado'); 
+                e.target.reset(); 
+                await loadData();
             });
 
             // Add Update (Texto/Link/Imagem)
@@ -909,7 +1050,8 @@
                     }
                     Toast.success('Atualização adicionada');
                     e.target.reset();
-                    await loadData(); renderProjectDetail(state.currentProjectId);
+                    await loadData(); 
+                    renderProjectDetail(state.currentProjectId);
                 } catch(err) { Toast.error('Erro ao atualizar'); }
                 finally { btn.disabled = false; btn.innerText = 'Publicar Atualização'; }
             });
@@ -923,6 +1065,8 @@
                     body: JSON.stringify({ versionId: state.currentVersionId, newProgress: parseInt(val) })
                 });
                 Toast.success('Progresso salvo');
+                // Nota: O slider é visual, mas se quiser atualizar a lista de projetos, chame loadData aqui
+                await loadData();
             });
             
             // Navegação de Voltar
@@ -967,13 +1111,11 @@
                     renderClientList();
                     showView('clientList');
                 } else {
-                    // Cliente vai direto para lista de projetos dele
                     renderProjectList(user.user_metadata.clientId);
                     showView('projectList');
                 }
             }
 
-            // Check Session
             supabaseClient.auth.getSession().then(({ data: { session } }) => {
                 if (session) initApp(session.user);
                 else showView('login');
