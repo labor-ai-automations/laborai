@@ -50,6 +50,7 @@
         .progress-bar-fill.low { background: var(--error-color); } .progress-bar-fill.medium { background: var(--warning-color); } .progress-bar-fill.high { background: var(--success-color); }
         .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; }
         .modal-content { background: var(--surface-dark); padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; border: 1px solid var(--border-dark); }
+        #client-logo-header { max-height: 24px; margin-right: 12px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -70,6 +71,7 @@
         <header id="app-header">
             <div><strong>LaborAI</strong><span id="client-name-header"></span></div>
             <div>
+                <img id="client-logo-header" class="hidden" alt="Logo do Cliente">
                 <span id="user-email" style="color: var(--text-secondary);"></span>
                 <button id="admin-button" class="hidden" style="width: auto; padding: 8px 12px; margin-left: 16px; background-color: var(--warning-color);">Admin</button>
                 <button id="logout-button" style="width: auto; padding: 8px 12px; margin-left: 16px; background: none; border: 1px solid var(--border-dark);">Sair</button>
@@ -110,6 +112,16 @@
             <div id="admin-view" class="hidden">
                 <button id="back-to-dashboard-from-admin-button" style="background: none; border: 1px solid var(--border-dark); width: auto; padding: 8px 16px; margin-bottom: 24px;">&larr; Voltar</button>
                 <h2>Painel Administrativo</h2>
+                <div class="admin-section-card">
+                    <h3>Adicionar/Atualizar Logo do Cliente</h3>
+                    <form id="upload-logo-form">
+                        <label for="logo-client-select">Para qual cliente?</label>
+                        <select id="logo-client-select" required></select>
+                        <label for="logo-file-input">Arquivo da Logo (PNG, JPG, SVG):</label>
+                        <input type="file" id="logo-file-input" accept="image/png, image/jpeg, image/svg+xml" required>
+                        <button type="submit" id="upload-logo-button">Salvar Logo</button>
+                    </form>
+                </div>
                 <div class="admin-section-card">
                     <h3>Criar Novo Projeto</h3>
                     <form id="create-project-form">
@@ -173,6 +185,7 @@
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
             const N8N_WEBHOOKS = {
+                ATUALIZAR_LOGO_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-logo-cliente',
                 ATUALIZAR_PROGRESSO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/atualizar-progresso-projeto',
                 ADD_ATUALIZACAO_ARQUIVO: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/adicionar-atualizacao-com-arquivo',
                 CRIAR_CLIENTE: 'https://n8n-n8n.znxk1t.easypanel.host/webhook/criar-novo-cliente',
@@ -201,7 +214,9 @@
                   progressDisplay = document.getElementById('progress-display'), saveProgressButton = document.getElementById('save-progress-button'),
                   sliderValueSpan = document.getElementById('slider-value'),
                   projectActionsAdmin = document.getElementById('project-actions-admin'), newVersionModal = document.getElementById('new-version-modal'),
-                  cancelNewVersionButton = document.getElementById('cancel-new-version-button'), newVersionForm = document.getElementById('new-version-form');
+                  cancelNewVersionButton = document.getElementById('cancel-new-version-button'), newVersionForm = document.getElementById('new-version-form'),
+                  uploadLogoForm = document.getElementById('upload-logo-form'), logoClientSelect = document.getElementById('logo-client-select'),
+                  clientLogoHeader = document.getElementById('client-logo-header');
 
             let state = { user: null, projects: [], clients: [], phaseTemplates: [
                 { name: "Padrão (3 Fases)", phases: ["Levantamento de Requisitos", "Desenvolvimento", "Testes e Validação"] },
@@ -253,8 +268,10 @@
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
                 const versions = project.laborai_project_versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                
                 const activeVersion = versions.find(v => v.status === 'in_progress' || v.status === 'active') || versions[0];
                 if (activeVersion) { state.currentVersionId = activeVersion.id; }
+
                 versions.forEach(version => {
                     const versionContainer = document.createElement('div');
                     const versionStatusLabel = (STATUS_LABELS[version.status] || version.status).toUpperCase();
@@ -554,6 +571,26 @@
                     renderProjectDetail(state.currentProjectId);
                 } catch (error) { ToastManager.error('Erro', error.message); } 
                 finally { button.disabled = false; button.innerText = 'Criar Versão'; }
+            });
+
+            uploadLogoForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const button = document.getElementById('upload-logo-button');
+                button.disabled = true; button.innerText = 'Enviando...';
+                const clientId = logoClientSelect.value;
+                const fileInput = document.getElementById('logo-file-input');
+                try {
+                    if (fileInput.files.length === 0) throw new Error('Selecione um arquivo de logo.');
+                    const file = fileInput.files[0];
+                    ToastManager.info('Fazendo upload da logo...');
+                    const uploadUrl = `${N8N_WEBHOOKS.ATUALIZAR_LOGO_CLIENTE}?clientId=${clientId}&fileName=logo-${clientId}.${file.name.split('.').pop()}`;
+                    const response = await fetch(uploadUrl, { method: 'POST', body: file });
+                    if (!response.ok) throw new Error('Falha no upload da logo para o n8n.');
+                    ToastManager.success('Logo atualizada com sucesso!');
+                    uploadLogoForm.reset();
+                    await fetchAllData();
+                } catch (error) { ToastManager.error('Erro ao enviar logo', error.message); } 
+                finally { button.disabled = false; button.innerText = 'Salvar Logo'; }
             });
 
             phaseTemplateSelect.addEventListener('change', updatePhasePreview);
