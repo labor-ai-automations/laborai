@@ -818,20 +818,26 @@
                             const uDiv = document.createElement('div');
                             uDiv.className = 'update';
                             
+                            // LÓGICA REFAORADA PARA MÚLTIPLOS ANEXOS
                             let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
-                            // BLOCO NOVO COM LIGHTBOX
-                            if (upd.update_type === 'image' && upd.content_url) {
+
+                            // Renderiza a imagem se 'content_url' (que agora é só para arquivos) existir
+                            if (upd.content_url) {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
                                 if (directImageUrl) {
-                                    // Escapa o objeto 'upd' para uso seguro no HTML
                                     const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
-                                    content += `<img src="${directImageUrl}" onclick='openImageLightbox(${safeUpd})'>`;
+                                    content += `<img src="${directImageUrl}" onclick='openImageLightbox(${safeUpd})' style="margin-top:10px;">`;
                                 } else {
-                                    content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:5px;">🔗 Acessar Anexo (Formato Inválido)</a>`;
+                                    // Fallback para outros tipos de arquivo (PDF, etc.)
+                                    content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">📄 Baixar Anexo</a>`;
                                 }
-                            } else if (upd.content_url) {
-                                content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:5px;">🔗 Acessar Link</a>`;
                             }
+
+                            // Renderiza o link de texto se 'link_url' existir
+                            if (upd.link_url) {
+                                content += `<a href="${upd.link_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Acessar Link</a>`;
+                            }
+
 
                             let updActions = '';
                             if (isAdminMode) {
