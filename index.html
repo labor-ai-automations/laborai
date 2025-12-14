@@ -57,9 +57,15 @@
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .client-logo-thumb { height: 40px; max-width: 100px; object-fit: contain; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 4px; }
         
-        /* Timeline/Details */
-        .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: var(--surface-dark); display: flex; justify-content: space-between; align-items: center; }
+        /* Timeline/Details - Accordion Styles */
+        .phase-header { border: 2px solid var(--border-dark); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: var(--surface-dark); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .phase-header.active { border-color: var(--primary-accent); animation: pulse-border 3s infinite; }
+        .phase-header::after { content: '▼'; margin-left: 10px; transition: transform 0.3s; font-size: 0.8em; }
+        .phase-header.expanded::after { transform: rotate(180deg); }
+        
+        .phase-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .phase-header.expanded + .phase-content { max-height: 2000px; transition: max-height 0.5s ease-in; }
+
         .update { margin-left: 20px; margin-bottom: 12px; padding: 15px; background: var(--background-dark); border-left: 3px solid var(--border-dark); border-radius: 0 8px 8px 0; position: relative; }
         .update-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; opacity: 0.7; }
         .update-actions:hover { opacity: 1; }
@@ -125,7 +131,7 @@
                 <span id="user-email" style="font-size: 0.9em; margin-right: 16px; color: var(--text-secondary);"></span>
                 
                 <!-- Botão Painel Admin (Apenas Admin) -->
-                <button id="admin-panel-button" class="hidden" style="width: auto; padding: 6px 12px; margin-right: 10px; background-color: var(--surface-dark); border: 1px solid var(--warning-color); color: var(--warning-color);">
+                <button id="admin-panel-button" class="hidden secondary" style="width: auto; padding: 6px 12px; margin-right: 10px;">
                     ⚙️ Painel & Criação
                 </button>
                 
@@ -143,13 +149,6 @@
             <!-- VIEW 2: Lista de Projetos (Home do Cliente / Navegação Admin) -->
             <div id="project-list-view" class="hidden">
                 <button id="back-to-clients-button" class="secondary hidden" style="margin-bottom: 20px;">&larr; Voltar para Clientes</button>
-                
-                <!-- Header da View 2 -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-dark); padding-bottom: 16px;">
-                    <h2 id="project-list-title" style="margin: 0;">Projetos</h2>
-                    <button id="manage-contacts-btn" class="secondary icon-btn hidden" style="font-size: 15px;">👥 Gerenciar Contatos</button>
-                </div>
-                
                 <div id="project-list-content" class="card-grid"></div>
             </div>
 
@@ -176,17 +175,23 @@
                 <div id="project-detail-content" style="margin-top: 24px;"></div>
 
                 <!-- Admin Controls: Adicionar Atualização (REFATORADO) -->
-                <div id="add-update-form-container" class="admin-section-card hidden">
-                    <h3>Nova Atualização</h3>
-                    <form id="add-update-form">
-                        <select id="update-phase-select" required></select>
-                        <input type="text" id="update-title" placeholder="Título da atualização" required>
-                        <textarea id="update-description" rows="3" placeholder="Descrição detalhada... (Obrigatório)"></textarea>
-                        <input type="url" id="update-link" placeholder="Anexar Link (Opcional, ex: https://...)">
-                        <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Imagem (Opcional):</label>
-                        <input type="file" id="update-file" accept="image/*">
-                        <button type="submit" id="add-update-button">Publicar Atualização</button>
-                    </form>
+                <div id="add-update-controls" class="hidden">
+                    <div class="admin-section-card">
+                        <button id="toggle-add-update-form" style="width: 100%;">[+] Adicionar Nova Atualização</button>
+                    </div>
+
+                    <div id="add-update-form-container" class="admin-section-card hidden" style="margin-top: 10px;">
+                        <h3>Nova Atualização</h3>
+                        <form id="add-update-form">
+                            <select id="update-phase-select" required></select>
+                            <input type="text" id="update-title" placeholder="Título da atualização" required>
+                            <textarea id="update-description" rows="3" placeholder="Descrição detalhada... (Obrigatório)"></textarea>
+                            <input type="url" id="update-link" placeholder="Anexar Link (Opcional, ex: https://...)">
+                            <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Imagem (Opcional):</label>
+                            <input type="file" id="update-file" accept="image/*">
+                            <button type="submit" id="add-update-button">Publicar Atualização</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -558,33 +563,17 @@
                 container.innerHTML = '';
                 
                 let filteredProjects = state.projects;
-                let title = "Meus Projetos";
-                const manageContactsBtn = document.getElementById('manage-contacts-btn');
-
+                
                 if (state.isAdmin) {
                     if (clientId) {
                         filteredProjects = state.projects.filter(p => p.client_id === clientId);
-                        const client = state.clients.find(c => c.id === clientId);
-                        if (client) title = `Projetos: ${client.name}`;
-                        
-                        if (client) {
-                            manageContactsBtn.classList.remove('hidden');
-                            manageContactsBtn.onclick = () => openContactsModal(client.id, client.name);
-                        } else {
-                            manageContactsBtn.classList.add('hidden');
-                        }
-
                         document.getElementById('back-to-clients-button').classList.remove('hidden');
                     } else {
                         document.getElementById('back-to-clients-button').classList.add('hidden');
-                        manageContactsBtn.classList.add('hidden');
                     }
                 } else {
                     document.getElementById('back-to-clients-button').classList.add('hidden');
-                    manageContactsBtn.classList.add('hidden');
                 }
-
-                document.getElementById('project-list-title').textContent = title;
 
                 if (filteredProjects.length === 0) {
                     container.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1/-1;">Nenhum projeto encontrado.</p>';
@@ -595,9 +584,11 @@
                     const latestVersion = project.laborai_project_versions?.[0];
                     const progress = latestVersion?.progress_percentage || 0;
                     
+                    const description = project.description || 'Sem descrição';
+                    const shortDesc = description.length > 120 ? description.substring(0, 120) + '...' : description;
+
                     let adminActions = '';
                     if (state.isAdmin && !state.isSimulatingClient) {
-                        // Safety: escape single quotes in the JSON string because the HTML attribute is wrapped in single quotes.
                         const safeProjectJson = JSON.stringify(project).replace(/'/g, "&apos;");
                         adminActions = `
                             <div class="admin-toolbar" style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
@@ -612,7 +603,7 @@
                     card.innerHTML = `
                         <div onclick="openProjectDetail('${project.id}')">
                             <h4 style="margin: 0 0 5px 0;">${project.name}</h4>
-                            <small style="color: var(--text-secondary);">${project.description || 'Sem descrição'}</small>
+                            <small style="color: var(--text-secondary);">${shortDesc}</small>
                             <div style="margin: 10px 0;">
                                 <div style="display:flex; justify-content:space-between; font-size:0.85em; margin-bottom:4px;">
                                     <span>Progresso</span>
@@ -648,7 +639,7 @@
                 contentDiv.innerHTML = '';
 
                 const isAdminMode = state.isAdmin && !state.isSimulatingClient;
-                const adminContainerIds = ['progress-control-container', 'add-update-form-container'];
+                const adminContainerIds = ['progress-control-container', 'add-update-controls'];
                 adminContainerIds.forEach(id => {
                     const el = document.getElementById(id);
                     if (isAdminMode) el.classList.remove('hidden');
@@ -682,6 +673,12 @@
                         pHeader.className = `phase-header ${isInProgress ? 'active' : ''}`;
                         pHeader.style.borderColor = isCompleted ? 'var(--success-color)' : (isInProgress ? 'var(--primary-accent)' : 'var(--border-dark)');
                         
+                        pHeader.onclick = (e) => {
+                            if (e.target.tagName !== 'BUTTON') {
+                                pHeader.classList.toggle('expanded');
+                            }
+                        };
+
                         let phaseActions = '';
                         if (isAdminMode) {
                             phaseActions = `
@@ -703,6 +700,10 @@
                         `;
                         vDiv.appendChild(pHeader);
 
+                        // Container Acordeão
+                        const pContent = document.createElement('div');
+                        pContent.className = 'phase-content';
+
                         const updates = phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                         updates.forEach(upd => {
                             const uDiv = document.createElement('div');
@@ -717,10 +718,7 @@
 
                             let updActions = '';
                             if (isAdminMode) {
-                                // Sanitização para evitar quebra de HTML no onclick
-                                // Importante: escapeQuotes para passar no onclick
                                 const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
-                                
                                 updActions = `
                                     <div class="update-actions">
                                         <button class="icon-btn secondary" title="Editar" onclick='handleEditUpdate(${safeUpd})'>✏️</button>
@@ -736,8 +734,9 @@
                                 <small style="display:block; color:var(--text-secondary);">${new Date(upd.created_at).toLocaleString('pt-BR')}</small>
                                 ${content}
                             `;
-                            vDiv.appendChild(uDiv);
+                            pContent.appendChild(uDiv);
                         });
+                        vDiv.appendChild(pContent);
                     });
                     contentDiv.appendChild(vDiv);
                 });
@@ -769,6 +768,10 @@
                 }
             });
 
+            document.getElementById('toggle-add-update-form').addEventListener('click', () => {
+                document.getElementById('add-update-form-container').classList.toggle('hidden');
+            });
+
             // --- FUNÇÕES ADMIN / ACTIONS (Via N8N & Modal Customizado) ---
 
             // 1. WhatsApp Notification
@@ -778,13 +781,12 @@
                     bodyHtml: '<p>Deseja enviar notificação via WhatsApp para todos os contatos deste cliente?</p>',
                     buttons: [{
                         label: 'Enviar',
-                        classes: 'primary', // O CSS padrão de button já é primary
+                        classes: 'primary', 
                         onClick: async () => {
                             await fetch(HOOKS.NOTIFICAR_WHATSAPP, { 
                                 method: 'POST', body: JSON.stringify({ updateId, projectId }) 
                             });
                             Toast.success('Notificação enviada!');
-                            // Sem necessidade de refresh aqui, ação externa
                         }
                     }]
                 });
@@ -942,11 +944,9 @@
 
                 try {
                     if (file) {
-                        // Se tem arquivo, usa o endpoint de upload binário
                         const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&contentUrl=${encodeURIComponent(link)}&fileName=${encodeURIComponent(file.name)}`;
                         await fetch(url, { method: 'POST', body: file });
                     } else {
-                        // Se não tem arquivo, usa o endpoint JSON
                         await fetch(HOOKS.ADD_ATUALIZACAO, {
                             method: 'POST', headers: {'Content-Type':'application/json'},
                             body: JSON.stringify({ phaseId, title, description, contentUrl: link, type: link ? 'link' : 'text' })
@@ -988,11 +988,9 @@
                             const newFile = document.getElementById('edit-update-file').files[0];
 
                             if (newFile) {
-                                // Lógica para substituir com um novo arquivo (usa o endpoint de upload)
                                 const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?updateIdToOverwrite=${update.id}&title=${encodeURIComponent(newTitle)}&description=${encodeURIComponent(newDesc)}&contentUrl=${encodeURIComponent(newLink)}&fileName=${encodeURIComponent(newFile.name)}`;
                                 await fetch(url, { method: 'POST', body: newFile });
                             } else {
-                                // Lógica para editar apenas os dados textuais
                                 await fetch(HOOKS.EDITAR_ATUALIZACAO, {
                                     method: 'POST', headers: {'Content-Type':'application/json'},
                                     body: JSON.stringify({ updateId: update.id, newTitle, newDescription: newDesc, newContentUrl: newLink })
