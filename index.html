@@ -883,23 +883,38 @@
 
             // 4. CRUD Projeto
             window.handleEditProject = async (projectId) => {
+                const project = state.projects.find(p => p.id === projectId);
+                if (!project) return;
+
                 showGenericModal({
                     title: 'Editar Projeto',
-                    bodyHtml: '<label>Novo nome do projeto:</label><input type="text" id="edit-project-name-input">',
+                    bodyHtml: `
+                        <label>Nome do Projeto:</label>
+                        <input type="text" id="edit-project-name" value="${escapeHtml(project.name)}" style="margin-bottom: 10px;">
+                        <label>Descrição:</label>
+                        <textarea id="edit-project-desc" rows="4">${escapeHtml(project.description || '')}</textarea>
+                    `,
                     buttons: [{
-                        label: 'Salvar',
+                        label: 'Salvar Alterações',
                         classes: 'primary',
                         onClick: async () => {
-                            const newName = document.getElementById('edit-project-name-input').value;
-                            if (newName) {
-                                await fetch(HOOKS.EDITAR_PROJETO, { 
-                                    method: 'POST', headers: {'Content-Type':'application/json'},
-                                    body: JSON.stringify({ projectId, field: 'name', value: newName }) 
-                                });
-                                Toast.success('Projeto atualizado');
-                                await loadData(); 
-                                renderProjectList(state.currentClientId);
-                            }
+                            const newName = document.getElementById('edit-project-name').value;
+                            const newDescription = document.getElementById('edit-project-desc').value;
+
+                            // Enviaremos um array de atualizações para o n8n
+                            const updates = [
+                                { field: 'name', value: newName },
+                                { field: 'description', value: newDescription }
+                            ];
+
+                            await fetch(HOOKS.EDITAR_PROJETO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ projectId: project.id, updates }) 
+                            });
+                            
+                            Toast.success('Projeto atualizado');
+                            await loadData(); 
+                            renderProjectList(state.currentClientId);
                         }
                     }]
                 });
