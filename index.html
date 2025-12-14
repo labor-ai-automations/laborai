@@ -203,8 +203,8 @@
                         <input type="text" id="update-title" placeholder="Título da atualização" required>
                         <textarea id="update-description" rows="3" placeholder="Descrição detalhada... (Obrigatório)"></textarea>
                         <input type="url" id="update-link" placeholder="Anexar Link (Opcional, ex: https://...)">
-                        <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Imagem (Opcional):</label>
-                        <input type="file" id="update-file" accept="image/*">
+                        <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Arquivo (Opcional):</label>
+                        <input type="file" id="update-file">
                         <button type="submit" id="add-update-button" style="margin-top:15px;">Publicar Atualização</button>
                     </form>
                 </div>
@@ -339,8 +339,7 @@
                 CRIAR_CLIENTE: `${N8N_BASE}/criar-novo-cliente`,
                 CRIAR_USUARIO: `${N8N_BASE}/criar-novo-usuario`,
                 CRIAR_PROJETO: `${N8N_BASE}/criar-novo-projeto`,
-                ADD_ATUALIZACAO: `${N8N_BASE}/adicionar-atualizacao-fase`,
-                ADD_ATUALIZACAO_ARQUIVO: `${N8N_BASE}/adicionar-atualizacao-com-arquivo`,
+                SALVAR_ATUALIZACAO: `${N8N_BASE}/salvar-atualizacao`,
                 
                 // Gestão de Projeto
                 ATUALIZAR_PROGRESSO: `${N8N_BASE}/atualizar-progresso-projeto`,
@@ -353,8 +352,7 @@
                 EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`,
                 EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, 
                 EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`, 
-                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`, 
-                EDITAR_ATUALIZACAO: `${N8N_BASE}/editar-atualizacao`
+                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`
             };
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -687,9 +685,10 @@
                 // A lógica para ocultar/mostrar o form de Nova Atualização continua a mesma.
                 document.getElementById('toggle-add-update-form').classList.toggle('hidden', !isAdminMode);
 
-                versions.forEach(version => {
+                // Pausa a feature de múltiplas versões, renderizando apenas a mais recente.
+                if (activeVersion) {
+                    const version = activeVersion; // usa a variável 'version' para compatibilidade com o código interno do loop
                     const vDiv = document.createElement('div');
-                    vDiv.innerHTML = `<h3 style="color: var(--text-secondary); border-bottom: 1px solid var(--border-dark); padding-bottom: 5px; margin-top: 30px;">Versão ${version.version_number}</h3>`;
                     
                     const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
                     
@@ -782,8 +781,9 @@
                         });
                         vDiv.appendChild(pContent);
                     });
+                    
                     contentDiv.appendChild(vDiv);
-                });
+                }
             }
 
             // --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA ---
@@ -824,14 +824,55 @@
                 // Re-atacha o listener de submit ao formulário dentro do modal
                 const modalForm = document.querySelector('#generic-modal #add-update-form');
                 if(modalForm) {
-                    modalForm.addEventListener('submit', async (e) => {
-                        await handleUpdateSubmit(e);
-                        document.getElementById('generic-modal').classList.add('hidden'); // Fecha modal no sucesso
-                    });
+                    modalForm.onsubmit = async (e) => {
+                        e.preventDefault();
+                        const btn = modalForm.querySelector('button[type="submit"]');
+                        btn.disabled = true; btn.innerText = 'Salvando...';
+
+                        try {
+                            const formData = new FormData();
+                            formData.append('phaseId', modalForm.querySelector('#update-phase-select').value);
+                            formData.append('title', modalForm.querySelector('#update-title').value);
+                            formData.append('description', modalForm.querySelector('#update-description').value);
+                            formData.append('link', modalForm.querySelector('#update-link').value);
+                            formData.append('file', modalForm.querySelector('#update-file').files[0]);
+
+                            await handleSaveUpdate(formData);
+                            
+                            Toast.success('Atualização criada!');
+                            await loadData();
+                            renderProjectDetail(state.currentProjectId);
+                            document.getElementById('generic-modal').classList.add('hidden');
+                        } catch (err) {
+                            Toast.error('Falha ao salvar. Verifique os dados.');
+                            btn.disabled = false; btn.innerText = 'Publicar Atualização';
+                        }
+                    };
                 }
             });
 
             // --- FUNÇÕES ADMIN / ACTIONS (Via N8N & Modal Customizado) ---
+
+            async function handleSaveUpdate(formData, updateId = null) {
+                // Constrói a URL com todos os dados como query params
+                let url = `${HOOKS.SALVAR_ATUALIZACAO}?title=${encodeURIComponent(formData.get('title'))}&description=${encodeURIComponent(formData.get('description'))}&contentUrl=${encodeURIComponent(formData.get('link'))}`;
+                
+                if (updateId) {
+                    url += `&updateId=${updateId}`; // Identifica que é uma edição
+                } else {
+                    url += `&phaseId=${formData.get('phaseId')}`; // Identifica que é uma criação
+                }
+
+                let fetchOptions = { method: 'POST' };
+                const file = formData.get('file');
+
+                if (file && file.size > 0) {
+                    url += `&fileName=${encodeURIComponent(file.name)}`;
+                    fetchOptions.body = file; // Envia o arquivo no corpo
+                }
+                
+                await fetch(url, fetchOptions);
+            }
 
             // 1. WhatsApp Notification
             window.notifyWhatsApp = async (updateId, projectId) => {
@@ -989,43 +1030,6 @@
                 });
             };
 
-            // 5. CRUD Atualizações (Lógica Reutilizável)
-            async function handleUpdateSubmit(e) {
-                e.preventDefault();
-                // Nota: Usamos e.target para pegar o form que disparou o evento (seja no modal ou original)
-                const form = e.target;
-                const btn = form.querySelector('button[type="submit"]');
-                btn.disabled = true; btn.innerText = 'Enviando...';
-
-                const phaseId = form.querySelector('#update-phase-select').value;
-                const title = form.querySelector('#update-title').value;
-                const description = form.querySelector('#update-description').value;
-                const link = form.querySelector('#update-link').value;
-                const file = form.querySelector('#update-file').files[0];
-
-                try {
-                    if (file) {
-                        const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&contentUrl=${encodeURIComponent(link)}&fileName=${encodeURIComponent(file.name)}`;
-                        await fetch(url, { method: 'POST', body: file });
-                    } else {
-                        await fetch(HOOKS.ADD_ATUALIZACAO, {
-                            method: 'POST', headers: {'Content-Type':'application/json'},
-                            body: JSON.stringify({ phaseId, title, description, contentUrl: link, type: link ? 'link' : 'text' })
-                        });
-                    }
-                    Toast.success('Atualização adicionada');
-                    // Reset do form original caso precise reutilizar
-                    document.getElementById('add-update-form').reset();
-                    await loadData();
-                    renderProjectDetail(state.currentProjectId);
-                } catch(err) {
-                    console.error(err);
-                    Toast.error('Erro ao publicar atualização.');
-                } finally {
-                    btn.disabled = false; btn.innerText = 'Publicar Atualização';
-                }
-            }
-
             window.handleEditUpdate = async (update) => {
                 showGenericModal({
                     title: 'Editar Atualização',
@@ -1036,28 +1040,21 @@
                         <textarea id="edit-update-desc" rows="4" style="width: 100%; box-sizing: border-box;">${escapeHtml(update.description || '')}</textarea>
                         <label>Link (deixe em branco para remover):</label>
                         <input type="url" id="edit-update-link" value="${update.update_type === 'link' ? escapeHtml(update.content_url) : ''}" placeholder="https://..." style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
-                        <label for="edit-update-file" style="font-size: 0.9em; color: var(--text-secondary);">Substituir Imagem (opcional):</label>
-                        ${update.update_type === 'image' ? `<img src="${update.content_url.replace('/view', '/uc')}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}
-                        <input type="file" id="edit-update-file" accept="image/*">
+                        <label for="edit-update-file" style="font-size: 0.9em; color: var(--text-secondary);">Substituir Arquivo (opcional):</label>
+                        ${update.update_type === 'image' && update.content_url ? `<img src="${update.content_url}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}
+                        <input type="file" id="edit-update-file">
                     `,
                     buttons: [{
                         label: 'Salvar Alterações',
                         classes: 'primary',
                         onClick: async () => {
-                            const newTitle = document.getElementById('edit-update-title').value;
-                            const newDesc = document.getElementById('edit-update-desc').value;
-                            const newLink = document.getElementById('edit-update-link').value;
-                            const newFile = document.getElementById('edit-update-file').files[0];
+                            const formData = new FormData();
+                            formData.append('title', document.getElementById('edit-update-title').value);
+                            formData.append('description', document.getElementById('edit-update-desc').value);
+                            formData.append('link', document.getElementById('edit-update-link').value);
+                            formData.append('file', document.getElementById('edit-update-file').files[0]);
 
-                            if (newFile) {
-                                const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?updateIdToOverwrite=${update.id}&title=${encodeURIComponent(newTitle)}&description=${encodeURIComponent(newDesc)}&contentUrl=${encodeURIComponent(newLink)}&fileName=${encodeURIComponent(newFile.name)}`;
-                                await fetch(url, { method: 'POST', body: newFile });
-                            } else {
-                                await fetch(HOOKS.EDITAR_ATUALIZACAO, {
-                                    method: 'POST', headers: {'Content-Type':'application/json'},
-                                    body: JSON.stringify({ updateId: update.id, newTitle, newDescription: newDesc, newContentUrl: newLink })
-                                });
-                            }
+                            await handleSaveUpdate(formData, update.id);
                             
                             Toast.success('Atualização salva!');
                             await loadData();
