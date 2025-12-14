@@ -640,6 +640,9 @@
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
 
+                // Dentro de renderProjectDetail, após encontrar o objeto 'project'
+                document.getElementById('project-detail-description').innerText = project.description || 'Nenhuma descrição fornecida.';
+
                 state.currentProjectId = projectId;
                 document.getElementById('project-detail-name').innerText = project.name;
                 
@@ -664,7 +667,6 @@
                 // Controle de visibilidade dos elementos de admin
                 const isAdminMode = state.isAdmin && !state.isSimulatingClient;
                 document.getElementById('admin-progress-controls').classList.toggle('hidden', !isAdminMode);
-                document.getElementById('project-description-container').classList.toggle('hidden', !project.description); // Opcional: esconde o card se não houver descrição
 
                 // Configura o slider e o form apenas se for admin
                 if (isAdminMode && activeVersion) {
