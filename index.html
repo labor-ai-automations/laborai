@@ -494,7 +494,7 @@
             };
 
             // Adicione esta função completa no seu script
-            function openImageLightbox(update) {
+            window.openImageLightbox = function(update) {
                 const lightbox = document.getElementById('image-lightbox');
                 const img = document.getElementById('lightbox-img');
                 const downloadLink = document.getElementById('lightbox-download-link');
@@ -515,7 +515,7 @@
                 document.getElementById('lightbox-update-description').innerText = update.description || 'Sem descrição.';
                 
                 lightbox.classList.remove('hidden');
-            }
+            };
 
             const Views = {
                 login: document.getElementById('login-section'),
