@@ -338,7 +338,6 @@
         <div class="modal-content" style="max-width: 90%; max-height: 90%; display: flex; gap: 20px; padding: 20px;">
             <div style="flex: 2; display: flex; justify-content: center; align-items: center; position: relative;">
                 <img id="lightbox-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                <a id="lightbox-download-link" href="#" download class="icon-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5);">📥 Download</a>
             </div>
             <div id="lightbox-info-panel" style="flex: 1; border-left: 1px solid var(--border-dark); padding-left: 20px; overflow-y: auto;">
                 <h3 id="lightbox-update-title" style="margin-top: 0;"></h3>
@@ -497,7 +496,6 @@
             window.openImageLightbox = function(update) {
                 const lightbox = document.getElementById('image-lightbox');
                 const img = document.getElementById('lightbox-img');
-                const downloadLink = document.getElementById('lightbox-download-link');
                 
                 const directImageUrl = getGoogleDriveDirectImage(update.content_url);
                 if (!directImageUrl) {
@@ -507,8 +505,6 @@
                 }
 
                 img.src = directImageUrl;
-                // Para download, o webContentLink é melhor, garantindo que o download seja forçado
-                downloadLink.href = update.content_url.replace(/(&?)(export=download|usp=drivesdk|view)$/, '') + '&export=download';
                 
                 document.getElementById('lightbox-update-title').innerText = update.title;
                 document.getElementById('lightbox-update-date').innerText = new Date(update.created_at).toLocaleString('pt-BR');
