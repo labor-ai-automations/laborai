@@ -1,3 +1,5 @@
+--- START OF FILE index.txt ---
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -683,10 +685,26 @@
 
                         let phaseActions = '';
                         if (isAdminMode) {
+                            const status = phase.status;
+                            let startPauseButton = '';
+                            let completeReopenButton = '';
+
+                            if (status === 'pending') {
+                                // Se está pendente, pode iniciar.
+                                startPauseButton = `<button class="icon-btn secondary" title="Marcar como 'Em Andamento'" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶ Iniciar</button>`;
+                            } else if (status === 'in_progress') {
+                                // Se está em andamento, pode pausar (voltar para pendente) ou concluir.
+                                startPauseButton = `<button class="icon-btn secondary" title="Pausar e voltar para 'Pendente'" onclick="changePhaseStatus('${phase.id}', 'pending')">|| Pausar</button>`;
+                                completeReopenButton = `<button class="icon-btn secondary" style="background-color: rgba(34, 197, 94, 0.1); color: var(--success-color);" title="Concluir Fase" onclick="changePhaseStatus('${phase.id}', 'completed')">✅ Concluir</button>`;
+                            } else if (status === 'completed') {
+                                // Se está concluído, pode reabrir (voltar para em andamento).
+                                completeReopenButton = `<button class="icon-btn secondary" title="Reabrir Fase (volta para 'Em Andamento')" onclick="changePhaseStatus('${phase.id}', 'in_progress')">↩️ Reabrir</button>`;
+                            }
+                            
                             phaseActions = `
                                 <div class="phase-actions" style="display:flex; gap:8px;">
-                                    <button class="icon-btn secondary" title="Marcar como 'Em Andamento'" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶ Iniciar</button>
-                                    <button class="icon-btn secondary" style="background-color: rgba(34, 197, 94, 0.1); color: var(--success-color);" title="Concluir Fase" onclick="changePhaseStatus('${phase.id}', 'completed')">✅ Concluir</button>
+                                    ${startPauseButton}
+                                    ${completeReopenButton}
                                 </div>
                             `;
                         }
