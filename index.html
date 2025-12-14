@@ -174,14 +174,22 @@
                     <p id="project-detail-description" style="color: var(--text-secondary); margin: 0; white-space: pre-wrap;"></p>
                 </div>
 
-                <!-- Admin Controls: Progresso -->
-                <div id="progress-control-container" class="admin-section-card hidden">
-                    <h3>📊 Controle de Progresso</h3>
-                    <div id="progress-display"></div>
-                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
-                        <input type="range" min="0" max="100" value="0" id="progress-slider" style="flex: 1;">
-                        <span id="slider-value" style="font-weight: bold; width: 40px;">0%</span>
-                        <button id="save-progress-button" style="width: auto;">Salvar</button>
+                <!-- ESTRUTURA NOVA E MELHORADA -->
+                <div id="progress-view-container" class="admin-section-card" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="margin: 0;">📊 Progresso</h3>
+                        <span id="progress-percentage-display" style="font-weight: bold; font-size: 1.1rem;">0%</span>
+                    </div>
+                    <!-- Barra de progresso visual para todos -->
+                    <div style="height: 8px; background-color: var(--border-dark); border-radius: 4px; overflow: hidden;">
+                        <div id="progress-bar-fill" style="width: 0%; height: 100%; background-color: var(--primary-accent); transition: width 0.3s;"></div>
+                    </div>
+                    <!-- Controles exclusivos para o admin -->
+                    <div id="admin-progress-controls" class="hidden" style="margin-top: 15px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="range" min="0" max="100" value="0" id="progress-slider" style="flex: 1;">
+                            <button id="save-progress-button" style="width: auto;">Salvar</button>
+                        </div>
                     </div>
                 </div>
 
@@ -632,46 +640,50 @@
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
 
-                // Dentro de renderProjectDetail, após encontrar o objeto 'project'
-                document.getElementById('project-detail-description').innerText = project.description || 'Nenhuma descrição fornecida.';
-
                 state.currentProjectId = projectId;
                 document.getElementById('project-detail-name').innerText = project.name;
                 
                 const versions = project.laborai_project_versions || [];
                 versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                 
-                const activeVersion = versions[0];
-                state.currentVersionId = activeVersion ? activeVersion.id : null;
-
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
 
+                // NOVA LÓGICA DE VISIBILIDADE E POPULAÇÃO
+                const activeVersion = versions[0]; // Versão mais recente
+                state.currentVersionId = activeVersion ? activeVersion.id : null;
+                const progress = activeVersion?.progress_percentage || 0;
+
+                // Popula a barra de progresso visual que é para todos
+                document.getElementById('progress-percentage-display').innerText = `${progress}%`;
+                const progressBarFill = document.getElementById('progress-bar-fill');
+                progressBarFill.style.width = `${progress}%`;
+                // Muda a cor para verde quando concluído
+                progressBarFill.style.backgroundColor = progress >= 100 ? 'var(--success-color)' : 'var(--primary-accent)';
+
+                // Controle de visibilidade dos elementos de admin
                 const isAdminMode = state.isAdmin && !state.isSimulatingClient;
-                const adminContainerIds = ['progress-control-container'];
-                adminContainerIds.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (isAdminMode) el.classList.remove('hidden');
-                    else el.classList.add('hidden');
-                });
+                document.getElementById('admin-progress-controls').classList.toggle('hidden', !isAdminMode);
+                document.getElementById('project-description-container').classList.toggle('hidden', !project.description); // Opcional: esconde o card se não houver descrição
 
-                // Toggle "Add Update" Button visibility
-                const addUpdateBtn = document.getElementById('toggle-add-update-form');
-                if (isAdminMode) addUpdateBtn.classList.remove('hidden');
-                else addUpdateBtn.classList.add('hidden');
-
+                // Configura o slider e o form apenas se for admin
                 if (isAdminMode && activeVersion) {
-                    document.getElementById('progress-slider').value = activeVersion.progress_percentage || 0;
-                    document.getElementById('slider-value').innerText = (activeVersion.progress_percentage || 0) + '%';
+                    const progressSlider = document.getElementById('progress-slider');
+                    progressSlider.value = progress;
                     
+                    // Popula o select de fases para o formulário de atualização
                     const phaseSelect = document.getElementById('update-phase-select');
                     phaseSelect.innerHTML = '';
                     activeVersion.laborai_project_phases.forEach(ph => {
                         const opt = document.createElement('option');
-                        opt.value = ph.id; opt.innerText = ph.name;
+                        opt.value = ph.id; 
+                        opt.innerText = ph.name;
                         phaseSelect.appendChild(opt);
                     });
                 }
+
+                // A lógica para ocultar/mostrar o form de Nova Atualização continua a mesma.
+                document.getElementById('toggle-add-update-form').classList.toggle('hidden', !isAdminMode);
 
                 versions.forEach(version => {
                     const vDiv = document.createElement('div');
@@ -1150,7 +1162,7 @@
             });
 
             // Save Progress
-            document.getElementById('progress-slider').addEventListener('input', (e) => document.getElementById('slider-value').innerText = e.target.value + '%');
+            document.getElementById('progress-slider').addEventListener('input', (e) => document.getElementById('progress-percentage-display').innerText = e.target.value + '%');
             document.getElementById('save-progress-button').addEventListener('click', async () => {
                 const val = document.getElementById('progress-slider').value;
                 await fetch(HOOKS.ATUALIZAR_PROGRESSO, {
@@ -1158,8 +1170,8 @@
                     body: JSON.stringify({ versionId: state.currentVersionId, newProgress: parseInt(val) })
                 });
                 Toast.success('Progresso salvo');
-                // Nota: O slider é visual, mas se quiser atualizar a lista de projetos, chame loadData aqui
                 await loadData();
+                renderProjectDetail(state.currentProjectId); // Re-render to confirm the change
             });
             
             // Navegação de Voltar
