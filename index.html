@@ -175,26 +175,16 @@
                 <!-- Conteúdo da Timeline -->
                 <div id="project-detail-content" style="margin-top: 24px;"></div>
 
-                <!-- Admin Controls: Adicionar Atualização -->
+                <!-- Admin Controls: Adicionar Atualização (REFATORADO) -->
                 <div id="add-update-form-container" class="admin-section-card hidden">
                     <h3>Nova Atualização</h3>
                     <form id="add-update-form">
                         <select id="update-phase-select" required></select>
-                        <select id="update-type-select" required>
-                            <option value="text">Texto</option>
-                            <option value="image">Imagem</option>
-                            <option value="link">Link</option>
-                        </select>
                         <input type="text" id="update-title" placeholder="Título da atualização" required>
-                        <div id="update-field-description">
-                            <textarea id="update-description" rows="3" placeholder="Descrição detalhada..."></textarea>
-                        </div>
-                        <div id="update-field-file" class="hidden">
-                            <input type="file" id="update-file" accept="image/*,application/pdf">
-                        </div>
-                        <div id="update-field-link" class="hidden">
-                            <input type="url" id="update-link" placeholder="https://...">
-                        </div>
+                        <textarea id="update-description" rows="3" placeholder="Descrição detalhada... (Obrigatório)"></textarea>
+                        <input type="url" id="update-link" placeholder="Anexar Link (Opcional, ex: https://...)">
+                        <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Imagem (Opcional):</label>
+                        <input type="file" id="update-file" accept="image/*">
                         <button type="submit" id="add-update-button">Publicar Atualização</button>
                     </form>
                 </div>
@@ -728,12 +718,12 @@
                             let updActions = '';
                             if (isAdminMode) {
                                 // Sanitização para evitar quebra de HTML no onclick
-                                const safeTitle = escapeHtml(upd.title);
-                                const safeDesc = escapeHtml(upd.description || '');
+                                // Importante: escapeQuotes para passar no onclick
+                                const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
                                 
                                 updActions = `
                                     <div class="update-actions">
-                                        <button class="icon-btn secondary" title="Editar" onclick="handleEditUpdate('${upd.id}', '${safeTitle}', '${safeDesc}')">✏️</button>
+                                        <button class="icon-btn secondary" title="Editar" onclick='handleEditUpdate(${safeUpd})'>✏️</button>
                                         <button class="icon-btn" style="background:#25D366; color:white;" title="Notificar WhatsApp" onclick="notifyWhatsApp('${upd.id}', '${project.id}')">📱</button>
                                         <button class="icon-btn danger" title="Excluir" onclick="deleteUpdate('${upd.id}')">🗑️</button>
                                     </div>
@@ -938,15 +928,55 @@
                 });
             };
 
-            // 5. CRUD Atualizações
-            window.handleEditUpdate = async (updateId, currentTitle, currentDescription) => {
+            // 5. CRUD Atualizações (REFATORADO)
+            document.getElementById('add-update-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('add-update-button');
+                btn.disabled = true; btn.innerText = 'Enviando...';
+
+                const phaseId = document.getElementById('update-phase-select').value;
+                const title = document.getElementById('update-title').value;
+                const description = document.getElementById('update-description').value;
+                const link = document.getElementById('update-link').value;
+                const file = document.getElementById('update-file').files[0];
+
+                try {
+                    if (file) {
+                        // Se tem arquivo, usa o endpoint de upload binário
+                        const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&contentUrl=${encodeURIComponent(link)}&fileName=${encodeURIComponent(file.name)}`;
+                        await fetch(url, { method: 'POST', body: file });
+                    } else {
+                        // Se não tem arquivo, usa o endpoint JSON
+                        await fetch(HOOKS.ADD_ATUALIZACAO, {
+                            method: 'POST', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify({ phaseId, title, description, contentUrl: link, type: link ? 'link' : 'text' })
+                        });
+                    }
+                    Toast.success('Atualização adicionada');
+                    e.target.reset();
+                    await loadData();
+                    renderProjectDetail(state.currentProjectId);
+                } catch(err) {
+                    console.error(err);
+                    Toast.error('Erro ao publicar atualização.');
+                } finally {
+                    btn.disabled = false; btn.innerText = 'Publicar Atualização';
+                }
+            });
+
+            window.handleEditUpdate = async (update) => {
                 showGenericModal({
                     title: 'Editar Atualização',
                     bodyHtml: `
                         <label>Título:</label>
-                        <input type="text" id="edit-update-title" value="${currentTitle}" style="margin-bottom: 10px;">
+                        <input type="text" id="edit-update-title" value="${escapeHtml(update.title)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
                         <label>Descrição:</label>
-                        <textarea id="edit-update-desc" rows="4">${currentDescription}</textarea>
+                        <textarea id="edit-update-desc" rows="4" style="width: 100%; box-sizing: border-box;">${escapeHtml(update.description || '')}</textarea>
+                        <label>Link (deixe em branco para remover):</label>
+                        <input type="url" id="edit-update-link" value="${update.update_type === 'link' ? escapeHtml(update.content_url) : ''}" placeholder="https://..." style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <label for="edit-update-file" style="font-size: 0.9em; color: var(--text-secondary);">Substituir Imagem (opcional):</label>
+                        ${update.update_type === 'image' ? `<img src="${update.content_url.replace('/view', '/uc')}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}
+                        <input type="file" id="edit-update-file" accept="image/*">
                     `,
                     buttons: [{
                         label: 'Salvar Alterações',
@@ -954,11 +984,20 @@
                         onClick: async () => {
                             const newTitle = document.getElementById('edit-update-title').value;
                             const newDesc = document.getElementById('edit-update-desc').value;
-                            
-                            await fetch(HOOKS.EDITAR_ATUALIZACAO, {
-                                method: 'POST', headers: {'Content-Type':'application/json'},
-                                body: JSON.stringify({ updateId, newTitle, newDescription: newDesc })
-                            });
+                            const newLink = document.getElementById('edit-update-link').value;
+                            const newFile = document.getElementById('edit-update-file').files[0];
+
+                            if (newFile) {
+                                // Lógica para substituir com um novo arquivo (usa o endpoint de upload)
+                                const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?updateIdToOverwrite=${update.id}&title=${encodeURIComponent(newTitle)}&description=${encodeURIComponent(newDesc)}&contentUrl=${encodeURIComponent(newLink)}&fileName=${encodeURIComponent(newFile.name)}`;
+                                await fetch(url, { method: 'POST', body: newFile });
+                            } else {
+                                // Lógica para editar apenas os dados textuais
+                                await fetch(HOOKS.EDITAR_ATUALIZACAO, {
+                                    method: 'POST', headers: {'Content-Type':'application/json'},
+                                    body: JSON.stringify({ updateId: update.id, newTitle, newDescription: newDesc, newContentUrl: newLink })
+                                });
+                            }
                             
                             Toast.success('Atualização salva!');
                             await loadData();
@@ -1061,42 +1100,6 @@
                 Toast.success('Projeto criado'); 
                 e.target.reset(); 
                 await loadData();
-            });
-
-            // Add Update (Texto/Link/Imagem)
-            document.getElementById('update-type-select').addEventListener('change', (e) => {
-                const t = e.target.value;
-                document.getElementById('update-field-description').classList.toggle('hidden', t !== 'text');
-                document.getElementById('update-field-file').classList.toggle('hidden', t !== 'image');
-                document.getElementById('update-field-link').classList.toggle('hidden', t !== 'link');
-            });
-
-            document.getElementById('add-update-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('add-update-button'); btn.disabled = true; btn.innerText = 'Enviando...';
-                const type = document.getElementById('update-type-select').value;
-                const phaseId = document.getElementById('update-phase-select').value;
-                const title = document.getElementById('update-title').value;
-                const desc = document.getElementById('update-description').value;
-
-                try {
-                    if (type === 'image') {
-                        const file = document.getElementById('update-file').files[0];
-                        const url = `${HOOKS.ADD_ATUALIZACAO_ARQUIVO}?phaseId=${phaseId}&type=${type}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(desc)}&fileName=${encodeURIComponent(file.name)}`;
-                        await fetch(url, { method: 'POST', body: file });
-                    } else {
-                        const link = document.getElementById('update-link').value;
-                        await fetch(HOOKS.ADD_ATUALIZACAO, {
-                            method: 'POST', headers: {'Content-Type':'application/json'},
-                            body: JSON.stringify({ phaseId, type, title, description: desc, contentUrl: link })
-                        });
-                    }
-                    Toast.success('Atualização adicionada');
-                    e.target.reset();
-                    await loadData(); 
-                    renderProjectDetail(state.currentProjectId);
-                } catch(err) { Toast.error('Erro ao atualizar'); }
-                finally { btn.disabled = false; btn.innerText = 'Publicar Atualização'; }
             });
 
             // Save Progress
