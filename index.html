@@ -398,6 +398,28 @@
                     .replace(/'/g, "&#039;")
                     .replace(/`/g, "&#96;"); // Importante para template literals
             }
+            
+            function getGoogleDriveDirectImage(url) {
+                if (!url || typeof url !== 'string') return null;
+                
+                // Tenta extrair o ID do formato /file/d/ID/...
+                let match = url.match(/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    const fileId = match[1];
+                    // Constrói a URL de imagem direta
+                    return `https://lh3.googleusercontent.com/d/${fileId}`;
+                }
+                
+                // Tenta extrair o ID do formato de link de compartilhamento ?id=ID
+                match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    const fileId = match[1];
+                    return `https://lh3.googleusercontent.com/d/${fileId}`;
+                }
+                
+                // Se nenhum formato conhecido for encontrado, retorna nulo
+                return null;
+            }
 
             // Sistema de Modal Genérico
             window.showGenericModal = function({ title, bodyHtml, buttons }) {
@@ -753,8 +775,15 @@
                             uDiv.className = 'update';
                             
                             let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
+                            // BLOCO NOVO E CORRIGIDO
                             if (upd.update_type === 'image' && upd.content_url) {
-                                content += `<img src="${upd.content_url.replace('/view', '/uc')}" style="max-width:100%; border-radius:6px; margin-top:10px;">`;
+                                const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
+                                if (directImageUrl) {
+                                    content += `<img src="${directImageUrl}" style="max-width:100%; border-radius:6px; margin-top:10px;">`;
+                                } else {
+                                    // Fallback caso a URL seja inválida, mostra um link genérico
+                                    content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:5px;">🔗 Acessar Anexo (Formato Inválido)</a>`;
+                                }
                             } else if (upd.content_url) {
                                 content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:5px;">🔗 Acessar Link</a>`;
                             }
