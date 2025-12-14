@@ -341,9 +341,9 @@
                 // CRUD e Gestão
                 CRIAR_CONTATO: `${N8N_BASE}/criar-contato-cliente`,
                 EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`,
-                EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`,
-                EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`,
-                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`,
+                EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, // Params: projectId, updates (array)
+                EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`, // Params: projectId
+                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`, // Params: updateId
                 EDITAR_ATUALIZACAO: `${N8N_BASE}/editar-atualizacao`
             };
 
@@ -607,9 +607,11 @@
                     
                     let adminActions = '';
                     if (state.isAdmin && !state.isSimulatingClient) {
+                        // Safety: escape single quotes in the JSON string because the HTML attribute is wrapped in single quotes.
+                        const safeProjectJson = JSON.stringify(project).replace(/'/g, "&apos;");
                         adminActions = `
                             <div class="admin-toolbar" style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
-                                <button class="secondary icon-btn" onclick="handleEditProject('${project.id}')">✏️ Editar</button>
+                                <button class="secondary icon-btn" onclick='handleEditProject(${safeProjectJson})'>✏️ Editar</button>
                                 <button class="danger icon-btn" onclick="handleDeleteProject('${project.id}')">🗑️</button>
                             </div>
                         `;
@@ -882,26 +884,22 @@
             };
 
             // 4. CRUD Projeto
-            window.handleEditProject = async (projectId) => {
-                const project = state.projects.find(p => p.id === projectId);
-                if (!project) return;
-
+            window.handleEditProject = (project) => {
                 showGenericModal({
                     title: 'Editar Projeto',
                     bodyHtml: `
-                        <label>Nome do Projeto:</label>
-                        <input type="text" id="edit-project-name" value="${escapeHtml(project.name)}" style="margin-bottom: 10px;">
+                        <label>Nome do projeto:</label>
+                        <input type="text" id="edit-project-name" value="${escapeHtml(project.name)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
                         <label>Descrição:</label>
-                        <textarea id="edit-project-desc" rows="4">${escapeHtml(project.description || '')}</textarea>
+                        <textarea id="edit-project-description" rows="4" placeholder="Adicione uma descrição detalhada..." style="width: 100%; box-sizing: border-box;">${escapeHtml(project.description || '')}</textarea>
                     `,
                     buttons: [{
-                        label: 'Salvar Alterações',
+                        label: 'Salvar',
                         classes: 'primary',
                         onClick: async () => {
                             const newName = document.getElementById('edit-project-name').value;
-                            const newDescription = document.getElementById('edit-project-desc').value;
+                            const newDescription = document.getElementById('edit-project-description').value;
 
-                            // Enviaremos um array de atualizações para o n8n
                             const updates = [
                                 { field: 'name', value: newName },
                                 { field: 'description', value: newDescription }
