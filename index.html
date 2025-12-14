@@ -73,6 +73,15 @@
         .update { margin-left: 20px; margin-bottom: 12px; padding: 15px; background: var(--background-dark); border-left: 3px solid var(--border-dark); border-radius: 0 8px 8px 0; position: relative; }
         .update-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; opacity: 0.7; }
         .update-actions:hover { opacity: 1; }
+        .update img {
+            max-height: 300px; /* Limita a altura da imagem na timeline */
+            width: auto;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .update img:hover {
+            opacity: 0.8;
+        }
         
         /* Admin Sections */
         .admin-section-card { border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-top: 20px; background: var(--surface-dark); }
@@ -324,6 +333,21 @@
         </div>
     </div>
 
+    <!-- LIGHTBOX PARA IMAGENS -->
+    <div id="image-lightbox" class="modal hidden">
+        <div class="modal-content" style="max-width: 90%; max-height: 90%; display: flex; gap: 20px; padding: 20px;">
+            <div style="flex: 2; display: flex; justify-content: center; align-items: center; position: relative;">
+                <img id="lightbox-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <a id="lightbox-download-link" href="#" download class="icon-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5);">📥 Download</a>
+            </div>
+            <div id="lightbox-info-panel" style="flex: 1; border-left: 1px solid var(--border-dark); padding-left: 20px; overflow-y: auto;">
+                <h3 id="lightbox-update-title" style="margin-top: 0;"></h3>
+                <small id="lightbox-update-date" style="color: var(--text-secondary); display: block; margin-bottom: 15px;"></small>
+                <p id="lightbox-update-description"></p>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -468,6 +492,25 @@
 
                 modal.classList.remove('hidden');
             };
+
+            function openImageLightbox(update) {
+                const lightbox = document.getElementById('image-lightbox');
+                const img = document.getElementById('lightbox-img');
+                const downloadLink = document.getElementById('lightbox-download-link');
+                
+                const directImageUrl = getGoogleDriveDirectImage(update.content_url);
+                if (!directImageUrl) return;
+
+                img.src = directImageUrl;
+                // Para download, o webContentLink é melhor
+                downloadLink.href = update.content_url.replace(/(&?)(export=download|usp=drivesdk|view)$/, '') + '&export=download';
+                
+                document.getElementById('lightbox-update-title').innerText = update.title;
+                document.getElementById('lightbox-update-date').innerText = new Date(update.created_at).toLocaleString('pt-BR');
+                document.getElementById('lightbox-update-description').innerText = update.description || 'Sem descrição.';
+                
+                lightbox.classList.remove('hidden');
+            }
 
             const Views = {
                 login: document.getElementById('login-section'),
@@ -775,13 +818,14 @@
                             uDiv.className = 'update';
                             
                             let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
-                            // BLOCO NOVO E CORRIGIDO
+                            // BLOCO NOVO COM LIGHTBOX
                             if (upd.update_type === 'image' && upd.content_url) {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
                                 if (directImageUrl) {
-                                    content += `<img src="${directImageUrl}" style="max-width:100%; border-radius:6px; margin-top:10px;">`;
+                                    // Escapa o objeto 'upd' para uso seguro no HTML
+                                    const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
+                                    content += `<img src="${directImageUrl}" onclick='openImageLightbox(${safeUpd})'>`;
                                 } else {
-                                    // Fallback caso a URL seja inválida, mostra um link genérico
                                     content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:5px;">🔗 Acessar Anexo (Formato Inválido)</a>`;
                                 }
                             } else if (upd.content_url) {
@@ -838,6 +882,13 @@
                     renderClientList();
                 } else if (!document.getElementById('project-list-view').classList.contains('hidden')) {
                     renderProjectList(state.currentClientId);
+                }
+            });
+
+            document.getElementById('image-lightbox').addEventListener('click', (e) => {
+                // Fecha somente se o clique for no fundo (o modal em si) e não nos seus filhos
+                if (e.target.id === 'image-lightbox') {
+                    e.target.classList.add('hidden');
                 }
             });
 
