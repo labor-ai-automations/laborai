@@ -34,7 +34,7 @@
         button.danger { background-color: rgba(239, 68, 68, 0.2); color: var(--error-color); border: 1px solid var(--error-color); }
         button.danger:hover { background-color: rgba(239, 68, 68, 0.3); }
         button.primary { /* Padrão, mas explicito se necessário via JS */ } 
-        button.icon-btn { width: auto; padding: 6px 10px; font-size: 14px; }
+        button.icon-btn { width: auto; padding: 6px 12px; font-size: 14px; }
         
         /* Header */
         #app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border-dark); margin-bottom: 24px; }
@@ -65,6 +65,10 @@
         
         .phase-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .phase-header.expanded + .phase-content { max-height: 2000px; transition: max-height 0.5s ease-in; }
+
+        /* Phase Actions Hover Effect */
+        .phase-header .phase-actions { opacity: 0; transition: opacity 0.2s ease-in-out; }
+        .phase-header:hover .phase-actions { opacity: 1; }
 
         .update { margin-left: 20px; margin-bottom: 12px; padding: 15px; background: var(--background-dark); border-left: 3px solid var(--border-dark); border-radius: 0 8px 8px 0; position: relative; }
         .update-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; opacity: 0.7; }
@@ -156,8 +160,10 @@
             <div id="project-detail-view" class="hidden">
                 <button id="back-to-projects-button" class="secondary" style="margin-bottom: 20px;">&larr; Voltar para Projetos</button>
                 
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h2 id="project-detail-name">Nome do Projeto</h2>
+                <!-- Cabeçalho do Projeto Refatorado -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2 id="project-detail-name" style="margin: 0;">Nome do Projeto</h2>
+                    <button id="toggle-add-update-form" class="primary icon-btn hidden">[+] Nova Atualização</button>
                 </div>
 
                 <!-- Admin Controls: Progresso -->
@@ -174,24 +180,17 @@
                 <!-- Conteúdo da Timeline -->
                 <div id="project-detail-content" style="margin-top: 24px;"></div>
 
-                <!-- Admin Controls: Adicionar Atualização (REFATORADO) -->
-                <div id="add-update-controls" class="hidden">
-                    <div class="admin-section-card">
-                        <button id="toggle-add-update-form" style="width: 100%;">[+] Adicionar Nova Atualização</button>
-                    </div>
-
-                    <div id="add-update-form-container" class="admin-section-card hidden" style="margin-top: 10px;">
-                        <h3>Nova Atualização</h3>
-                        <form id="add-update-form">
-                            <select id="update-phase-select" required></select>
-                            <input type="text" id="update-title" placeholder="Título da atualização" required>
-                            <textarea id="update-description" rows="3" placeholder="Descrição detalhada... (Obrigatório)"></textarea>
-                            <input type="url" id="update-link" placeholder="Anexar Link (Opcional, ex: https://...)">
-                            <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Imagem (Opcional):</label>
-                            <input type="file" id="update-file" accept="image/*">
-                            <button type="submit" id="add-update-button">Publicar Atualização</button>
-                        </form>
-                    </div>
+                <!-- Template do Formulário (Oculto, clonado para o modal) -->
+                <div id="add-update-form-container" class="hidden">
+                    <form id="add-update-form">
+                        <select id="update-phase-select" required></select>
+                        <input type="text" id="update-title" placeholder="Título da atualização" required>
+                        <textarea id="update-description" rows="3" placeholder="Descrição detalhada... (Obrigatório)"></textarea>
+                        <input type="url" id="update-link" placeholder="Anexar Link (Opcional, ex: https://...)">
+                        <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Imagem (Opcional):</label>
+                        <input type="file" id="update-file" accept="image/*">
+                        <button type="submit" id="add-update-button" style="margin-top:15px;">Publicar Atualização</button>
+                    </form>
                 </div>
             </div>
 
@@ -336,9 +335,9 @@
                 // CRUD e Gestão
                 CRIAR_CONTATO: `${N8N_BASE}/criar-contato-cliente`,
                 EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`,
-                EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, // Params: projectId, updates (array)
-                EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`, // Params: projectId
-                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`, // Params: updateId
+                EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, 
+                EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`, 
+                EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`, 
                 EDITAR_ATUALIZACAO: `${N8N_BASE}/editar-atualizacao`
             };
 
@@ -398,12 +397,14 @@
                 // Botão para fechar o modal
                 const closeModal = () => modal.classList.add('hidden');
 
-                // Adiciona um botão de "Cancelar" padrão
-                const cancelButton = document.createElement('button');
-                cancelButton.className = 'secondary';
-                cancelButton.innerText = 'Cancelar';
-                cancelButton.onclick = closeModal;
-                footer.appendChild(cancelButton);
+                // Adiciona um botão de "Cancelar" padrão (se houver botões customizados ou se não houver nenhum)
+                if (buttons.length > 0 || buttons.length === 0) {
+                    const cancelButton = document.createElement('button');
+                    cancelButton.className = 'secondary';
+                    cancelButton.innerText = 'Cancelar';
+                    cancelButton.onclick = closeModal;
+                    footer.appendChild(cancelButton);
+                }
 
                 // Adiciona botões customizados
                 buttons.forEach(btnConfig => {
@@ -412,7 +413,6 @@
                     if (btnConfig.classes) button.className = btnConfig.classes;
                     
                     button.onclick = async () => {
-                        // Desabilitar botão para evitar duplo clique
                         const originalText = button.innerText;
                         button.disabled = true;
                         button.innerText = '...';
@@ -484,26 +484,24 @@
                 const toggleContainer = document.getElementById('admin-simulation-toggle');
                 
                 if (state.isAdmin) {
-                    adminPanelBtn.classList.remove('hidden');
                     toggleContainer.classList.remove('hidden');
+                    // Refatoração da Tarefa 3: Só mostra painel se estiver dentro de um cliente
+                    adminPanelBtn.classList.toggle('hidden', !state.currentClientId);
                 } else {
                     adminPanelBtn.classList.add('hidden');
                     toggleContainer.classList.add('hidden');
                 }
 
-                // --- LÓGICA DE EXIBIÇÃO DO LOGO DO CLIENTE (ADICIONAR/MODIFICAR) ---
+                // --- LÓGICA DE EXIBIÇÃO DO LOGO DO CLIENTE ---
                 const headerLogoImg = document.getElementById('header-client-logo');
                 const headerClientNameSpan = document.getElementById('header-client-name');
                 let clientForHeader = null;
 
-                // Se for admin, o cliente é o que está sendo visualizado.
-                // Se for cliente, o clientId vem dos seus metadados.
                 const clientIdToShow = state.isAdmin ? state.currentClientId : state.user.user_metadata.clientId;
 
                 if (clientIdToShow && state.clients.length > 0) {
                     clientForHeader = state.clients.find(c => c.id === clientIdToShow);
                 } else if (clientIdToShow && state.projects.length > 0) {
-                    // Fallback para pegar o cliente dos projetos, caso a lista de clientes não esteja populada (cenário do cliente logado)
                     const projectFromClient = state.projects.find(p => p.client_id === clientIdToShow);
                     if (projectFromClient && projectFromClient.laborai_clients) {
                         clientForHeader = projectFromClient.laborai_clients;
@@ -519,7 +517,6 @@
                     headerClientNameSpan.textContent = `| ${clientForHeader.name}`;
                 } else {
                     headerLogoImg.classList.add('hidden');
-                    // Para admin na tela principal, mostra "Admin"
                     headerClientNameSpan.textContent = state.isAdmin ? (state.isSimulatingClient ? " (Modo Visualização)" : " | Admin") : "";
                 }
             }
@@ -639,12 +636,17 @@
                 contentDiv.innerHTML = '';
 
                 const isAdminMode = state.isAdmin && !state.isSimulatingClient;
-                const adminContainerIds = ['progress-control-container', 'add-update-controls'];
+                const adminContainerIds = ['progress-control-container'];
                 adminContainerIds.forEach(id => {
                     const el = document.getElementById(id);
                     if (isAdminMode) el.classList.remove('hidden');
                     else el.classList.add('hidden');
                 });
+
+                // Toggle "Add Update" Button visibility
+                const addUpdateBtn = document.getElementById('toggle-add-update-form');
+                if (isAdminMode) addUpdateBtn.classList.remove('hidden');
+                else addUpdateBtn.classList.add('hidden');
 
                 if (isAdminMode && activeVersion) {
                     document.getElementById('progress-slider').value = activeVersion.progress_percentage || 0;
@@ -682,9 +684,9 @@
                         let phaseActions = '';
                         if (isAdminMode) {
                             phaseActions = `
-                                <div style="display:flex; gap:5px;">
-                                    <button class="icon-btn secondary" title="Iniciar" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶️</button>
-                                    <button class="icon-btn secondary" title="Concluir" onclick="changePhaseStatus('${phase.id}', 'completed')">✅</button>
+                                <div class="phase-actions" style="display:flex; gap:8px;">
+                                    <button class="icon-btn secondary" title="Marcar como 'Em Andamento'" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶ Iniciar</button>
+                                    <button class="icon-btn secondary" style="background-color: rgba(34, 197, 94, 0.1); color: var(--success-color);" title="Concluir Fase" onclick="changePhaseStatus('${phase.id}', 'completed')">✅ Concluir</button>
                                 </div>
                             `;
                         }
@@ -768,8 +770,23 @@
                 }
             });
 
+            // Refatoração: Botão de Adicionar Atualização abre Modal
             document.getElementById('toggle-add-update-form').addEventListener('click', () => {
-                document.getElementById('add-update-form-container').classList.toggle('hidden');
+                const formContainer = document.getElementById('add-update-form-container');
+                showGenericModal({
+                    title: 'Adicionar Nova Atualização',
+                    bodyHtml: formContainer.innerHTML, // Clona o HTML do formulário
+                    buttons: [] // Sem botões extras, o form tem o submit
+                });
+
+                // Re-atacha o listener de submit ao formulário dentro do modal
+                const modalForm = document.querySelector('#generic-modal #add-update-form');
+                if(modalForm) {
+                    modalForm.addEventListener('submit', async (e) => {
+                        await handleUpdateSubmit(e);
+                        document.getElementById('generic-modal').classList.add('hidden'); // Fecha modal no sucesso
+                    });
+                }
             });
 
             // --- FUNÇÕES ADMIN / ACTIONS (Via N8N & Modal Customizado) ---
@@ -930,17 +947,19 @@
                 });
             };
 
-            // 5. CRUD Atualizações (REFATORADO)
-            document.getElementById('add-update-form').addEventListener('submit', async (e) => {
+            // 5. CRUD Atualizações (Lógica Reutilizável)
+            async function handleUpdateSubmit(e) {
                 e.preventDefault();
-                const btn = document.getElementById('add-update-button');
+                // Nota: Usamos e.target para pegar o form que disparou o evento (seja no modal ou original)
+                const form = e.target;
+                const btn = form.querySelector('button[type="submit"]');
                 btn.disabled = true; btn.innerText = 'Enviando...';
 
-                const phaseId = document.getElementById('update-phase-select').value;
-                const title = document.getElementById('update-title').value;
-                const description = document.getElementById('update-description').value;
-                const link = document.getElementById('update-link').value;
-                const file = document.getElementById('update-file').files[0];
+                const phaseId = form.querySelector('#update-phase-select').value;
+                const title = form.querySelector('#update-title').value;
+                const description = form.querySelector('#update-description').value;
+                const link = form.querySelector('#update-link').value;
+                const file = form.querySelector('#update-file').files[0];
 
                 try {
                     if (file) {
@@ -953,7 +972,8 @@
                         });
                     }
                     Toast.success('Atualização adicionada');
-                    e.target.reset();
+                    // Reset do form original caso precise reutilizar
+                    document.getElementById('add-update-form').reset();
                     await loadData();
                     renderProjectDetail(state.currentProjectId);
                 } catch(err) {
@@ -962,7 +982,7 @@
                 } finally {
                     btn.disabled = false; btn.innerText = 'Publicar Atualização';
                 }
-            });
+            }
 
             window.handleEditUpdate = async (update) => {
                 showGenericModal({
@@ -1060,7 +1080,8 @@
                 showView('adminForms');
             });
             document.getElementById('back-from-admin-panel').addEventListener('click', () => {
-                showView('clientList');
+                renderProjectList(state.currentClientId); // Refatoração Tarefa 3: Voltar para lista de projetos do cliente
+                showView('projectList');
             });
 
             // Criar Cliente
