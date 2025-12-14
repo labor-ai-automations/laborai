@@ -493,16 +493,21 @@
                 modal.classList.remove('hidden');
             };
 
+            // Adicione esta função completa no seu script
             function openImageLightbox(update) {
                 const lightbox = document.getElementById('image-lightbox');
                 const img = document.getElementById('lightbox-img');
                 const downloadLink = document.getElementById('lightbox-download-link');
                 
                 const directImageUrl = getGoogleDriveDirectImage(update.content_url);
-                if (!directImageUrl) return;
+                if (!directImageUrl) {
+                    console.error("Não foi possível gerar a URL direta para a imagem:", update.content_url);
+                    Toast.error("Não foi possível carregar a imagem.");
+                    return;
+                }
 
                 img.src = directImageUrl;
-                // Para download, o webContentLink é melhor
+                // Para download, o webContentLink é melhor, garantindo que o download seja forçado
                 downloadLink.href = update.content_url.replace(/(&?)(export=download|usp=drivesdk|view)$/, '') + '&export=download';
                 
                 document.getElementById('lightbox-update-title').innerText = update.title;
