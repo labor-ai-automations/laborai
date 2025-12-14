@@ -144,7 +144,7 @@
             <div id="project-list-view" class="hidden">
                 <button id="back-to-clients-button" class="secondary hidden" style="margin-bottom: 20px;">&larr; Voltar para Clientes</button>
                 
-                <!-- Header da View 2 refatorado -->
+                <!-- Header da View 2 -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-dark); padding-bottom: 16px;">
                     <h2 id="project-list-title" style="margin: 0;">Projetos</h2>
                     <button id="manage-contacts-btn" class="secondary icon-btn hidden" style="font-size: 15px;">👥 Gerenciar Contatos</button>
@@ -491,22 +491,41 @@
                 if (state.isAdmin) {
                     adminPanelBtn.classList.remove('hidden');
                     toggleContainer.classList.remove('hidden');
-                    document.getElementById('header-client-logo').classList.add('hidden');
-                    document.getElementById('header-client-name').textContent = state.isSimulatingClient ? " (Modo Visualização)" : " | Admin";
                 } else {
                     adminPanelBtn.classList.add('hidden');
                     toggleContainer.classList.add('hidden');
-                    const clientId = state.user.user_metadata.clientId;
-                    if (clientId) {
-                        const clientName = state.user.user_metadata.clientName;
-                        document.getElementById('header-client-name').textContent = `| ${clientName}`;
-                        const p = state.projects.find(p => p.client_id === clientId);
-                        if (p && p.laborai_clients && p.laborai_clients.logo_url) {
-                            const img = document.getElementById('header-client-logo');
-                            img.src = p.laborai_clients.logo_url.replace('/view', '/uc');
-                            img.classList.remove('hidden');
-                        }
+                }
+
+                // --- LÓGICA DE EXIBIÇÃO DO LOGO DO CLIENTE (ADICIONAR/MODIFICAR) ---
+                const headerLogoImg = document.getElementById('header-client-logo');
+                const headerClientNameSpan = document.getElementById('header-client-name');
+                let clientForHeader = null;
+
+                // Se for admin, o cliente é o que está sendo visualizado.
+                // Se for cliente, o clientId vem dos seus metadados.
+                const clientIdToShow = state.isAdmin ? state.currentClientId : state.user.user_metadata.clientId;
+
+                if (clientIdToShow && state.clients.length > 0) {
+                    clientForHeader = state.clients.find(c => c.id === clientIdToShow);
+                } else if (clientIdToShow && state.projects.length > 0) {
+                    // Fallback para pegar o cliente dos projetos, caso a lista de clientes não esteja populada (cenário do cliente logado)
+                    const projectFromClient = state.projects.find(p => p.client_id === clientIdToShow);
+                    if (projectFromClient && projectFromClient.laborai_clients) {
+                        clientForHeader = projectFromClient.laborai_clients;
                     }
+                }
+
+                if (clientForHeader && clientForHeader.logo_url) {
+                    headerLogoImg.src = clientForHeader.logo_url.replace('/view', '/uc');
+                    headerLogoImg.classList.remove('hidden');
+                    headerClientNameSpan.textContent = `| ${clientForHeader.name}`;
+                } else if (clientForHeader) {
+                    headerLogoImg.classList.add('hidden');
+                    headerClientNameSpan.textContent = `| ${clientForHeader.name}`;
+                } else {
+                    headerLogoImg.classList.add('hidden');
+                    // Para admin na tela principal, mostra "Admin"
+                    headerClientNameSpan.textContent = state.isAdmin ? (state.isSimulatingClient ? " (Modo Visualização)" : " | Admin") : "";
                 }
             }
 
@@ -527,7 +546,6 @@
                         ? `<img src="${client.logo_url.replace('/view', '/uc')}" class="client-logo-thumb">`
                         : `<div style="width:40px; height:40px; background:#374151; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold;">${client.name.substring(0,2).toUpperCase()}</div>`;
 
-                    // Refatoração da Tarefa 1: Botão de contatos removido, botão de projetos full-width
                     card.innerHTML = `
                         <div class="card-header">
                             <div>
@@ -559,7 +577,6 @@
                         const client = state.clients.find(c => c.id === clientId);
                         if (client) title = `Projetos: ${client.name}`;
                         
-                        // Refatoração da Tarefa 2: Botão Gerenciar Contatos no Header
                         if (client) {
                             manageContactsBtn.classList.remove('hidden');
                             manageContactsBtn.onclick = () => openContactsModal(client.id, client.name);
@@ -738,6 +755,7 @@
 
             window.openClientProjects = (clientId) => {
                 state.currentClientId = clientId;
+                renderHeader();
                 renderProjectList(clientId);
                 showView('projectList');
             };
@@ -1084,6 +1102,7 @@
             // Navegação de Voltar
             document.getElementById('back-to-clients-button').addEventListener('click', () => {
                 state.currentClientId = null;
+                renderHeader();
                 showView('clientList');
             });
             document.getElementById('back-to-projects-button').addEventListener('click', () => {
