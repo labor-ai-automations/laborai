@@ -673,8 +673,8 @@
                         // BLOCO NOVO E CORRIGIDO
                         adminActions = `
                             <div class="admin-toolbar" style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
-                                <button class="secondary icon-btn" onclick="event.stopPropagation(); handleEditProject(${JSON.stringify(project)})">✏️ Editar</button>
-                                <button class="danger icon-btn" onclick="event.stopPropagation(); handleDeleteProject('${project.id}')">🗑️</button>
+                                <button class="secondary icon-btn" onclick='event.stopPropagation(); handleEditProject(${JSON.stringify(project)})'>✏️ Editar</button>
+                                <button class="danger icon-btn" onclick='event.stopPropagation(); handleDeleteProject("${project.id}")'>🗑️</button>
                             </div>
                         `;
                     }
