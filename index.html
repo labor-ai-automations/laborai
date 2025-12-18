@@ -1,3 +1,5 @@
+--- START OF FILE index (23).html ---
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -822,23 +824,23 @@
                             const uDiv = document.createElement('div');
                             uDiv.className = 'update';
                             
+                            // BLOCO NOVO E CORRIGIDO - LÓGICA UNIFICADA
                             let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
 
-                            // BLOCO NOVO E CORRIGIDO
-                            // Renderiza o anexo de arquivo APENAS se o tipo for 'image' e a URL for válida
+                            // Anexa a imagem se o tipo for 'image'
                             if (upd.update_type === 'image' && upd.content_url && upd.content_url.trim() !== '') {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
                                 if (directImageUrl) {
                                     const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
                                     content += `<img src="${directImageUrl}" onclick='openImageLightbox(${safeUpd})' style="margin-top:10px;">`;
-                                } else {
-                                    // Fallback para outros tipos de arquivo ou links de imagem quebrados
-                                    content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">📄 Baixar Anexo</a>`;
                                 }
-                            } else if (upd.update_type === 'link' && upd.content_url && upd.content_url.trim() !== '') {
-                                // Renderiza o link de texto se o tipo for 'link' e a URL for válida
-                                content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Acessar Link</a>`;
                             }
+
+                            // Anexa o link se 'link_url' existir (independente do tipo de atualização principal)
+                            if (upd.link_url && upd.link_url.trim() !== '') {
+                                content += `<a href="${upd.link_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Acessar Link</a>`;
+                            }
+
 
                             let updActions = '';
                             if (isAdminMode) {
@@ -1127,9 +1129,9 @@
                         <label>Descrição:</label>
                         <textarea id="edit-update-desc" rows="4" style="width: 100%; box-sizing: border-box;">${escapeHtml(update.description || '')}</textarea>
                         <label>Link (deixe em branco para remover):</label>
-                        <input type="url" id="edit-update-link" value="${update.update_type === 'link' ? escapeHtml(update.content_url) : ''}" placeholder="https://..." style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <input type="url" id="edit-update-link" value="${update.link_url ? escapeHtml(update.link_url) : ''}" placeholder="https://..." style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
                         <label for="edit-update-file" style="font-size: 0.9em; color: var(--text-secondary);">Substituir Arquivo (opcional):</label>
-                        ${update.update_type === 'image' && update.content_url ? `<img src="${update.content_url}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}
+                        ${update.update_type === 'image' && update.content_url ? `<img src="${getGoogleDriveDirectImage(update.content_url)}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}
                         <input type="file" id="edit-update-file">
                     `,
                     buttons: [{
