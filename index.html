@@ -1,3 +1,5 @@
+--- START OF FILE index (22).html ---
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -338,6 +340,7 @@
         <div class="modal-content" style="max-width: 90%; max-height: 90%; display: flex; gap: 20px; padding: 20px;">
             <div style="flex: 2; display: flex; justify-content: center; align-items: center; position: relative;">
                 <img id="lightbox-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <a id="lightbox-download-link" href="#" download class="icon-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5);">📥 Download</a>
             </div>
             <div id="lightbox-info-panel" style="flex: 1; border-left: 1px solid var(--border-dark); padding-left: 20px; overflow-y: auto;">
                 <h3 id="lightbox-update-title" style="margin-top: 0;"></h3>
@@ -493,9 +496,10 @@
             };
 
             // Adicione esta função completa no seu script
-            window.openImageLightbox = function(update) {
+            function openImageLightbox(update) {
                 const lightbox = document.getElementById('image-lightbox');
                 const img = document.getElementById('lightbox-img');
+                const downloadLink = document.getElementById('lightbox-download-link');
                 
                 const directImageUrl = getGoogleDriveDirectImage(update.content_url);
                 if (!directImageUrl) {
@@ -505,13 +509,15 @@
                 }
 
                 img.src = directImageUrl;
+                // Para download, o webContentLink é melhor, garantindo que o download seja forçado
+                downloadLink.href = update.content_url.replace(/(&?)(export=download|usp=drivesdk|view)$/, '') + '&export=download';
                 
                 document.getElementById('lightbox-update-title').innerText = update.title;
                 document.getElementById('lightbox-update-date').innerText = new Date(update.created_at).toLocaleString('pt-BR');
                 document.getElementById('lightbox-update-description').innerText = update.description || 'Sem descrição.';
                 
                 lightbox.classList.remove('hidden');
-            };
+            }
 
             const Views = {
                 login: document.getElementById('login-section'),
@@ -670,11 +676,10 @@
 
                     let adminActions = '';
                     if (state.isAdmin && !state.isSimulatingClient) {
-                        // BLOCO NOVO E CORRIGIDO
                         adminActions = `
                             <div class="admin-toolbar" style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
-                                <button class="secondary icon-btn" onclick='event.stopPropagation(); handleEditProject(${JSON.stringify(project)})'>✏️ Editar</button>
-                                <button class="danger icon-btn" onclick='event.stopPropagation(); handleDeleteProject("${project.id}")'>🗑️</button>
+                                <button class="secondary icon-btn" onclick="event.stopPropagation(); handleEditProject(${JSON.stringify(project)})">✏️ Editar</button>
+                                <button class="danger icon-btn" onclick="event.stopPropagation(); handleDeleteProject('${project.id}')">🗑️</button>
                             </div>
                         `;
                     }
@@ -819,26 +824,23 @@
                             const uDiv = document.createElement('div');
                             uDiv.className = 'update';
                             
-                            // LÓGICA REFAORADA PARA MÚLTIPLOS ANEXOS
                             let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
 
-                            // Renderiza a imagem se 'content_url' (que agora é só para arquivos) existir
-                            if (upd.content_url) {
+                            // BLOCO NOVO E CORRIGIDO
+                            // Renderiza o anexo de arquivo APENAS se o tipo for 'image' e a URL for válida
+                            if (upd.update_type === 'image' && upd.content_url && upd.content_url.trim() !== '') {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
                                 if (directImageUrl) {
                                     const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
                                     content += `<img src="${directImageUrl}" onclick='openImageLightbox(${safeUpd})' style="margin-top:10px;">`;
                                 } else {
-                                    // Fallback para outros tipos de arquivo (PDF, etc.)
+                                    // Fallback para outros tipos de arquivo ou links de imagem quebrados
                                     content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">📄 Baixar Anexo</a>`;
                                 }
+                            } else if (upd.update_type === 'link' && upd.content_url && upd.content_url.trim() !== '') {
+                                // Renderiza o link de texto se o tipo for 'link' e a URL for válida
+                                content += `<a href="${upd.content_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Acessar Link</a>`;
                             }
-
-                            // Renderiza o link de texto se 'link_url' existir
-                            if (upd.link_url) {
-                                content += `<a href="${upd.link_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Acessar Link</a>`;
-                            }
-
 
                             let updActions = '';
                             if (isAdminMode) {
