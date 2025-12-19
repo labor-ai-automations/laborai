@@ -33,6 +33,7 @@
         button.secondary:hover { background: var(--border-dark); }
         button.danger { background-color: rgba(239, 68, 68, 0.2); color: var(--error-color); border: 1px solid var(--error-color); }
         button.danger:hover { background-color: rgba(239, 68, 68, 0.3); }
+        button.primary { /* Padrão, mas explicito se necessário via JS */ } 
         button.icon-btn { width: auto; padding: 6px 12px; font-size: 14px; }
         
         /* Header */
@@ -73,7 +74,7 @@
         .update-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; opacity: 0.7; }
         .update-actions:hover { opacity: 1; }
         .update img {
-            max-height: 300px;
+            max-height: 300px; /* Limita a altura da imagem na timeline */
             width: auto;
             cursor: pointer;
             transition: opacity 0.2s;
@@ -122,6 +123,7 @@
     <div id="app-container" class="container hidden">
         <header id="app-header">
             <div class="header-left">
+                <!-- Logo do Cliente (Carregada Dinamicamente) -->
                 <img id="header-client-logo" class="client-logo-header-img hidden" alt="Logo">
                 <div>
                     <strong style="font-size: 1.2rem;">LaborAI</strong>
@@ -130,6 +132,7 @@
             </div>
             <div style="display: flex; align-items: center;">
                 
+                <!-- Toggle "Ver como Cliente" (Apenas Admin) -->
                 <div id="admin-simulation-toggle" class="toggle-container hidden">
                     <span style="font-size: 0.9em; color: var(--text-secondary);">Ver como Cliente</span>
                     <label class="switch">
@@ -140,6 +143,7 @@
 
                 <span id="user-email" style="font-size: 0.9em; margin-right: 16px; color: var(--text-secondary);"></span>
                 
+                <!-- Botão Painel Admin (Apenas Admin) -->
                 <button id="admin-panel-button" class="hidden secondary" style="width: auto; padding: 6px 12px; margin-right: 10px;">
                     ⚙️ Painel & Criação
                 </button>
@@ -155,9 +159,10 @@
                 <div id="clients-list" class="card-grid"></div>
             </div>
 
-            <!-- VIEW 2: Lista de Projetos -->
+            <!-- VIEW 2: Lista de Projetos (Home do Cliente / Navegação Admin) -->
             <div id="project-list-view" class="hidden">
                 <button id="back-to-clients-button" class="secondary hidden" style="margin-bottom: 20px;">&larr; Voltar para Clientes</button>
+                <!-- Adicionar logo após o botão de voltar -->
                 <h2 style="font-weight: 500; border-bottom: 1px solid var(--border-dark); padding-bottom: 16px; margin-bottom: 24px;">Projetos</h2>
                 <div id="project-list-content" class="card-grid"></div>
             </div>
@@ -166,24 +171,29 @@
             <div id="project-detail-view" class="hidden">
                 <button id="back-to-projects-button" class="secondary" style="margin-bottom: 20px;">&larr; Voltar para Projetos</button>
                 
+                <!-- Cabeçalho do Projeto Refatorado -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                     <h2 id="project-detail-name" style="margin: 0;">Nome do Projeto</h2>
                     <button id="toggle-add-update-form" class="primary icon-btn hidden">[+] Nova Atualização</button>
                 </div>
 
+                <!-- Adicionar logo após o <div> do título e botão "Nova Atualização" -->
                 <div id="project-description-container" class="admin-section-card" style="margin-bottom: 24px; padding: 20px;">
                     <h3 style="margin-top: 0; margin-bottom: 10px;">Sobre o Projeto</h3>
                     <p id="project-detail-description" style="color: var(--text-secondary); margin: 0; white-space: pre-wrap;"></p>
                 </div>
 
+                <!-- ESTRUTURA NOVA E MELHORADA -->
                 <div id="progress-view-container" class="admin-section-card" style="margin-bottom: 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <h3 style="margin: 0;">📊 Progresso</h3>
                         <span id="progress-percentage-display" style="font-weight: bold; font-size: 1.1rem;">0%</span>
                     </div>
+                    <!-- Barra de progresso visual para todos -->
                     <div style="height: 8px; background-color: var(--border-dark); border-radius: 4px; overflow: hidden;">
                         <div id="progress-bar-fill" style="width: 0%; height: 100%; background-color: var(--primary-accent); transition: width 0.3s;"></div>
                     </div>
+                    <!-- Controles exclusivos para o admin -->
                     <div id="admin-progress-controls" class="hidden" style="margin-top: 15px;">
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="range" min="0" max="100" value="0" id="progress-slider" style="flex: 1;">
@@ -192,14 +202,16 @@
                     </div>
                 </div>
 
+                <!-- Conteúdo da Timeline -->
                 <div id="project-detail-content" style="margin-top: 24px;"></div>
 
+                <!-- Template do Formulário (Oculto, clonado para o modal) -->
                 <div id="add-update-form-container" class="hidden">
                     <form id="add-update-form">
                         <select id="update-phase-select" required></select>
                         <input type="text" id="update-title" placeholder="Título da atualização" required>
-                        <textarea id="update-description" rows="3" placeholder="Descrição detalhada..." required></textarea>
-                        <input type="url" id="update-link" placeholder="Anexar Link (Opcional)">
+                        <textarea id="update-description" rows="3" placeholder="Descrição detalhada... (Obrigatório)"></textarea>
+                        <input type="url" id="update-link" placeholder="Anexar Link (Opcional, ex: https://...)">
                         <label for="update-file" style="font-size: 0.9em; color: var(--text-secondary);">Anexar Arquivo (Opcional):</label>
                         <input type="file" id="update-file">
                         <button type="submit" id="add-update-button" style="margin-top:15px;">Publicar Atualização</button>
@@ -207,12 +219,13 @@
                 </div>
             </div>
 
-            <!-- VIEW 4: Painel Administrativo -->
+            <!-- VIEW 4: Painel Administrativo (Formulários de Criação) -->
             <div id="admin-forms-view" class="hidden">
                 <button id="back-from-admin-panel" class="secondary" style="margin-bottom: 20px;">&larr; Voltar</button>
                 <h2>Painel de Gestão & Criação</h2>
                 
                 <div class="card-grid">
+                    <!-- Upload de Logo -->
                     <div class="admin-section-card" style="margin-top: 0;">
                         <h3>🖼️ Logo do Cliente</h3>
                         <form id="upload-logo-form">
@@ -224,15 +237,17 @@
                         </form>
                     </div>
 
+                    <!-- Criar Cliente -->
                     <div class="admin-section-card" style="margin-top: 0;">
                         <h3>🏢 Novo Cliente</h3>
                         <form id="create-client-form">
                             <label>Nome da Empresa:</label>
-                            <input type="text" id="new-client-name" placeholder="Ex: LaborAI Corp" required>
+                            <input type="text" id="new-client-name" placeholder="Ex: Molas Fama" required>
                             <button type="submit" id="create-client-button">Criar Cliente</button>
                         </form>
                     </div>
 
+                    <!-- Criar Usuário -->
                     <div class="admin-section-card" style="margin-top: 0;">
                         <h3>👤 Novo Usuário</h3>
                         <form id="create-user-form">
@@ -247,6 +262,7 @@
                     </div>
                 </div>
 
+                <!-- Criar Projeto -->
                 <div class="admin-section-card">
                     <h3>🚀 Novo Projeto</h3>
                     <form id="create-project-form">
@@ -266,12 +282,33 @@
         </main>
     </div>
 
-    <!-- MODAIS -->
+    <!-- MODAL: Nova Versão -->
+    <div id="new-version-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Iniciar Nova Versão</h3>
+            <form id="new-version-form">
+                <input type="text" id="new-version-number" placeholder="Ex: V2.0" required>
+                <textarea id="new-version-summary" rows="3" placeholder="Resumo das mudanças..." required></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="secondary" onclick="document.getElementById('new-version-modal').classList.add('hidden')">Cancelar</button>
+                    <button type="submit">Criar Versão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Gerenciar Contatos -->
     <div id="contacts-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Gerenciar Contatos</h3>
             <p id="contacts-modal-client-name" style="color: var(--text-secondary); margin-bottom: 15px;"></p>
-            <div id="contacts-list-container" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-dark); border-radius: 6px;"></div>
+            
+            <!-- Lista -->
+            <div id="contacts-list" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-dark); border-radius: 6px;">
+                <!-- Itens inseridos via JS -->
+            </div>
+
+            <!-- Adicionar Novo -->
             <h4 style="border-top: 1px solid var(--border-dark); padding-top: 15px;">Adicionar Novo</h4>
             <form id="add-contact-form">
                 <input type="text" id="contact-name" placeholder="Nome" required style="margin-bottom: 8px;">
@@ -283,15 +320,20 @@
         </div>
     </div>
 
+    <!-- MODAL GENÉRICO PARA AÇÕES -->
     <div id="generic-modal" class="modal hidden">
         <div class="modal-content" style="max-width: 500px;">
-            <h3 id="modal-title">Título</h3>
-            <div id="modal-body" style="margin: 20px 0;"></div>
-            <div id="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;"></div>
+            <h3 id="modal-title">Título Padrão</h3>
+            <div id="modal-body" style="margin: 20px 0;">
+                <!-- Conteúdo será injetado aqui via JS -->
+            </div>
+            <div id="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <!-- Botões serão injetados aqui via JS -->
+            </div>
         </div>
     </div>
 
-    <!-- LIGHTBOX -->
+    <!-- LIGHTBOX PARA IMAGENS -->
     <div id="image-lightbox" class="modal hidden">
         <div class="modal-content" style="max-width: 90%; max-height: 90%; display: flex; gap: 20px; padding: 20px;">
             <div style="flex: 2; display: flex; justify-content: center; align-items: center; position: relative;">
@@ -309,19 +351,27 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURAÇÃO ---
             const SUPABASE_URL = 'https://vzmhnponxmrvoqctmpty.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6bWhucG9ueG1ydm9xY3RtcHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3Mzg5MjYsImV4cCI6MjA3MDMxNDkyNn0.sSfMCpPKwFp2lVLuWnFN066OT0lluMb-sd-kWb1PePg';
             
+            // Webhooks do N8N
             const N8N_BASE = 'https://n8n-n8n.znxk1t.easypanel.host/webhook';
             const HOOKS = {
+                // Uploads e Criação
                 ATUALIZAR_LOGO: `${N8N_BASE}/atualizar-logo-cliente`,
                 CRIAR_CLIENTE: `${N8N_BASE}/criar-novo-cliente`,
                 CRIAR_USUARIO: `${N8N_BASE}/criar-novo-usuario`,
                 CRIAR_PROJETO: `${N8N_BASE}/criar-novo-projeto`,
                 SALVAR_ATUALIZACAO: `${N8N_BASE}/salvar-atualizacao`,
+                
+                // Gestão de Projeto
                 ATUALIZAR_PROGRESSO: `${N8N_BASE}/atualizar-progresso-projeto`,
                 ATUALIZAR_STATUS_FASE: `${N8N_BASE}/atualizar-status-fase`,
+                CRIAR_NOVA_VERSAO: `${N8N_BASE}/criar-nova-versao`,
                 NOTIFICAR_WHATSAPP: `${N8N_BASE}/notificar-whatsapp`,
+                
+                // CRUD e Gestão
                 CRIAR_CONTATO: `${N8N_BASE}/criar-contato-cliente`,
                 EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`,
                 EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, 
@@ -331,10 +381,17 @@
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+            // --- ESTADO GLOBAL ---
             let state = {
-                user: null, isAdmin: false, isSimulatingClient: false,
-                clients: [], projects: [], contacts: [],
-                currentClientId: null, currentProjectId: null, currentVersionId: null,
+                user: null,
+                isAdmin: false,
+                isSimulatingClient: false,
+                clients: [],
+                projects: [],
+                contacts: [],
+                currentClientId: null,
+                currentProjectId: null,
+                currentVersionId: null,
                 phaseTemplates: [
                     { name: "Padrão (3 Fases)", phases: ["Levantamento", "Desenvolvimento", "Validação"] },
                     { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Design", "Dev", "Homologação", "Go-Live"] },
@@ -342,65 +399,122 @@
                 ]
             };
 
+            // --- UTILS ---
             const Toast = {
                 container: document.getElementById('toast-container'),
                 show(type, msg) {
                     const el = document.createElement('div'); el.className = `toast ${type}`;
-                    el.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
+                    el.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span><span>${msg}</span>`;
                     this.container.appendChild(el);
                     setTimeout(() => el.remove(), 4000);
                 },
-                success(m) { this.show('success', m); }, error(m) { this.show('error', m); }
+                success(m) { this.show('success', m); }, error(m) { this.show('error', m); }, info(m) { this.show('info', m); }
             };
 
+            // Função de escape para strings em HTML
             function escapeHtml(text) {
                 if (!text) return '';
-                return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                return text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;")
+                    .replace(/`/g, "&#96;"); // Importante para template literals
             }
-
-            // --- FUNÇÃO CORRIGIDA ---
+            
+            // --- AJUSTE 1: getGoogleDriveDirectImage CORRIGIDA ---
             function getGoogleDriveDirectImage(url) {
-                if (!url || typeof url !== 'string' || url === 'null' || url === 'undefined' || url.trim() === '') return null;
+                if (!url || typeof url !== 'string' || url === 'null' || url === 'undefined') return null;
+                
                 let match = url.match(/file\/d\/([a-zA-Z0-9_-]+)/);
                 if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+                
                 match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
                 if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+                
                 return null;
             }
 
+            // Sistema de Modal Genérico
             window.showGenericModal = function({ title, bodyHtml, buttons }) {
                 const modal = document.getElementById('generic-modal');
                 document.getElementById('modal-title').innerText = title;
                 document.getElementById('modal-body').innerHTML = bodyHtml;
-                const footer = document.getElementById('modal-footer');
-                footer.innerHTML = '';
-                const closeModal = () => modal.classList.add('hidden');
-                
-                const cancelButton = document.createElement('button');
-                cancelButton.className = 'secondary';
-                cancelButton.innerText = 'Cancelar';
-                cancelButton.onclick = closeModal;
-                footer.appendChild(cancelButton);
 
+                const footer = document.getElementById('modal-footer');
+                footer.innerHTML = ''; // Limpa botões antigos
+
+                // Botão para fechar o modal
+                const closeModal = () => modal.classList.add('hidden');
+
+                // Adiciona um botão de "Cancelar" padrão (se houver botões customizados ou se não houver nenhum)
+                if (buttons.length > 0 || buttons.length === 0) {
+                    const cancelButton = document.createElement('button');
+                    cancelButton.className = 'secondary';
+                    cancelButton.innerText = 'Cancelar';
+                    cancelButton.onclick = closeModal;
+                    footer.appendChild(cancelButton);
+                }
+
+                // Adiciona botões customizados
                 buttons.forEach(btnConfig => {
                     const button = document.createElement('button');
                     button.innerText = btnConfig.label;
                     if (btnConfig.classes) button.className = btnConfig.classes;
+                    
                     button.onclick = async () => {
+                        const originalText = button.innerText;
                         button.disabled = true;
-                        try { await btnConfig.onClick(); closeModal(); }
-                        catch (e) { Toast.error("Erro na ação"); }
-                        finally { button.disabled = false; }
+                        button.innerText = '...';
+                        try {
+                            await btnConfig.onClick();
+                            closeModal();
+                        } catch (e) {
+                            console.error(e);
+                            Toast.error("Erro na ação");
+                        } finally {
+                            button.disabled = false;
+                            button.innerText = originalText;
+                        }
                     };
                     footer.appendChild(button);
                 });
+
                 modal.classList.remove('hidden');
             };
 
+            // Adicione esta função completa no seu script
+            function openImageLightbox(update) {
+                const lightbox = document.getElementById('image-lightbox');
+                const img = document.getElementById('lightbox-img');
+                const downloadLink = document.getElementById('lightbox-download-link');
+                
+                const directImageUrl = getGoogleDriveDirectImage(update.content_url);
+                if (!directImageUrl) {
+                    console.error("Não foi possível gerar a URL direta para a imagem:", update.content_url);
+                    Toast.error("Não foi possível carregar a imagem.");
+                    return;
+                }
+
+                img.src = directImageUrl;
+                // Para download, o webContentLink é melhor, garantindo que o download seja forçado
+                downloadLink.href = update.content_url.replace(/(&?)(export=download|usp=drivesdk|view)$/, '') + '&export=download';
+                
+                document.getElementById('lightbox-update-title').innerText = update.title;
+                document.getElementById('lightbox-update-date').innerText = new Date(update.created_at).toLocaleString('pt-BR');
+                document.getElementById('lightbox-update-description').innerText = update.description || 'Sem descrição.';
+                
+                lightbox.classList.remove('hidden');
+            }
+
             const Views = {
-                login: document.getElementById('login-section'), app: document.getElementById('app-container'),
-                clientList: document.getElementById('client-list-view'), projectList: document.getElementById('project-list-view'),
-                projectDetail: document.getElementById('project-detail-view'), adminForms: document.getElementById('admin-forms-view')
+                login: document.getElementById('login-section'),
+                app: document.getElementById('app-container'),
+                clientList: document.getElementById('client-list-view'),
+                projectList: document.getElementById('project-list-view'),
+                projectDetail: document.getElementById('project-detail-view'),
+                adminForms: document.getElementById('admin-forms-view')
             };
 
             function showView(viewName) {
@@ -409,163 +523,306 @@
                 if (Views[viewName]) Views[viewName].classList.remove('hidden');
             }
 
+            // --- DATA FETCHING (LEITURA via Supabase, ESCRITA via Webhook) ---
             async function loadData() {
                 try {
+                    // 1. Carregar Projetos
                     let query = supabaseClient.from('laborai_projects').select(`*, laborai_clients(name, logo_url), laborai_project_versions(*, laborai_project_phases(*, laborai_phase_updates(*)))`).order('created_at', { ascending: false });
-                    if (!state.isAdmin) query = query.eq('client_id', state.user.user_metadata.clientId);
-                    const { data: projData } = await query;
-                    state.projects = projData || [];
-                    if (state.isAdmin) {
-                        const { data: clientData } = await supabaseClient.from('laborai_clients').select('*').order('name');
-                        state.clients = clientData || [];
+                    
+                    if (!state.isAdmin) {
+                        const clientId = state.user.user_metadata.clientId;
+                        if (clientId) query = query.eq('client_id', clientId);
                     }
-                } catch (e) { Toast.error('Erro ao carregar dados'); }
+                    
+                    const { data: projData, error: projError } = await query;
+                    if (projError) throw projError;
+                    state.projects = projData;
+
+                    // 2. Carregar Clientes (Apenas Admin)
+                    if (state.isAdmin) {
+                        const { data: clientData, error: clientError } = await supabaseClient.from('laborai_clients').select('*').order('name');
+                        if (clientError) throw clientError;
+                        state.clients = clientData;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    Toast.error('Erro ao carregar dados: ' + e.message);
+                }
             }
 
+            // --- RENDERIZAÇÃO ---
+
+            // 1. HEADER
             function renderHeader() {
                 document.getElementById('user-email').textContent = state.user.email;
                 const adminPanelBtn = document.getElementById('admin-panel-button');
+                const toggleContainer = document.getElementById('admin-simulation-toggle');
+                
                 if (state.isAdmin) {
-                    document.getElementById('admin-simulation-toggle').classList.remove('hidden');
+                    toggleContainer.classList.remove('hidden');
+                    // Refatoração da Tarefa 3: Só mostra painel se estiver dentro de um cliente
                     adminPanelBtn.classList.toggle('hidden', !state.currentClientId);
                 } else {
                     adminPanelBtn.classList.add('hidden');
-                    document.getElementById('admin-simulation-toggle').classList.add('hidden');
+                    toggleContainer.classList.add('hidden');
                 }
 
-                const logoImg = document.getElementById('header-client-logo');
-                const nameSpan = document.getElementById('header-client-name');
-                const clientIdToShow = state.isAdmin ? state.currentClientId : state.user.user_metadata.clientId;
-                
-                const client = state.clients.find(c => c.id === clientIdToShow) || (state.projects.find(p => p.client_id === clientIdToShow)?.laborai_clients);
+                // --- LÓGICA DE EXIBIÇÃO DO LOGO DO CLIENTE ---
+                const headerLogoImg = document.getElementById('header-client-logo');
+                const headerClientNameSpan = document.getElementById('header-client-name');
+                let clientForHeader = null;
 
-                if (client) {
-                    nameSpan.textContent = `| ${client.name}`;
-                    if (client.logo_url) {
-                        logoImg.src = client.logo_url.replace('/view', '/uc');
-                        logoImg.classList.remove('hidden');
-                    } else { logoImg.classList.add('hidden'); }
+                const clientIdToShow = state.isAdmin ? state.currentClientId : state.user.user_metadata.clientId;
+
+                if (clientIdToShow && state.clients.length > 0) {
+                    clientForHeader = state.clients.find(c => c.id === clientIdToShow);
+                } else if (clientIdToShow && state.projects.length > 0) {
+                    const projectFromClient = state.projects.find(p => p.client_id === clientIdToShow);
+                    if (projectFromClient && projectFromClient.laborai_clients) {
+                        clientForHeader = projectFromClient.laborai_clients;
+                    }
+                }
+
+                if (clientForHeader && clientForHeader.logo_url) {
+                    headerLogoImg.src = clientForHeader.logo_url.replace('/view', '/uc');
+                    headerLogoImg.classList.remove('hidden');
+                    headerClientNameSpan.textContent = `| ${clientForHeader.name}`;
+                } else if (clientForHeader) {
+                    headerLogoImg.classList.add('hidden');
+                    headerClientNameSpan.textContent = `| ${clientForHeader.name}`;
                 } else {
-                    logoImg.classList.add('hidden');
-                    nameSpan.textContent = state.isAdmin ? (state.isSimulatingClient ? " (Visualização)" : " | Admin") : "";
+                    headerLogoImg.classList.add('hidden');
+                    headerClientNameSpan.textContent = state.isAdmin ? (state.isSimulatingClient ? " (Modo Visualização)" : " | Admin") : "";
                 }
             }
 
+            // 2. LISTA DE CLIENTES
             function renderClientList() {
                 const container = document.getElementById('clients-list');
                 container.innerHTML = '';
+                
                 state.clients.forEach(client => {
                     const card = document.createElement('div');
                     card.className = 'client-card';
-                    card.onclick = (e) => { if(e.target.tagName !== 'BUTTON') openClientProjects(client.id); };
-                    const logoHtml = client.logo_url ? `<img src="${client.logo_url.replace('/view', '/uc')}" class="client-logo-thumb">` : `<div style="width:40px;height:40px;background:#374151;border-radius:4px;display:flex;align-items:center;justify-content:center;">${client.name.substring(0,2).toUpperCase()}</div>`;
-                    card.innerHTML = `<div class="card-header"><div><h4>${client.name}</h4></div>${logoHtml}</div>
-                                      <div style="margin-top:15px; display:flex; gap:8px;">
-                                        <button class="secondary icon-btn" onclick="event.stopPropagation(); openContactsModal('${client.id}', '${client.name}')">👥 Contatos</button>
-                                        <button class="secondary" style="flex:1" onclick="openClientProjects('${client.id}')">📂 Projetos</button>
-                                      </div>`;
+                    card.onclick = (e) => {
+                        if (e.target.tagName === 'BUTTON') return;
+                        openClientProjects(client.id);
+                    };
+
+                    const logoHtml = client.logo_url 
+                        ? `<img src="${client.logo_url.replace('/view', '/uc')}" class="client-logo-thumb">`
+                        : `<div style="width:40px; height:40px; background:#374151; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold;">${client.name.substring(0,2).toUpperCase()}</div>`;
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div>
+                                <h4 style="margin:0;">${client.name}</h4>
+                                <small style="color:var(--text-secondary)">ID: ${client.id.split('-')[0]}...</small>
+                            </div>
+                            ${logoHtml}
+                        </div>
+                        <div style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
+                            <button class="secondary" style="width: 100%;" onclick="openClientProjects('${client.id}')">📂 Ver Projetos &rarr;</button>
+                        </div>
+                    `;
                     container.appendChild(card);
                 });
             }
 
+            // 3. LISTA DE PROJETOS
             function renderProjectList(clientId = null) {
                 const container = document.getElementById('project-list-content');
                 container.innerHTML = '';
-                let filtered = state.projects;
-                if (state.isAdmin && clientId) filtered = state.projects.filter(p => p.client_id === clientId);
                 
-                filtered.forEach(project => {
+                let filteredProjects = state.projects;
+                
+                if (state.isAdmin) {
+                    if (clientId) {
+                        filteredProjects = state.projects.filter(p => p.client_id === clientId);
+                        document.getElementById('back-to-clients-button').classList.remove('hidden');
+                    } else {
+                        document.getElementById('back-to-clients-button').classList.add('hidden');
+                    }
+                } else {
+                    document.getElementById('back-to-clients-button').classList.add('hidden');
+                }
+
+                if (filteredProjects.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1/-1;">Nenhum projeto encontrado.</p>';
+                    return;
+                }
+
+                filteredProjects.forEach(project => {
                     const latestVersion = project.laborai_project_versions?.[0];
                     const progress = latestVersion?.progress_percentage || 0;
+                    
                     const card = document.createElement('div');
                     card.className = 'project-card';
-                    card.onclick = () => openProjectDetail(project.id);
-                    
+                    card.onclick = () => openProjectDetail(project.id); // O card inteiro agora é o link
+
+                    const description = project.description || 'Sem descrição';
+                    const shortDesc = description.length > 120 ? description.substring(0, 120) + '...' : description;
+
                     let adminActions = '';
                     if (state.isAdmin && !state.isSimulatingClient) {
-                        adminActions = `<div class="admin-toolbar" style="margin-top:15px; border-top:1px solid var(--border-dark); padding-top:10px;">
-                                            <button class="secondary icon-btn" onclick="event.stopPropagation(); handleEditProject(${JSON.stringify(project).replace(/'/g, "&apos;")})">✏️</button>
-                                            <button class="danger icon-btn" onclick="event.stopPropagation(); handleDeleteProject('${project.id}')">🗑️</button>
-                                        </div>`;
+                        adminActions = `
+                            <div class="admin-toolbar" style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
+                                <button class="secondary icon-btn" onclick="event.stopPropagation(); handleEditProject(${JSON.stringify(project)})">✏️ Editar</button>
+                                <button class="danger icon-btn" onclick="event.stopPropagation(); handleDeleteProject('${project.id}')">🗑️</button>
+                            </div>
+                        `;
                     }
 
-                    card.innerHTML = `<div><h4>${project.name}</h4><small>${project.description || ''}</small>
-                                      <div style="margin:10px 0;">
-                                        <div style="display:flex;justify-content:space-between;font-size:0.85em;"><span>Progresso</span><span>${progress}%</span></div>
-                                        <div style="height:6px;background:#374151;border-radius:3px;overflow:hidden;"><div style="height:100%;width:${progress}%;background:var(--primary-accent);"></div></div>
-                                      </div></div>${adminActions}`;
+                    card.innerHTML = `
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;">${project.name}</h4>
+                            <small style="color: var(--text-secondary);">${shortDesc}</small>
+                            <div style="margin: 10px 0;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.85em; margin-bottom:4px;">
+                                    <span>Progresso</span>
+                                    <span>${progress}%</span>
+                                </div>
+                                <div style="height:6px; background:#374151; border-radius:3px; overflow:hidden;">
+                                    <div style="height:100%; width:${progress}%; background: var(${progress > 99 ? '--success-color' : '--primary-accent'});"></div>
+                                </div>
+                            </div>
+                            <small style="color: var(--text-secondary);">Versão Atual: ${latestVersion ? latestVersion.version_number : 'v1.0'}</small>
+                        </div>
+                        ${adminActions}
+                    `;
                     container.appendChild(card);
                 });
-                document.getElementById('back-to-clients-button').classList.toggle('hidden', !state.isAdmin || !state.currentClientId);
             }
 
+            // 4. DETALHES DO PROJETO (TIMELINE)
             function renderProjectDetail(projectId) {
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
+
+                // Dentro de renderProjectDetail, após encontrar o objeto 'project'
+                document.getElementById('project-detail-description').innerText = project.description || 'Nenhuma descrição fornecida.';
+
                 state.currentProjectId = projectId;
                 document.getElementById('project-detail-name').innerText = project.name;
-                document.getElementById('project-detail-description').innerText = project.description || 'Nenhuma descrição.';
-
+                
                 const versions = project.laborai_project_versions || [];
-                const activeVersion = versions[0];
-                state.currentVersionId = activeVersion?.id;
+                versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                const contentDiv = document.getElementById('project-detail-content');
+                contentDiv.innerHTML = '';
+
+                // NOVA LÓGICA DE VISIBILIDADE E POPULAÇÃO
+                const activeVersion = versions[0]; // Versão mais recente
+                state.currentVersionId = activeVersion ? activeVersion.id : null;
                 const progress = activeVersion?.progress_percentage || 0;
 
+                // Popula a barra de progresso visual que é para todos
                 document.getElementById('progress-percentage-display').innerText = `${progress}%`;
-                document.getElementById('progress-bar-fill').style.width = `${progress}%`;
-                
+                const progressBarFill = document.getElementById('progress-bar-fill');
+                progressBarFill.style.width = `${progress}%`;
+                // Muda a cor para verde quando concluído
+                progressBarFill.style.backgroundColor = progress >= 100 ? 'var(--success-color)' : 'var(--primary-accent)';
+
+                // Controle de visibilidade dos elementos de admin
                 const isAdminMode = state.isAdmin && !state.isSimulatingClient;
                 document.getElementById('admin-progress-controls').classList.toggle('hidden', !isAdminMode);
-                document.getElementById('toggle-add-update-form').classList.toggle('hidden', !isAdminMode);
 
+                // Configura o slider e o form apenas se for admin
                 if (isAdminMode && activeVersion) {
-                    document.getElementById('progress-slider').value = progress;
+                    const progressSlider = document.getElementById('progress-slider');
+                    progressSlider.value = progress;
+                    
+                    // Popula the select de fases para o formulário de atualização
                     const phaseSelect = document.getElementById('update-phase-select');
                     phaseSelect.innerHTML = '';
                     activeVersion.laborai_project_phases.forEach(ph => {
-                        const opt = document.createElement('option'); opt.value = ph.id; opt.innerText = ph.name;
+                        const opt = document.createElement('option');
+                        opt.value = ph.id; 
+                        opt.innerText = ph.name;
                         phaseSelect.appendChild(opt);
                     });
                 }
 
-                const contentDiv = document.getElementById('project-detail-content');
-                contentDiv.innerHTML = '';
+                // A lógica para ocultar/mostrar o form de Nova Atualização continua a mesma.
+                document.getElementById('toggle-add-update-form').classList.toggle('hidden', !isAdminMode);
 
+                // Pausa a feature de múltiplas versões, renderizando apenas a mais recente.
                 if (activeVersion) {
-                    activeVersion.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order).forEach(phase => {
-                        const isInProgress = phase.status === 'in_progress';
+                    const version = activeVersion; // usa a variável 'version' para compatibilidade com o código interno do loop
+                    const vDiv = document.createElement('div');
+                    
+                    const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
+                    
+                    phases.forEach(phase => {
                         const isCompleted = phase.status === 'completed';
+                        const isInProgress = phase.status === 'in_progress';
                         
                         const pHeader = document.createElement('div');
                         pHeader.className = `phase-header ${isInProgress ? 'active' : ''}`;
                         pHeader.style.borderColor = isCompleted ? 'var(--success-color)' : (isInProgress ? 'var(--primary-accent)' : 'var(--border-dark)');
                         
+                        pHeader.onclick = (e) => {
+                            if (e.target.tagName !== 'BUTTON') {
+                                pHeader.classList.toggle('expanded');
+                            }
+                        };
+
                         let phaseActions = '';
                         if (isAdminMode) {
-                            phaseActions = `<div class="phase-actions" style="display:flex; gap:8px;">
-                                <button class="icon-btn secondary" onclick="event.stopPropagation(); changePhaseStatus('${phase.id}', '${phase.status === 'pending' ? 'in_progress' : 'pending'}')">${phase.status === 'pending' ? '▶ Iniciar' : '|| Pausar'}</button>
-                                <button class="icon-btn secondary" onclick="event.stopPropagation(); changePhaseStatus('${phase.id}', '${phase.status === 'completed' ? 'in_progress' : 'completed'}')">${phase.status === 'completed' ? '↩️ Reabrir' : '✅ Concluir'}</button>
-                            </div>`;
+                            const status = phase.status;
+                            let startPauseButton = '';
+                            let completeReopenButton = '';
+
+                            if (status === 'pending') {
+                                // Se está pendente, pode iniciar.
+                                startPauseButton = `<button class="icon-btn secondary" title="Marcar como 'Em Andamento'" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶ Iniciar</button>`;
+                            } else if (status === 'in_progress') {
+                                // Se está em andamento, pode pausar (voltar para pendente) ou concluir.
+                                startPauseButton = `<button class="icon-btn secondary" title="Pausar e voltar para 'Pendente'" onclick="changePhaseStatus('${phase.id}', 'pending')">|| Pausar</button>`;
+                                completeReopenButton = `<button class="icon-btn secondary" style="background-color: rgba(34, 197, 94, 0.1); color: var(--success-color);" title="Concluir Fase" onclick="changePhaseStatus('${phase.id}', 'completed')">✅ Concluir</button>`;
+                            } else if (status === 'completed') {
+                                // Se está concluído, pode reabrir (voltar para em andamento).
+                                completeReopenButton = `<button class="icon-btn secondary" title="Reabrir Fase (volta para 'Em Andamento')" onclick="changePhaseStatus('${phase.id}', 'in_progress')">↩️ Reabrir</button>`;
+                            }
+                            
+                            phaseActions = `
+                                <div class="phase-actions" style="display:flex; gap:8px;">
+                                    ${startPauseButton}
+                                    ${completeReopenButton}
+                                </div>
+                            `;
                         }
 
-                        pHeader.innerHTML = `<div><h4>${phase.name}</h4><small>${phase.status}</small></div>${phaseActions}`;
-                        pHeader.onclick = (e) => { if(e.target.tagName !== 'BUTTON') pHeader.classList.toggle('expanded'); };
-                        contentDiv.appendChild(pHeader);
+                        pHeader.innerHTML = `
+                            <div>
+                                <h4 style="margin:0;">${phase.name}</h4>
+                                <small style="color:${isCompleted ? 'var(--success-color)' : (isInProgress ? 'var(--primary-accent)' : 'var(--text-secondary)')}">
+                                    ${phase.status === 'pending' ? 'Pendente' : phase.status === 'in_progress' ? 'Em Andamento' : 'Concluído'}
+                                </small>
+                            </div>
+                            ${phaseActions}
+                        `;
+                        vDiv.appendChild(pHeader);
 
+                        // Container Acordeão
                         const pContent = document.createElement('div');
                         pContent.className = 'phase-content';
-                        
-                        phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).forEach(upd => {
+
+                        const updates = phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                        updates.forEach(upd => {
                             const uDiv = document.createElement('div');
                             uDiv.className = 'update';
                             
+                            // --- AJUSTE 2: LÓGICA DE IMAGEM RIGOROSA ---
                             let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
 
-                            // --- LÓGICA DE IMAGEM CORRIGIDA ---
+                            // Verifica se há imagem para anexar
                             if (upd.update_type === 'image' && upd.content_url) {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
+                                // Só renderiza se a URL convertida for válida
                                 if (directImageUrl && directImageUrl.length > 30) { 
                                     const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
+                                    // Adicionado onerror para esconder a imagem caso o link quebre ou falhe o carregamento
                                     content += `<img src="${directImageUrl}" 
                                                      onclick='openImageLightbox(${safeUpd})' 
                                                      onerror="this.style.display='none'" 
@@ -573,191 +830,485 @@
                                 }
                             }
 
-                            if (upd.link_url) content += `<a href="${upd.link_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Link</a>`;
+                            // Anexa o link se 'link_url' existir (independente do tipo de atualização principal)
+                            if (upd.link_url && upd.link_url.trim() !== '') {
+                                content += `<a href="${upd.link_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Acessar Link</a>`;
+                            }
+
 
                             let updActions = '';
                             if (isAdminMode) {
                                 const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
-                                updActions = `<div class="update-actions">
-                                                <button class="icon-btn secondary" onclick='handleEditUpdate(${safeUpd})'>✏️</button>
-                                                <button class="icon-btn" style="background:#25D366" onclick="notifyWhatsApp('${upd.id}', '${project.id}')">📱</button>
-                                                <button class="icon-btn danger" onclick="deleteUpdate('${upd.id}')">🗑️</button>
-                                              </div>`;
+                                updActions = `
+                                    <div class="update-actions">
+                                        <button class="icon-btn secondary" title="Editar" onclick='handleEditUpdate(${safeUpd})'>✏️</button>
+                                        <button class="icon-btn" style="background:#25D366; color:white;" title="Notificar WhatsApp" onclick="notifyWhatsApp('${upd.id}', '${project.id}')">📱</button>
+                                        <button class="icon-btn danger" title="Excluir" onclick="deleteUpdate('${upd.id}')">🗑️</button>
+                                    </div>
+                                `;
                             }
 
-                            uDiv.innerHTML = `${updActions}<strong>${upd.title}</strong><small style="display:block; color:var(--text-secondary);">${new Date(upd.created_at).toLocaleString()}</small>${content}`;
+                            uDiv.innerHTML = `
+                                ${updActions}
+                                <strong>${upd.title}</strong>
+                                <small style="display:block; color:var(--text-secondary);">${new Date(upd.created_at).toLocaleString('pt-BR')}</small>
+                                ${content}
+                            `;
                             pContent.appendChild(uDiv);
                         });
-                        contentDiv.appendChild(pContent);
+                        vDiv.appendChild(pContent);
                     });
+                    
+                    contentDiv.appendChild(vDiv);
                 }
             }
 
-            // --- NAVEGAÇÃO E EVENTOS ---
-            window.openClientProjects = (id) => { state.currentClientId = id; renderHeader(); renderProjectList(id); showView('projectList'); };
-            window.openProjectDetail = (id) => { renderProjectDetail(id); showView('projectDetail'); };
-            
-            document.getElementById('client-view-toggle').onchange = (e) => { state.isSimulatingClient = e.target.checked; renderHeader(); location.reload(); };
+            // --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA ---
 
-            document.getElementById('toggle-add-update-form').onclick = () => {
-                showGenericModal({
-                    title: 'Nova Atualização',
-                    bodyHtml: document.getElementById('add-update-form-container').innerHTML,
-                    buttons: []
-                });
-                const mForm = document.querySelector('#generic-modal #add-update-form');
-                mForm.onsubmit = async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData();
-                    fd.append('phaseId', mForm.querySelector('#update-phase-select').value);
-                    fd.append('title', mForm.querySelector('#update-title').value);
-                    fd.append('description', mForm.querySelector('#update-description').value);
-                    fd.append('link', mForm.querySelector('#update-link').value);
-                    fd.append('file', mForm.querySelector('#update-file').files[0]);
-                    await handleSaveUpdate(fd);
-                    Toast.success('Salvo!');
-                    await loadData(); renderProjectDetail(state.currentProjectId);
-                    document.getElementById('generic-modal').classList.add('hidden');
-                };
+            window.openClientProjects = (clientId) => {
+                state.currentClientId = clientId;
+                renderHeader();
+                renderProjectList(clientId);
+                showView('projectList');
             };
 
-            async function handleSaveUpdate(fd, id = null) {
-                let url = `${HOOKS.SALVAR_ATUALIZACAO}?title=${encodeURIComponent(fd.get('title'))}&description=${encodeURIComponent(fd.get('description'))}&contentUrl=${encodeURIComponent(fd.get('link'))}`;
-                if (id) url += `&updateId=${id}`; else url += `&phaseId=${fd.get('phaseId')}`;
-                const file = fd.get('file');
-                let opt = { method: 'POST' };
-                if (file && file.size > 0) { url += `&fileName=${encodeURIComponent(file.name)}`; opt.body = file; }
-                await fetch(url, opt);
+            window.openProjectDetail = (projectId) => {
+                renderProjectDetail(projectId);
+                showView('projectDetail');
+            };
+
+            document.getElementById('client-view-toggle').addEventListener('change', (e) => {
+                state.isSimulatingClient = e.target.checked;
+                renderHeader();
+                if (!document.getElementById('project-detail-view').classList.contains('hidden')) {
+                    renderProjectDetail(state.currentProjectId);
+                } else if (!document.getElementById('client-list-view').classList.contains('hidden')) {
+                    renderClientList();
+                } else if (!document.getElementById('project-list-view').classList.contains('hidden')) {
+                    renderProjectList(state.currentClientId);
+                }
+            });
+
+            document.getElementById('image-lightbox').addEventListener('click', (e) => {
+                // Fecha somente se o clique for no fundo (o modal em si) e não nos seus filhos
+                if (e.target.id === 'image-lightbox') {
+                    e.target.classList.add('hidden');
+                }
+            });
+
+            // Refatoração: Botão de Adicionar Atualização abre Modal
+            document.getElementById('toggle-add-update-form').addEventListener('click', () => {
+                const formContainer = document.getElementById('add-update-form-container');
+                showGenericModal({
+                    title: 'Adicionar Nova Atualização',
+                    bodyHtml: formContainer.innerHTML, // Clona o HTML do formulário
+                    buttons: [] // Sem botões extras, o form tem o submit
+                });
+
+                // Re-atacha o listener de submit ao formulário dentro do modal
+                const modalForm = document.querySelector('#generic-modal #add-update-form');
+                if(modalForm) {
+                    modalForm.onsubmit = async (e) => {
+                        e.preventDefault();
+                        const btn = modalForm.querySelector('button[type="submit"]');
+                        btn.disabled = true; btn.innerText = 'Salvando...';
+
+                        try {
+                            const formData = new FormData();
+                            formData.append('phaseId', modalForm.querySelector('#update-phase-select').value);
+                            formData.append('title', modalForm.querySelector('#update-title').value);
+                            formData.append('description', modalForm.querySelector('#update-description').value);
+                            formData.append('link', modalForm.querySelector('#update-link').value);
+                            formData.append('file', modalForm.querySelector('#update-file').files[0]);
+
+                            await handleSaveUpdate(formData);
+                            
+                            Toast.success('Atualização criada!');
+                            await loadData();
+                            renderProjectDetail(state.currentProjectId);
+                            document.getElementById('generic-modal').classList.add('hidden');
+                        } catch (err) {
+                            Toast.error('Falha ao salvar. Verifique os dados.');
+                            btn.disabled = false; btn.innerText = 'Publicar Atualização';
+                        }
+                    };
+                }
+            });
+
+            // --- FUNÇÕES ADMIN / ACTIONS (Via N8N & Modal Customizado) ---
+
+            async function handleSaveUpdate(formData, updateId = null) {
+                // Constrói a URL com todos os dados como query params
+                let url = `${HOOKS.SALVAR_ATUALIZACAO}?title=${encodeURIComponent(formData.get('title'))}&description=${encodeURIComponent(formData.get('description'))}&contentUrl=${encodeURIComponent(formData.get('link'))}`;
+                
+                if (updateId) {
+                    url += `&updateId=${updateId}`; // Identifica que é uma edição
+                } else {
+                    url += `&phaseId=${formData.get('phaseId')}`; // Identifica que é uma criação
+                }
+
+                let fetchOptions = { method: 'POST' };
+                const file = formData.get('file');
+
+                if (file && file.size > 0) {
+                    url += `&fileName=${encodeURIComponent(file.name)}`;
+                    fetchOptions.body = file; // Envia o arquivo no corpo
+                }
+                
+                await fetch(url, fetchOptions);
             }
 
-            window.notifyWhatsApp = async (uId, pId) => {
+            // 1. WhatsApp Notification
+            window.notifyWhatsApp = async (updateId, projectId) => {
                 showGenericModal({
-                    title: 'Notificar WhatsApp',
-                    bodyHtml: '<p>Enviar para os contatos?</p>',
-                    buttons: [{ label: 'Enviar', classes: 'primary', onClick: async () => { await fetch(HOOKS.NOTIFICAR_WHATSAPP, { method: 'POST', body: JSON.stringify({ updateId: uId, projectId: pId }) }); Toast.success('Enviado!'); } }]
+                    title: 'Enviar Notificação',
+                    bodyHtml: '<p>Deseja enviar notificação via WhatsApp para todos os contatos deste cliente?</p>',
+                    buttons: [{
+                        label: 'Enviar',
+                        classes: 'primary', 
+                        onClick: async () => {
+                            await fetch(HOOKS.NOTIFICAR_WHATSAPP, { 
+                                method: 'POST', body: JSON.stringify({ updateId, projectId }) 
+                            });
+                            Toast.success('Notificação enviada!');
+                        }
+                    }]
                 });
             };
 
+            // 2. Upload Logo
+            document.getElementById('upload-logo-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('upload-logo-button');
+                const file = document.getElementById('logo-file-input').files[0];
+                const clientId = document.getElementById('logo-client-select').value;
+                
+                btn.innerText = 'Enviando...'; btn.disabled = true;
+                
+                try {
+                    const url = `${HOOKS.ATUALIZAR_LOGO}?clientId=${clientId}&fileName=${encodeURIComponent(file.name)}`;
+                    const res = await fetch(url, { method: 'POST', body: file });
+                    if(!res.ok) throw new Error();
+                    
+                    Toast.success('Logo atualizada!');
+                    await loadData();
+                    if(state.isAdmin) renderClientList();
+                } catch(e) { Toast.error('Erro no upload.'); }
+                finally { btn.innerText = 'Salvar Logo'; btn.disabled = false; document.getElementById('upload-logo-form').reset(); }
+            });
+
+            // 3. Gerenciar Contatos
             window.openContactsModal = async (clientId, clientName) => {
                 state.currentManageClientId = clientId;
                 document.getElementById('contacts-modal-client-name').innerText = clientName;
-                const container = document.getElementById('contacts-list-container');
-                container.innerHTML = 'Carregando...';
                 document.getElementById('contacts-modal').classList.remove('hidden');
+                
+                const listEl = document.getElementById('contacts-list');
+                listEl.innerHTML = 'Carregando...';
+                
                 const { data } = await supabaseClient.from('laborai_client_contacts').select('*').eq('client_id', clientId);
-                container.innerHTML = '';
-                if(data) data.forEach(c => {
-                    const d = document.createElement('div'); d.className = 'contact-item';
-                    d.innerHTML = `<div><strong>${c.name}</strong><br><small>${c.whatsapp}</small></div><button class="danger icon-btn" onclick="deleteContact('${c.id}')">🗑️</button>`;
-                    container.appendChild(d);
-                });
+                listEl.innerHTML = '';
+                
+                if(data) {
+                    data.forEach(c => {
+                        const item = document.createElement('div');
+                        item.className = 'contact-item';
+                        item.innerHTML = `
+                            <div><strong>${c.name}</strong> (${c.role || '-'})<br><small>${c.whatsapp}</small></div>
+                            <button class="danger icon-btn" onclick="deleteContact('${c.id}')">🗑️</button>
+                        `;
+                        listEl.appendChild(item);
+                    });
+                }
             };
 
-            document.getElementById('add-contact-form').onsubmit = async (e) => {
+            document.getElementById('add-contact-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await fetch(HOOKS.CRIAR_CONTATO, { method: 'POST', body: JSON.stringify({ clientId: state.currentManageClientId, name: document.getElementById('contact-name').value, role: document.getElementById('contact-role').value, whatsapp: document.getElementById('contact-whatsapp').value }), headers: {'Content-Type':'application/json'} });
-                Toast.success('Adicionado');
-                openContactsModal(state.currentManageClientId, "");
-            };
+                const btn = document.getElementById('add-contact-btn'); btn.disabled = true;
+                try {
+                    await fetch(HOOKS.CRIAR_CONTATO, {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({
+                            clientId: state.currentManageClientId,
+                            name: document.getElementById('contact-name').value,
+                            role: document.getElementById('contact-role').value,
+                            whatsapp: document.getElementById('contact-whatsapp').value
+                        })
+                    });
+                    Toast.success('Contato adicionado!');
+                    document.getElementById('add-contact-form').reset();
+                    const client = state.clients.find(c => c.id === state.currentManageClientId);
+                    openContactsModal(client.id, client.name);
+                } catch(e) { Toast.error('Erro ao criar contato'); }
+                finally { btn.disabled = false; }
+            });
 
             window.deleteContact = async (id) => {
-                await fetch(HOOKS.EXCLUIR_CONTATO, { method: 'POST', body: JSON.stringify({ contactId: id }), headers: {'Content-Type':'application/json'} });
-                openContactsModal(state.currentManageClientId, "");
+                showGenericModal({
+                    title: 'Excluir Contato',
+                    bodyHtml: '<p>Tem certeza que deseja excluir este contato?</p>',
+                    buttons: [{
+                        label: 'Excluir',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_CONTATO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ contactId: id }) });
+                            const client = state.clients.find(c => c.id === state.currentManageClientId);
+                            openContactsModal(client.id, client.name);
+                        }
+                    }]
+                });
             };
 
-            window.handleEditProject = (p) => {
+            // 4. CRUD Projeto
+            window.handleEditProject = (project) => {
                 showGenericModal({
                     title: 'Editar Projeto',
-                    bodyHtml: `<input id="en" value="${p.name}"><textarea id="ed">${p.description || ''}</textarea>`,
-                    buttons: [{ label: 'Salvar', classes: 'primary', onClick: async () => {
-                        await fetch(HOOKS.EDITAR_PROJETO, { method: 'POST', body: JSON.stringify({ projectId: p.id, updates: [{field:'name', value:document.getElementById('en').value}, {field:'description', value:document.getElementById('ed').value}] }), headers: {'Content-Type':'application/json'} });
-                        await loadData(); renderProjectList(state.currentClientId);
-                    }}]
+                    bodyHtml: `
+                        <label>Nome do projeto:</label>
+                        <input type="text" id="edit-project-name" value="${escapeHtml(project.name)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <label>Descrição:</label>
+                        <textarea id="edit-project-description" rows="4" placeholder="Adicione uma descrição detalhada..." style="width: 100%; box-sizing: border-box;">${escapeHtml(project.description || '')}</textarea>
+                    `,
+                    buttons: [{
+                        label: 'Salvar',
+                        classes: 'primary',
+                        onClick: async () => {
+                            const newName = document.getElementById('edit-project-name').value;
+                            const newDescription = document.getElementById('edit-project-description').value;
+
+                            const updates = [
+                                { field: 'name', value: newName },
+                                { field: 'description', value: newDescription }
+                            ];
+
+                            await fetch(HOOKS.EDITAR_PROJETO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ projectId: project.id, updates }) 
+                            });
+                            
+                            Toast.success('Projeto atualizado');
+                            await loadData(); 
+                            renderProjectList(state.currentClientId);
+                        }
+                    }]
                 });
             };
 
-            window.handleDeleteProject = (id) => {
-                showGenericModal({ title: 'Excluir?', bodyHtml: '<p>Apagar tudo?</p>', buttons: [{ label: 'Excluir', classes: 'danger', onClick: async () => { await fetch(HOOKS.EXCLUIR_PROJETO, { method: 'POST', body: JSON.stringify({ projectId: id }), headers: {'Content-Type':'application/json'} }); await loadData(); renderProjectList(state.currentClientId); } }] });
+            window.handleDeleteProject = async (projectId) => {
+                showGenericModal({
+                    title: 'Confirmar Exclusão',
+                    bodyHtml: '<p style="color:var(--error-color);">ATENÇÃO: Isso excluirá o projeto e todo o histórico. Esta ação não pode ser desfeita.</p>',
+                    buttons: [{
+                        label: 'Excluir Projeto',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_PROJETO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ projectId }) 
+                            });
+                            Toast.success('Projeto excluído');
+                            await loadData(); 
+                            renderProjectList(state.currentClientId);
+                        }
+                    }]
+                });
             };
 
-            window.handleEditUpdate = (u) => {
+            window.handleEditUpdate = async (update) => {
                 showGenericModal({
                     title: 'Editar Atualização',
-                    bodyHtml: `<input id="ut" value="${u.title}"><textarea id="ud">${u.description || ''}</textarea><input id="ul" value="${u.link_url || ''}"><input type="file" id="uf">`,
-                    buttons: [{ label: 'Salvar', classes: 'primary', onClick: async () => {
-                        const fd = new FormData();
-                        fd.append('title', document.getElementById('ut').value);
-                        fd.append('description', document.getElementById('ud').value);
-                        fd.append('link', document.getElementById('ul').value);
-                        fd.append('file', document.getElementById('uf').files[0]);
-                        await handleSaveUpdate(fd, u.id);
-                        await loadData(); renderProjectDetail(state.currentProjectId);
-                    }}]
+                    bodyHtml: `
+                        <label>Título:</label>
+                        <input type="text" id="edit-update-title" value="${escapeHtml(update.title)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <label>Descrição:</label>
+                        <textarea id="edit-update-desc" rows="4" style="width: 100%; box-sizing: border-box;">${escapeHtml(update.description || '')}</textarea>
+                        <label>Link (deixe em branco para remover):</label>
+                        <input type="url" id="edit-update-link" value="${update.link_url ? escapeHtml(update.link_url) : ''}" placeholder="https://..." style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <label for="edit-update-file" style="font-size: 0.9em; color: var(--text-secondary);">Substituir Arquivo (opcional):</label>
+                        ${update.update_type === 'image' && update.content_url ? `<img src="${getGoogleDriveDirectImage(update.content_url)}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}
+                        <input type="file" id="edit-update-file">
+                    `,
+                    buttons: [{
+                        label: 'Salvar Alterações',
+                        classes: 'primary',
+                        onClick: async () => {
+                            const formData = new FormData();
+                            formData.append('title', document.getElementById('edit-update-title').value);
+                            formData.append('description', document.getElementById('edit-update-desc').value);
+                            formData.append('link', document.getElementById('edit-update-link').value);
+                            formData.append('file', document.getElementById('edit-update-file').files[0]);
+
+                            await handleSaveUpdate(formData, update.id);
+                            
+                            Toast.success('Atualização salva!');
+                            await loadData();
+                            renderProjectDetail(state.currentProjectId);
+                        }
+                    }]
                 });
             };
 
-            window.deleteUpdate = (id) => {
-                showGenericModal({ title: 'Apagar?', bodyHtml: '<p>Remover da timeline?</p>', buttons: [{ label: 'Sim', classes: 'danger', onClick: async () => { await fetch(HOOKS.EXCLUIR_ATUALIZACAO, { method: 'POST', body: JSON.stringify({ updateId: id }), headers: {'Content-Type':'application/json'} }); await loadData(); renderProjectDetail(state.currentProjectId); } }] });
+            window.deleteUpdate = async (updateId) => {
+                showGenericModal({
+                    title: 'Excluir Atualização',
+                    bodyHtml: '<p>Deseja remover esta atualização da timeline?</p>',
+                    buttons: [{
+                        label: 'Excluir',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_ATUALIZACAO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ updateId }) 
+                            });
+                            Toast.success('Atualização removida');
+                            await loadData(); 
+                            renderProjectDetail(state.currentProjectId);
+                        }
+                    }]
+                });
             };
 
-            window.changePhaseStatus = async (id, s) => {
-                await fetch(HOOKS.ATUALIZAR_STATUS_FASE, { method: 'POST', body: JSON.stringify({ phaseId: id, newStatus: s }), headers: {'Content-Type':'application/json'} });
-                await loadData(); renderProjectDetail(state.currentProjectId);
+            // 6. Status da Fase
+            window.changePhaseStatus = async (phaseId, status) => {
+                await fetch(HOOKS.ATUALIZAR_STATUS_FASE, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ phaseId, newStatus: status })
+                });
+                Toast.success('Status da fase alterado');
+                await loadData(); 
+                renderProjectDetail(state.currentProjectId);
             };
 
-            document.getElementById('save-progress-button').onclick = async () => {
-                const v = document.getElementById('progress-slider').value;
-                await fetch(HOOKS.ATUALIZAR_PROGRESSO, { method: 'POST', body: JSON.stringify({ versionId: state.currentVersionId, newProgress: parseInt(v) }), headers: {'Content-Type':'application/json'} });
-                Toast.success('Salvo'); await loadData(); renderProjectDetail(state.currentProjectId);
-            };
-
-            document.getElementById('login-form').onsubmit = async (e) => {
+            // --- OUTROS FORMULÁRIOS (Refatorados para Auto-Refresh) ---
+            
+            // Login
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
-                if (error) Toast.error(error.message); else initApp(data.user);
-            };
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+                    email: document.getElementById('login-email').value, 
+                    password: document.getElementById('login-password').value 
+                });
+                if (error) Toast.error(error.message);
+                else initApp(data.user);
+            });
 
-            document.getElementById('logout-button').onclick = () => { supabaseClient.auth.signOut().then(() => location.reload()); };
-            document.getElementById('admin-panel-button').onclick = () => { populateDropdowns(); showView('adminForms'); };
-            document.getElementById('back-from-admin-panel').onclick = () => { renderProjectList(state.currentClientId); showView('projectList'); };
-            document.getElementById('back-to-clients-button').onclick = () => { state.currentClientId = null; renderHeader(); showView('clientList'); };
-            document.getElementById('back-to-projects-button').onclick = () => { renderProjectList(state.currentClientId); showView('projectList'); };
+            document.getElementById('logout-button').addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                window.location.reload();
+            });
+
+            // Navegação Admin Panel
+            document.getElementById('admin-panel-button').addEventListener('click', () => {
+                populateDropdowns();
+                showView('adminForms');
+            });
+            document.getElementById('back-from-admin-panel').addEventListener('click', () => {
+                renderProjectList(state.currentClientId); // Refatoração Tarefa 3: Voltar para lista de projetos do cliente
+                showView('projectList');
+            });
+
+            // Criar Cliente
+            document.getElementById('create-client-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-client-name').value;
+                await fetch(HOOKS.CRIAR_CLIENTE, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ clientName: name }) });
+                Toast.success('Cliente criado'); 
+                e.target.reset(); 
+                await loadData(); 
+                populateDropdowns();
+            });
+
+            // Criar Projeto
+            document.getElementById('phase-template-select').addEventListener('change', (e) => {
+                const isCustom = e.target.value === 'Customizado';
+                document.getElementById('new-project-phases').classList.toggle('hidden', !isCustom);
+            });
+            
+            document.getElementById('create-project-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const phasesRaw = document.getElementById('new-project-phases').value;
+                const template = state.phaseTemplates.find(t => t.name === document.getElementById('phase-template-select').value);
+                const phases = template.name === 'Customizado' ? phasesRaw.split('\n') : template.phases;
+
+                await fetch(HOOKS.CRIAR_PROJETO, { 
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ 
+                        clientId: document.getElementById('project-client-select').value,
+                        projectName: document.getElementById('new-project-name').value,
+                        description: document.getElementById('new-project-description').value,
+                        phases 
+                    })
+                });
+                Toast.success('Projeto criado'); 
+                e.target.reset(); 
+                await loadData();
+            });
+
+            // Save Progress
+            document.getElementById('progress-slider').addEventListener('input', (e) => document.getElementById('progress-percentage-display').innerText = e.target.value + '%');
+            document.getElementById('save-progress-button').addEventListener('click', async () => {
+                const val = document.getElementById('progress-slider').value;
+                await fetch(HOOKS.ATUALIZAR_PROGRESSO, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ versionId: state.currentVersionId, newProgress: parseInt(val) })
+                });
+                Toast.success('Progresso salvo');
+                await loadData();
+                renderProjectDetail(state.currentProjectId); // Re-render to confirm the change
+            });
+            
+            // Navegação de Voltar
+            document.getElementById('back-to-clients-button').addEventListener('click', () => {
+                state.currentClientId = null;
+                renderHeader();
+                showView('clientList');
+            });
+            document.getElementById('back-to-projects-button').addEventListener('click', () => {
+                renderProjectList(state.currentClientId);
+                showView('projectList');
+            });
 
             function populateDropdowns() {
-                const clients = state.clients;
-                const selects = [document.getElementById('logo-client-select'), document.getElementById('project-client-select'), document.getElementById('user-client-select')];
-                selects.forEach(s => {
-                    s.innerHTML = '<option value="">Selecione...</option>';
-                    clients.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.innerText = c.name; s.appendChild(o); });
+                const logoSel = document.getElementById('logo-client-select');
+                const projSel = document.getElementById('project-client-select');
+                const userSel = document.getElementById('user-client-select');
+                [logoSel, projSel, userSel].forEach(s => s.innerHTML = '<option value="">Selecione...</option>');
+                
+                state.clients.forEach(c => {
+                    const opt = document.createElement('option'); opt.value = c.id; opt.innerText = c.name;
+                    [logoSel, projSel, userSel].forEach(s => s.appendChild(opt.cloneNode(true)));
                 });
-                const ts = document.getElementById('phase-template-select');
-                ts.innerHTML = '';
-                state.phaseTemplates.forEach(t => { const o = document.createElement('option'); o.value = t.name; o.innerText = t.name; ts.appendChild(o); });
+
+                const tmplSel = document.getElementById('phase-template-select');
+                tmplSel.innerHTML = '';
+                state.phaseTemplates.forEach(t => {
+                    const opt = document.createElement('option'); opt.value = t.name; opt.innerText = t.name;
+                    tmplSel.appendChild(opt);
+                });
             }
 
-            // Lightbox
-            window.openImageLightbox = (u) => {
-                const lb = document.getElementById('image-lightbox');
-                const img = document.getElementById('lightbox-img');
-                const url = getGoogleDriveDirectImage(u.content_url);
-                if(!url) return;
-                img.src = url;
-                document.getElementById('lightbox-update-title').innerText = u.title;
-                document.getElementById('lightbox-update-description').innerText = u.description || '';
-                document.getElementById('lightbox-download-link').href = u.content_url;
-                lb.classList.remove('hidden');
-            };
-            document.getElementById('image-lightbox').onclick = (e) => { if(e.target.id === 'image-lightbox') e.target.classList.add('hidden'); };
-
+            // --- INIT ---
             async function initApp(user) {
                 state.user = user;
                 state.isAdmin = user.user_metadata.role === 'admin';
-                await loadData(); renderHeader(); showView('app');
-                if (state.isAdmin) { renderClientList(); showView('clientList'); }
-                else { renderProjectList(user.user_metadata.clientId); showView('projectList'); }
+                
+                await loadData();
+                renderHeader();
+                showView('app');
+
+                if (state.isAdmin) {
+                    renderClientList();
+                    showView('clientList');
+                } else {
+                    renderProjectList(user.user_metadata.clientId);
+                    showView('projectList');
+                }
             }
 
-            supabaseClient.auth.getSession().then(({ data: { session } }) => { if (session) initApp(session.user); else showView('login'); });
+            supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                if (session) initApp(session.user);
+                else showView('login');
+            });
         });
     </script>
 </body>
