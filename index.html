@@ -215,7 +215,7 @@
                 </div>
 
                 <!-- Container de Abas -->
-                <div class="tab-container" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-dark); padding-bottom: 10px;">
+                <div class="tab-container hidden" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-dark); padding-bottom: 10px;">
                     <button id="btn-view-timeline" class="secondary icon-btn" style="background: var(--primary-accent);">🕒 Linha do Tempo</button>
                     <button id="btn-view-reports" class="secondary icon-btn">📊 Relatórios de Uso</button>
                 </div>
@@ -432,7 +432,7 @@
                 // Gestão de Projeto
                 ATUALIZAR_PROGRESSO: `${N8N_BASE}/atualizar-progresso-projeto`,
                 ATUALIZAR_STATUS_FASE: `${N8N_BASE}/atualizar-status-fase`,
-                CRIAR_NOVA_VERSAO: `${N8N_BASE}/criar-nova-versao`,
+                CRIAR_NOVA_VERSAO: `${N8N_BASE}/criar-nova-versão`,
                 NOTIFICAR_WHATSAPP: `${N8N_BASE}/notificar-whatsapp`,
                 
                 // CRUD e Gestão
@@ -823,8 +823,8 @@
                     `;
 
                 } catch (e) {
-                    console.error("Error fetching automation logs:", e);
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--error-color); padding: 20px;">Erro ao carregar relatórios.</td></tr>';
+                    console.error("Erro ao buscar logs:", e);
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Este projeto ainda não possui dados de automação registrados.</td></tr>';
                 }
             }
 
@@ -1008,36 +1008,53 @@
             };
 
             window.openProjectDetail = (projectId) => {
-                renderProjectDetail(projectId); // Renders the timeline part
+                const project = state.projects.find(p => p.id === projectId);
+                if (!project) return;
 
-                // Setup tab listeners
+                renderProjectDetail(projectId);
+
+                const tabContainer = document.querySelector('#project-detail-view .tab-container');
                 const btnTimeline = document.getElementById('btn-view-timeline');
                 const btnReports = document.getElementById('btn-view-reports');
                 const timelineContent = document.getElementById('project-timeline-content');
                 const reportsContent = document.getElementById('project-reports-content');
-                
-                // Reset to default state (Timeline view)
-                timelineContent.classList.remove('hidden');
-                reportsContent.classList.add('hidden');
-                btnTimeline.style.background = 'var(--primary-accent)';
-                btnReports.style.background = 'transparent';
 
-                btnTimeline.onclick = () => {
+                // CONFIGURAÇÃO: Lista de palavras-chave que ativam a aba de relatórios
+                const automationKeywords = ['Plano de Corte', 'Otimização', 'Calculadora'];
+                const isAutomationProject = automationKeywords.some(key => project.name.includes(key));
+
+                if (isAutomationProject) {
+                    // Mostra as abas se for um projeto de automação
+                    tabContainer.classList.remove('hidden');
+                    
+                    // Reset de estado para abas
                     timelineContent.classList.remove('hidden');
                     reportsContent.classList.add('hidden');
                     btnTimeline.style.background = 'var(--primary-accent)';
                     btnReports.style.background = 'transparent';
-                };
 
-                btnReports.onclick = () => {
-                    timelineContent.classList.add('hidden');
-                    reportsContent.classList.remove('hidden');
-                    btnReports.style.background = 'var(--primary-accent)';
-                    btnTimeline.style.background = 'transparent';
-                    renderAutomationReports(projectId); // Fetch data when tab is clicked
-                };
+                    btnTimeline.onclick = () => {
+                        timelineContent.classList.remove('hidden');
+                        reportsContent.classList.add('hidden');
+                        btnTimeline.style.background = 'var(--primary-accent)';
+                        btnReports.style.background = 'transparent';
+                    };
 
-                // Setup search listener
+                    btnReports.onclick = () => {
+                        timelineContent.classList.add('hidden');
+                        reportsContent.classList.remove('hidden');
+                        btnReports.style.background = 'var(--primary-accent)';
+                        btnTimeline.style.background = 'transparent';
+                        renderAutomationReports(projectId);
+                    };
+                } else {
+                    // Se não for automação, garante que apenas a timeline apareça e esconde as abas
+                    tabContainer.classList.add('hidden');
+                    timelineContent.classList.remove('hidden');
+                    reportsContent.classList.add('hidden');
+                }
+
+                // Setup search listener - needs to be accessible regardless
                 document.getElementById('report-search').oninput = (e) => {
                     const searchTerm = e.target.value.toLowerCase();
                     const rows = document.querySelectorAll('#automation-history-body tr');
@@ -1049,9 +1066,10 @@
                         }
                     });
                 };
-
+                
                 showView('projectDetail');
             };
+
 
             document.getElementById('client-view-toggle').addEventListener('change', (e) => {
                 state.isSimulatingClient = e.target.checked;
