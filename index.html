@@ -138,6 +138,10 @@
             color: var(--text-secondary);
             margin-top: 4px;
         }
+
+        .pagination-btn { padding: 5px 12px; border: 1px solid var(--border-dark); background: var(--surface-dark); color: var(--text-primary); cursor: pointer; border-radius: 4px; }
+        .pagination-btn.active { background: var(--primary-accent); border-color: var(--primary-accent); }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -261,38 +265,35 @@
 
                 <!-- Conteúdo dos Relatórios -->
                 <div id="project-reports-content" class="hidden">
-                    <div id="reports-dashboard">
-                        <div id="kpi-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
-                        <div id="usage-chart" style="background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px; padding: 15px; margin-bottom: 20px; min-height: 300px;"></div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 0.9em; color: var(--text-secondary);">Mostrar:</span>
-                                <select id="rows-per-page" style="width: auto; margin-bottom: 0; padding: 5px;">
-                                    <option value="15">15</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                </select>
-                            </div>
-                            <div id="pagination-controls" style="display: flex; gap: 5px;"></div>
+                    <div id="reports-dashboard-container">
+                        <!-- Area do Gráfico -->
+                        <div id="chart-container" style="background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                            <h4 style="margin-top:0;">📊 Desempenho ao Longo do Tempo</h4>
+                            <div id="usage-chart"></div>
                         </div>
-
-                        <input type="text" id="report-search" placeholder="Pesquisar por produto..." style="margin-bottom: 10px;">
-                        <div style="overflow-x: auto;">
-                            <table id="automation-history-table" style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-                                <thead>
-                                    <tr style="text-align: left; border-bottom: 2px solid var(--border-dark);">
-                                        <th style="padding: 10px;">Data</th>
-                                        <th>Bitola</th>
-                                        <th>Produto</th>
-                                        <th>Qtd</th>
-                                        <th>Barra</th>
-                                        <th>% Perda</th>
-                                    </tr>
-                                </thead>
+                        
+                        <!-- KPIs e Busca -->
+                        <div id="kpi-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 24px;"></div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 15px;">
+                            <input type="text" id="report-search" placeholder="🔍 Pesquisar produto..." style="margin-bottom: 0; flex: 1;">
+                            <select id="rows-per-page" style="width: auto; margin-bottom: 0;">
+                                <option value="15">15 por página</option>
+                                <option value="25">25 por página</option>
+                                <option value="50">50 por página</option>
+                            </select>
+                        </div>
+                
+                        <!-- Tabela -->
+                        <div style="overflow-x: auto; background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px;">
+                            <table id="automation-history-table" style="width: 100%; border-collapse: collapse;">
+                                <thead id="table-header-modular"></thead>
                                 <tbody id="automation-history-body"></tbody>
                             </table>
                         </div>
+                
+                        <!-- Controles de Paginação -->
+                        <div id="pagination-controls" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px; padding-bottom: 40px;"></div>
                     </div>
                 </div>
 
@@ -476,6 +477,15 @@
                     { name: "Completo (5 Fases)", phases: ["Diagnóstico", "Design", "Dev", "Homologação", "Go-Live"] },
                     { name: "Customizado", phases: [] }
                 ]
+            };
+            
+            // --- ESTADO DOS RELATÓRIOS ---
+            let reportState = {
+                allLogs: [],
+                currentPage: 1,
+                rowsPerPage: 15,
+                searchTerm: '',
+                chart: null // To hold the chart instance
             };
 
             // --- UTILS ---
@@ -775,92 +785,45 @@
                     container.appendChild(card);
                 });
             }
+
+            // --- FUNÇÕES DE RELATÓRIO MODULAR ---
             
-            // State for reports view
-            let allAutomationLogs = [];
-            let currentPage = 1;
-            let rowsPerPage = 15;
-
-            function renderChart(logs) {
-                const chartEl = document.querySelector("#usage-chart");
-                chartEl.innerHTML = ''; 
-
-                const sortedLogs = [...logs].reverse();
-
-                const dailyData = {};
-                sortedLogs.forEach(log => {
-                    const date = new Date(log.created_at).toLocaleDateString('pt-BR');
-                    dailyData[date] = (dailyData[date] || 0) + 1;
-                });
-
-                const options = {
-                    chart: { type: 'area', height: 300, toolbar: {show: false}, foreColor: '#9ca3af', background: 'transparent', zoom: { enabled: false } },
-                    dataLabels: { enabled: false },
-                    series: [{ name: 'Otimizações', data: Object.values(dailyData) }],
-                    xaxis: { categories: Object.keys(dailyData) },
-                    stroke: { curve: 'smooth', width: 2, colors: ['#3b82f6'] },
-                    fill: { type: 'gradient', colors: ['#3b82f6'], gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.2, stops: [0, 100] } },
-                    grid: { borderColor: '#374151', strokeDashArray: 4 },
-                    tooltip: { theme: 'dark' },
-                    theme: { mode: 'dark' }
-                };
-                new ApexCharts(chartEl, options).render();
+            // Renderiza o cabeçalho para relatórios de Plano de Corte
+            function renderCuttingPlanHeader() {
+                const header = document.getElementById('table-header-modular');
+                header.innerHTML = `
+                    <tr>
+                        <th style="padding: 12px 10px; text-align: left;">Data</th>
+                        <th style="padding: 12px 10px; text-align: left;">Bitola</th>
+                        <th style="padding: 12px 10px; text-align: left;">Produto</th>
+                        <th style="padding: 12px 10px; text-align: left;">Qtd</th>
+                        <th style="padding: 12px 10px; text-align: left;">Barra</th>
+                        <th style="padding: 12px 10px; text-align: left;">% Perda</th>
+                    </tr>
+                `;
             }
 
-            function renderPaginationControls() {
-                const controlsContainer = document.getElementById('pagination-controls');
-                controlsContainer.innerHTML = '';
-                const pageCount = Math.ceil(allAutomationLogs.length / rowsPerPage);
-
-                if (pageCount <= 1) return;
-
-                const prevButton = document.createElement('button');
-                prevButton.innerText = '←';
-                prevButton.className = 'secondary icon-btn';
-                prevButton.disabled = currentPage === 1;
-                prevButton.onclick = () => {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        displayPaginatedTable();
-                    }
-                };
-                controlsContainer.appendChild(prevButton);
-
-                const pageInfo = document.createElement('span');
-                pageInfo.innerText = `Pág ${currentPage} de ${pageCount}`;
-                pageInfo.style.cssText = 'font-size: 0.9em; color: var(--text-secondary); padding: 0 8px;';
-                controlsContainer.appendChild(pageInfo);
-
-                const nextButton = document.createElement('button');
-                nextButton.innerText = '→';
-                nextButton.className = 'secondary icon-btn';
-                nextButton.disabled = currentPage === pageCount;
-                nextButton.onclick = () => {
-                    if (currentPage < pageCount) {
-                        currentPage++;
-                        displayPaginatedTable();
-                    }
-                };
-                controlsContainer.appendChild(nextButton);
-            }
-
-            function displayPaginatedTable() {
+            // Renderiza as linhas da tabela para relatórios de Plano de Corte
+            function renderCuttingPlanRows(logs) {
                 const tableBody = document.getElementById('automation-history-body');
                 tableBody.innerHTML = '';
-                
-                const start = (currentPage - 1) * rowsPerPage;
-                const end = start + rowsPerPage;
-                const paginatedItems = allAutomationLogs.slice(start, end);
+                if (logs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum resultado encontrado.</td></tr>';
+                    return;
+                }
+                logs.forEach(log => {
+                    let s = {};
+                    try {
+                        s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {});
+                    } catch (e) {
+                        console.error("Erro ao converter summary_data:", e, log.summary_data);
+                        s = {};
+                    }
 
-                paginatedItems.forEach(log => {
-                     let s = log.summary_data;
-                    if (typeof s === 'string') { try { s = JSON.parse(s); } catch (e) { console.error("Error parsing summary_data:", e); s = {}; } }
-                    s = s || {};
-
-                    const bitola = s.bitola || "-";
-                    const produto = s.produto || "-";
+                    const bitola = s.bitola || s.Bitola || s.produtoPrincipal?.bitola || "-";
+                    const produto = s.produto || s.nomeProduto || "-";
                     const qtd = parseInt(s.qtd || 0);
-                    const barra = s.barra || 0;
+                    const barra = s.barra || s.tamanhoBarra || 0;
                     const perda = parseFloat(s.perda || 0);
 
                     const row = document.createElement('tr');
@@ -877,60 +840,153 @@
                     `;
                     tableBody.appendChild(row);
                 });
-                renderPaginationControls();
             }
 
+            // Renderiza o gráfico para relatórios de Plano de Corte
+            function renderCuttingPlanCharts(logs) {
+                const chartContainer = document.getElementById('usage-chart');
+                chartContainer.innerHTML = '';
 
+                const dataByDay = logs.reduce((acc, log) => {
+                    const date = new Date(log.created_at).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                    let s = {};
+                    try {
+                        s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {});
+                    } catch(e) { s = {}; }
+                    const perda = parseFloat(s.perda || 0);
+
+                    if (!acc[date]) acc[date] = { totalLoss: 0, count: 0 };
+                    acc[date].totalLoss += perda;
+                    acc[date].count += 1;
+                    return acc;
+                }, {});
+
+                const chartData = Object.entries(dataByDay).map(([date, values]) => ({
+                    x: date,
+                    y: (values.totalLoss / values.count).toFixed(2)
+                })).sort((a,b) => new Date(a.x.split('/').reverse().join('-')) - new Date(b.x.split('/').reverse().join('-')));
+
+                const options = {
+                    series: [{ name: 'Média de Perda (%)', data: chartData.map(d => d.y) }],
+                    chart: { type: 'area', height: 350, zoom: { enabled: false }, toolbar: { show: false }, foreColor: 'var(--text-secondary)' },
+                    dataLabels: { enabled: false },
+                    stroke: { curve: 'smooth' },
+                    xaxis: { type: 'category', categories: chartData.map(d => d.x) },
+                    yaxis: { title: { text: '% Perda' } },
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.9, stops: [0, 90, 100] } },
+                    tooltip: { theme: 'dark' },
+                    theme: { mode: 'dark' },
+                    colors: ['#3b82f6']
+                };
+
+                if (reportState.chart) reportState.chart.destroy();
+                reportState.chart = new ApexCharts(chartContainer, options);
+                reportState.chart.render();
+            }
+
+            // Renderiza os controles de paginação
+            function renderPagination(totalItems) {
+                const paginationContainer = document.getElementById('pagination-controls');
+                paginationContainer.innerHTML = '';
+                const totalPages = Math.ceil(totalItems / reportState.rowsPerPage);
+                if (totalPages <= 1) return;
+
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'pagination-btn';
+                prevBtn.innerText = '«';
+                prevBtn.disabled = reportState.currentPage === 1;
+                prevBtn.onclick = () => { reportState.currentPage--; updateReportView(); };
+                paginationContainer.appendChild(prevBtn);
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = 'pagination-btn';
+                    if (i === reportState.currentPage) pageBtn.classList.add('active');
+                    pageBtn.innerText = i;
+                    pageBtn.onclick = () => { reportState.currentPage = i; updateReportView(); };
+                    paginationContainer.appendChild(pageBtn);
+                }
+                
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'pagination-btn';
+                nextBtn.innerText = '»';
+                nextBtn.disabled = reportState.currentPage === totalPages;
+                nextBtn.onclick = () => { reportState.currentPage++; updateReportView(); };
+                paginationContainer.appendChild(nextBtn);
+            }
+
+            // Atualiza a visualização da tabela e da paginação
+            function updateReportView() {
+                const filteredLogs = reportState.allLogs.filter(log => {
+                    let s = {};
+                    try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch(e) { s = {}; }
+                    const productName = s.produto || s.nomeProduto || '';
+                    return productName.toLowerCase().includes(reportState.searchTerm);
+                });
+
+                const startIndex = (reportState.currentPage - 1) * reportState.rowsPerPage;
+                const paginatedLogs = filteredLogs.slice(startIndex, startIndex + reportState.rowsPerPage);
+
+                renderCuttingPlanRows(paginatedLogs); 
+                renderPagination(filteredLogs.length);
+            }
+
+            // Função principal dos relatórios (roteador)
             async function renderAutomationReports(projectId) {
+                reportState = { allLogs: [], currentPage: 1, rowsPerPage: 15, searchTerm: '', chart: reportState.chart };
+
                 const tableBody = document.getElementById('automation-history-body');
                 const kpiContainer = document.getElementById('kpi-cards');
+                const chartContainer = document.getElementById('chart-container');
                 tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Carregando dados...</td></tr>';
                 kpiContainer.innerHTML = '';
-                document.getElementById('pagination-controls').innerHTML = '';
-                document.getElementById('usage-chart').innerHTML = '';
 
                 try {
-                    const { data, error } = await supabaseClient.from('laborai_automation_logs').select('*').eq('project_id', projectId).order('created_at', { ascending: false });
+                    const { data, error } = await supabaseClient
+                        .from('laborai_automation_logs')
+                        .select('*')
+                        .eq('project_id', projectId)
+                        .order('created_at', { ascending: false });
+
                     if (error) throw error;
-                    
-                    allAutomationLogs = data || [];
-                    currentPage = 1;
-                    rowsPerPage = parseInt(document.getElementById('rows-per-page').value, 10);
-                    
-                    if (allAutomationLogs.length === 0) {
+                    if (!data || data.length === 0) {
                         tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum registro de automação encontrado.</td></tr>';
+                        chartContainer.classList.add('hidden');
                         return;
                     }
 
-                    // KPIs
-                    let totalCortes = 0;
-                    let totalPerdaValue = 0;
-                    allAutomationLogs.forEach(log => {
-                        let s = log.summary_data;
-                        if (typeof s === 'string') { try { s = JSON.parse(s); } catch (e) { s = {}; } }
-                        s = s || {};
+                    reportState.allLogs = data;
+                    chartContainer.classList.remove('hidden');
+
+                    const project = state.projects.find(p => p.id === projectId);
+                    if (project && project.name.includes('Plano de Corte')) {
+                        renderCuttingPlanHeader();
+                        renderCuttingPlanCharts(reportState.allLogs);
+                        updateReportView(); // Render inicial
+                    } else {
+                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Tipo de relatório não configurado.</td></tr>';
+                        chartContainer.classList.add('hidden');
+                    }
+
+                    let totalCortes = 0, totalPerdaValue = 0;
+                    data.forEach(log => {
+                        let s = {};
+                        try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch (e) { s = {}; }
                         totalCortes += parseInt(s.qtd || 0);
                         totalPerdaValue += parseFloat(s.perda || 0);
                     });
-                    const avgPerda = allAutomationLogs.length > 0 ? (totalPerdaValue / allAutomationLogs.length) : 0;
+
+                    const avgPerda = data.length > 0 ? (totalPerdaValue / data.length) : 0;
                     kpiContainer.innerHTML = `
-                        <div class="kpi-card"><div class="value">${allAutomationLogs.length}</div><div class="label">Total de Cálculos</div></div>
+                        <div class="kpi-card"><div class="value">${data.length}</div><div class="label">Total de Cálculos</div></div>
                         <div class="kpi-card"><div class="value">${totalCortes}</div><div class="label">Peças Cortadas</div></div>
                         <div class="kpi-card"><div class="value">${avgPerda.toFixed(2)}%</div><div class="label">Média de Perda</div></div>
                     `;
 
-                    renderChart(allAutomationLogs);
-                    displayPaginatedTable();
-
-                    document.getElementById('rows-per-page').onchange = (e) => {
-                        rowsPerPage = parseInt(e.target.value, 10);
-                        currentPage = 1;
-                        displayPaginatedTable();
-                    };
-
                 } catch (e) {
                     console.error("Erro ao buscar logs:", e);
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Este projeto ainda não possui dados de automação registrados.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Falha ao carregar dados de automação.</td></tr>';
+                    chartContainer.classList.add('hidden');
                 }
             }
 
@@ -977,7 +1033,9 @@
                 document.getElementById('toggle-add-update-form').classList.toggle('hidden', !isAdminMode);
 
                 if (activeVersion) {
+                    const version = activeVersion;
                     const vDiv = document.createElement('div');
+                    
                     const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
                     
                     phases.forEach(phase => {
@@ -989,7 +1047,7 @@
                         pHeader.style.borderColor = isCompleted ? 'var(--success-color)' : (isInProgress ? 'var(--primary-accent)' : 'var(--border-dark)');
                         
                         pHeader.onclick = (e) => {
-                            if (!e.target.closest('button')) {
+                            if (e.target.tagName !== 'BUTTON') {
                                 pHeader.classList.toggle('expanded');
                             }
                         };
@@ -997,8 +1055,17 @@
                         let phaseActions = '';
                         if (isAdminMode) {
                             const status = phase.status;
-                            let startPauseButton = status === 'pending' ? `<button class="icon-btn secondary" title="Marcar como 'Em Andamento'" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶ Iniciar</button>` : (status === 'in_progress' ? `<button class="icon-btn secondary" title="Pausar e voltar para 'Pendente'" onclick="changePhaseStatus('${phase.id}', 'pending')">|| Pausar</button>` : '');
-                            let completeReopenButton = status === 'in_progress' ? `<button class="icon-btn secondary" style="background-color: rgba(34, 197, 94, 0.1); color: var(--success-color);" title="Concluir Fase" onclick="changePhaseStatus('${phase.id}', 'completed')">✅ Concluir</button>` : (status === 'completed' ? `<button class="icon-btn secondary" title="Reabrir Fase (volta para 'Em Andamento')" onclick="changePhaseStatus('${phase.id}', 'in_progress')">↩️ Reabrir</button>` : '');
+                            let startPauseButton = '', completeReopenButton = '';
+
+                            if (status === 'pending') {
+                                startPauseButton = `<button class="icon-btn secondary" title="Marcar como 'Em Andamento'" onclick="changePhaseStatus('${phase.id}', 'in_progress')">▶ Iniciar</button>`;
+                            } else if (status === 'in_progress') {
+                                startPauseButton = `<button class="icon-btn secondary" title="Pausar e voltar para 'Pendente'" onclick="changePhaseStatus('${phase.id}', 'pending')">|| Pausar</button>`;
+                                completeReopenButton = `<button class="icon-btn secondary" style="background-color: rgba(34, 197, 94, 0.1); color: var(--success-color);" title="Concluir Fase" onclick="changePhaseStatus('${phase.id}', 'completed')">✅ Concluir</button>`;
+                            } else if (status === 'completed') {
+                                completeReopenButton = `<button class="icon-btn secondary" title="Reabrir Fase (volta para 'Em Andamento')" onclick="changePhaseStatus('${phase.id}', 'in_progress')">↩️ Reabrir</button>`;
+                            }
+                            
                             phaseActions = `<div class="phase-actions" style="display:flex; gap:8px;">${startPauseButton}${completeReopenButton}</div>`;
                         }
 
@@ -1015,21 +1082,29 @@
 
                         const pContent = document.createElement('div');
                         pContent.className = 'phase-content';
-                        phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).forEach(upd => {
+
+                        const updates = phase.laborai_phase_updates.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                        updates.forEach(upd => {
                             const uDiv = document.createElement('div');
                             uDiv.className = 'update';
                             
                             let content = `<p style="margin-top:5px;">${upd.description || ''}</p>`;
+
                             if (upd.update_type === 'image' && upd.content_url) {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
-                                if (directImageUrl) { 
+                                if (directImageUrl && directImageUrl.length > 30) { 
                                     const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
-                                    content += `<img src="${directImageUrl}" onclick='openImageLightbox(${safeUpd})' onerror="this.style.display='none'" style="margin-top:10px; display: block; border-radius: 4px; max-width: 100%;">`;
+                                    content += `<img src="${directImageUrl}" 
+                                                     onclick='openImageLightbox(${safeUpd})' 
+                                                     onerror="this.style.display='none'" 
+                                                     style="margin-top:10px; display: block; border-radius: 4px; max-width: 100%;">`;
                                 }
                             }
-                            if (upd.link_url) {
+
+                            if (upd.link_url && upd.link_url.trim() !== '') {
                                 content += `<a href="${upd.link_url}" target="_blank" style="color:var(--primary-accent); display:block; margin-top:10px;">🔗 Acessar Link</a>`;
                             }
+
 
                             let updActions = '';
                             if (isAdminMode) {
@@ -1043,7 +1118,12 @@
                                 `;
                             }
 
-                            uDiv.innerHTML = `${updActions}<strong>${upd.title}</strong><small style="display:block; color:var(--text-secondary);">${new Date(upd.created_at).toLocaleString('pt-BR')}</small>${content}`;
+                            uDiv.innerHTML = `
+                                ${updActions}
+                                <strong>${upd.title}</strong>
+                                <small style="display:block; color:var(--text-secondary);">${new Date(upd.created_at).toLocaleString('pt-BR')}</small>
+                                ${content}
+                            `;
                             pContent.appendChild(uDiv);
                         });
                         vDiv.appendChild(pContent);
@@ -1079,6 +1159,7 @@
 
                 if (isAutomationProject) {
                     tabContainer.classList.remove('hidden');
+                    
                     timelineContent.classList.remove('hidden');
                     reportsContent.classList.add('hidden');
                     btnTimeline.style.background = 'var(--primary-accent)';
@@ -1105,11 +1186,15 @@
                 }
 
                 document.getElementById('report-search').oninput = (e) => {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const rows = document.querySelectorAll('#automation-history-body tr');
-                    rows.forEach(row => {
-                        row.style.display = (row.dataset.productName && row.dataset.productName.includes(searchTerm)) ? '' : 'none';
-                    });
+                    reportState.searchTerm = e.target.value.toLowerCase();
+                    reportState.currentPage = 1;
+                    updateReportView();
+                };
+
+                document.getElementById('rows-per-page').onchange = (e) => {
+                    reportState.rowsPerPage = parseInt(e.target.value, 10);
+                    reportState.currentPage = 1;
+                    updateReportView();
                 };
                 
                 showView('projectDetail');
@@ -1120,7 +1205,7 @@
                 state.isSimulatingClient = e.target.checked;
                 renderHeader();
                 if (!document.getElementById('project-detail-view').classList.contains('hidden')) {
-                    openProjectDetail(state.currentProjectId); // Re-run logic to show/hide tabs
+                    renderProjectDetail(state.currentProjectId);
                 } else if (!document.getElementById('client-list-view').classList.contains('hidden')) {
                     renderClientList();
                 } else if (!document.getElementById('project-list-view').classList.contains('hidden')) {
@@ -1128,14 +1213,12 @@
                 }
             });
 
-            // FECHAMENTO DO LIGHTBOX AJUSTADO
             document.getElementById('image-lightbox').addEventListener('click', (e) => {
                 if (e.target.id === 'image-lightbox' || e.target.classList.contains('modal-content')) {
                     document.getElementById('image-lightbox').classList.add('hidden');
                 }
             });
 
-            // Refatoração: Botão de Adicionar Atualização abre Modal
             document.getElementById('toggle-add-update-form').addEventListener('click', () => {
                 const formContainer = document.getElementById('add-update-form-container');
                 showGenericModal({
@@ -1163,11 +1246,10 @@
                             
                             Toast.success('Atualização criada!');
                             await loadData();
-                            openProjectDetail(state.currentProjectId);
+                            renderProjectDetail(state.currentProjectId);
                             document.getElementById('generic-modal').classList.add('hidden');
                         } catch (err) {
                             Toast.error('Falha ao salvar. Verifique os dados.');
-                        } finally {
                             btn.disabled = false; btn.innerText = 'Publicar Atualização';
                         }
                     };
@@ -1178,12 +1260,17 @@
 
             async function handleSaveUpdate(formData, updateId = null) {
                 let url = `${HOOKS.SALVAR_ATUALIZACAO}?title=${encodeURIComponent(formData.get('title'))}&description=${encodeURIComponent(formData.get('description'))}&contentUrl=${encodeURIComponent(formData.get('link'))}`;
-                if (updateId) url += `&updateId=${updateId}`;
-                else url += `&phaseId=${formData.get('phaseId')}`;
+                
+                if (updateId) {
+                    url += `&updateId=${updateId}`;
+                } else {
+                    url += `&phaseId=${formData.get('phaseId')}`;
+                }
 
                 let fetchOptions = { method: 'POST' };
                 const file = formData.get('file');
-                if (file) {
+
+                if (file && file.size > 0) {
                     url += `&fileName=${encodeURIComponent(file.name)}`;
                     fetchOptions.body = file;
                 }
@@ -1191,55 +1278,65 @@
                 await fetch(url, fetchOptions);
             }
 
-            window.notifyWhatsApp = (updateId, projectId) => showGenericModal({
-                title: 'Enviar Notificação',
-                bodyHtml: '<p>Deseja enviar notificação via WhatsApp para todos os contatos deste cliente?</p>',
-                buttons: [{
-                    label: 'Enviar',
-                    classes: 'primary', 
-                    onClick: async () => {
-                        await fetch(HOOKS.NOTIFICAR_WHATSAPP, { method: 'POST', body: JSON.stringify({ updateId, projectId }) });
-                        Toast.success('Notificação enviada!');
-                    }
-                }]
-            });
+            window.notifyWhatsApp = async (updateId, projectId) => {
+                showGenericModal({
+                    title: 'Enviar Notificação',
+                    bodyHtml: '<p>Deseja enviar notificação via WhatsApp para todos os contatos deste cliente?</p>',
+                    buttons: [{
+                        label: 'Enviar',
+                        classes: 'primary', 
+                        onClick: async () => {
+                            await fetch(HOOKS.NOTIFICAR_WHATSAPP, { 
+                                method: 'POST', body: JSON.stringify({ updateId, projectId }) 
+                            });
+                            Toast.success('Notificação enviada!');
+                        }
+                    }]
+                });
+            };
 
             document.getElementById('upload-logo-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('upload-logo-button');
                 const file = document.getElementById('logo-file-input').files[0];
                 const clientId = document.getElementById('logo-client-select').value;
+                
                 btn.innerText = 'Enviando...'; btn.disabled = true;
                 
                 try {
                     const url = `${HOOKS.ATUALIZAR_LOGO}?clientId=${clientId}&fileName=${encodeURIComponent(file.name)}`;
                     const res = await fetch(url, { method: 'POST', body: file });
-                    if(!res.ok) throw new Error('Falha no upload');
+                    if(!res.ok) throw new Error();
+                    
                     Toast.success('Logo atualizada!');
                     await loadData();
                     if(state.isAdmin) renderClientList();
-                    e.target.reset();
-                } catch(err) { Toast.error(err.message); }
-                finally { btn.innerText = 'Salvar Logo'; btn.disabled = false; }
+                } catch(e) { Toast.error('Erro no upload.'); }
+                finally { btn.innerText = 'Salvar Logo'; btn.disabled = false; document.getElementById('upload-logo-form').reset(); }
             });
 
             window.openContactsModal = async (clientId, clientName) => {
                 state.currentManageClientId = clientId;
-                const modal = document.getElementById('contacts-modal');
-                modal.querySelector('#contacts-modal-client-name').innerText = clientName;
-                modal.classList.remove('hidden');
+                document.getElementById('contacts-modal-client-name').innerText = clientName;
+                document.getElementById('contacts-modal').classList.remove('hidden');
                 
-                const listEl = modal.querySelector('#contacts-list');
+                const listEl = document.getElementById('contacts-list');
                 listEl.innerHTML = 'Carregando...';
                 
                 const { data } = await supabaseClient.from('laborai_client_contacts').select('*').eq('client_id', clientId);
                 listEl.innerHTML = '';
-                if(data) data.forEach(c => {
-                    const item = document.createElement('div');
-                    item.className = 'contact-item';
-                    item.innerHTML = `<div><strong>${c.name}</strong> (${c.role || '-'})<br><small>${c.whatsapp}</small></div><button class="danger icon-btn" onclick="deleteContact('${c.id}')">🗑️</button>`;
-                    listEl.appendChild(item);
-                });
+                
+                if(data) {
+                    data.forEach(c => {
+                        const item = document.createElement('div');
+                        item.className = 'contact-item';
+                        item.innerHTML = `
+                            <div><strong>${c.name}</strong> (${c.role || '-'})<br><small>${c.whatsapp}</small></div>
+                            <button class="danger icon-btn" onclick="deleteContact('${c.id}')">🗑️</button>
+                        `;
+                        listEl.appendChild(item);
+                    });
+                }
             };
 
             document.getElementById('add-contact-form').addEventListener('submit', async (e) => {
@@ -1256,159 +1353,258 @@
                         })
                     });
                     Toast.success('Contato adicionado!');
-                    e.target.reset();
+                    document.getElementById('add-contact-form').reset();
                     const client = state.clients.find(c => c.id === state.currentManageClientId);
-                    if (client) openContactsModal(client.id, client.name);
-                } catch(err) { Toast.error('Erro ao criar contato'); }
+                    openContactsModal(client.id, client.name);
+                } catch(e) { Toast.error('Erro ao criar contato'); }
                 finally { btn.disabled = false; }
             });
 
-            window.deleteContact = async (id) => showGenericModal({
-                title: 'Excluir Contato',
-                bodyHtml: '<p>Tem certeza que deseja excluir este contato?</p>',
-                buttons: [{
-                    label: 'Excluir',
-                    classes: 'danger',
-                    onClick: async () => {
-                        await fetch(HOOKS.EXCLUIR_CONTATO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ contactId: id }) });
-                        const client = state.clients.find(c => c.id === state.currentManageClientId);
-                        if (client) openContactsModal(client.id, client.name);
-                    }
-                }]
-            });
-
-            window.handleEditProject = (project) => showGenericModal({
-                title: 'Editar Projeto',
-                bodyHtml: `<label>Nome do projeto:</label><input type="text" id="edit-project-name" value="${escapeHtml(project.name)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;"><label>Descrição:</label><textarea id="edit-project-description" rows="4" style="width: 100%; box-sizing: border-box;">${escapeHtml(project.description || '')}</textarea>`,
-                buttons: [{
-                    label: 'Salvar',
-                    classes: 'primary',
-                    onClick: async () => {
-                        const updates = [
-                            { field: 'name', value: document.getElementById('edit-project-name').value },
-                            { field: 'description', value: document.getElementById('edit-project-description').value }
-                        ];
-                        await fetch(HOOKS.EDITAR_PROJETO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ projectId: project.id, updates }) });
-                        Toast.success('Projeto atualizado');
-                        await loadData(); 
-                        renderProjectList(state.currentClientId);
-                    }
-                }]
-            });
-
-            window.handleDeleteProject = async (projectId) => showGenericModal({
-                title: 'Confirmar Exclusão',
-                bodyHtml: '<p style="color:var(--error-color);">ATENÇÃO: Isso excluirá o projeto e todo o histórico. Esta ação não pode ser desfeita.</p>',
-                buttons: [{
-                    label: 'Excluir Projeto',
-                    classes: 'danger',
-                    onClick: async () => {
-                        await fetch(HOOKS.EXCLUIR_PROJETO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ projectId }) });
-                        Toast.success('Projeto excluído');
-                        await loadData(); 
-                        renderProjectList(state.currentClientId);
-                    }
-                }]
-            });
-
-            window.handleEditUpdate = async (update) => showGenericModal({
-                title: 'Editar Atualização',
-                bodyHtml: `<label>Título:</label><input type="text" id="edit-update-title" value="${escapeHtml(update.title)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;"><label>Descrição:</label><textarea id="edit-update-desc" rows="4" style="width: 100%; box-sizing: border-box;">${escapeHtml(update.description || '')}</textarea><label>Link (deixe em branco para remover):</label><input type="url" id="edit-update-link" value="${update.link_url ? escapeHtml(update.link_url) : ''}" style="margin-bottom: 10px; width: 100%; box-sizing: border-box;"><label style="font-size: 0.9em; color: var(--text-secondary);">Substituir Arquivo (opcional):</label>${update.update_type === 'image' && update.content_url ? `<img src="${getGoogleDriveDirectImage(update.content_url)}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}<input type="file" id="edit-update-file">`,
-                buttons: [{
-                    label: 'Salvar Alterações',
-                    classes: 'primary',
-                    onClick: async () => {
-                        const formData = new FormData();
-                        formData.append('title', document.getElementById('edit-update-title').value);
-                        formData.append('description', document.getElementById('edit-update-desc').value);
-                        formData.append('link', document.getElementById('edit-update-link').value);
-                        formData.append('file', document.getElementById('edit-update-file').files[0]);
-                        await handleSaveUpdate(formData, update.id);
-                        Toast.success('Atualização salva!');
-                        await loadData();
-                        openProjectDetail(state.currentProjectId);
-                    }
-                }]
-            });
-
-            window.deleteUpdate = async (updateId) => showGenericModal({
-                title: 'Excluir Atualização',
-                bodyHtml: '<p>Deseja remover esta atualização da timeline?</p>',
-                buttons: [{
-                    label: 'Excluir',
-                    classes: 'danger',
-                    onClick: async () => {
-                        await fetch(HOOKS.EXCLUIR_ATUALIZACAO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ updateId }) });
-                        Toast.success('Atualização removida');
-                        await loadData(); 
-                        openProjectDetail(state.currentProjectId);
-                    }
-                }]
-            });
-
-            window.changePhaseStatus = async (phaseId, status) => {
-                await fetch(HOOKS.ATUALIZAR_STATUS_FASE, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ phaseId, newStatus: status }) });
-                Toast.success('Status da fase alterado');
-                await loadData(); 
-                openProjectDetail(state.currentProjectId);
+            window.deleteContact = async (id) => {
+                showGenericModal({
+                    title: 'Excluir Contato',
+                    bodyHtml: '<p>Tem certeza que deseja excluir este contato?</p>',
+                    buttons: [{
+                        label: 'Excluir',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_CONTATO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ contactId: id }) });
+                            const client = state.clients.find(c => c.id === state.currentManageClientId);
+                            openContactsModal(client.id, client.name);
+                        }
+                    }]
+                });
             };
 
+            window.handleEditProject = (project) => {
+                showGenericModal({
+                    title: 'Editar Projeto',
+                    bodyHtml: `
+                        <label>Nome do projeto:</label>
+                        <input type="text" id="edit-project-name" value="${escapeHtml(project.name)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <label>Descrição:</label>
+                        <textarea id="edit-project-description" rows="4" placeholder="Adicione uma descrição detalhada..." style="width: 100%; box-sizing: border-box;">${escapeHtml(project.description || '')}</textarea>
+                    `,
+                    buttons: [{
+                        label: 'Salvar',
+                        classes: 'primary',
+                        onClick: async () => {
+                            const newName = document.getElementById('edit-project-name').value;
+                            const newDescription = document.getElementById('edit-project-description').value;
+
+                            const updates = [
+                                { field: 'name', value: newName },
+                                { field: 'description', value: newDescription }
+                            ];
+
+                            await fetch(HOOKS.EDITAR_PROJETO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ projectId: project.id, updates }) 
+                            });
+                            
+                            Toast.success('Projeto atualizado');
+                            await loadData(); 
+                            renderProjectList(state.currentClientId);
+                        }
+                    }]
+                });
+            };
+
+            window.handleDeleteProject = async (projectId) => {
+                showGenericModal({
+                    title: 'Confirmar Exclusão',
+                    bodyHtml: '<p style="color:var(--error-color);">ATENÇÃO: Isso excluirá o projeto e todo o histórico. Esta ação não pode ser desfeita.</p>',
+                    buttons: [{
+                        label: 'Excluir Projeto',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_PROJETO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ projectId }) 
+                            });
+                            Toast.success('Projeto excluído');
+                            await loadData(); 
+                            renderProjectList(state.currentClientId);
+                        }
+                    }]
+                });
+            };
+
+            window.handleEditUpdate = async (update) => {
+                showGenericModal({
+                    title: 'Editar Atualização',
+                    bodyHtml: `
+                        <label>Título:</label>
+                        <input type="text" id="edit-update-title" value="${escapeHtml(update.title)}" required style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <label>Descrição:</label>
+                        <textarea id="edit-update-desc" rows="4" style="width: 100%; box-sizing: border-box;">${escapeHtml(update.description || '')}</textarea>
+                        <label>Link (deixe em branco para remover):</label>
+                        <input type="url" id="edit-update-link" value="${update.link_url ? escapeHtml(update.link_url) : ''}" placeholder="https://..." style="margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                        <label for="edit-update-file" style="font-size: 0.9em; color: var(--text-secondary);">Substituir Arquivo (opcional):</label>
+                        ${update.update_type === 'image' && update.content_url ? `<img src="${getGoogleDriveDirectImage(update.content_url)}" style="max-width:100px; display:block; margin-bottom:5px;">` : ''}
+                        <input type="file" id="edit-update-file">
+                    `,
+                    buttons: [{
+                        label: 'Salvar Alterações',
+                        classes: 'primary',
+                        onClick: async () => {
+                            const formData = new FormData();
+                            formData.append('title', document.getElementById('edit-update-title').value);
+                            formData.append('description', document.getElementById('edit-update-desc').value);
+                            formData.append('link', document.getElementById('edit-update-link').value);
+                            formData.append('file', document.getElementById('edit-update-file').files[0]);
+
+                            await handleSaveUpdate(formData, update.id);
+                            
+                            Toast.success('Atualização salva!');
+                            await loadData();
+                            renderProjectDetail(state.currentProjectId);
+                        }
+                    }]
+                });
+            };
+
+            window.deleteUpdate = async (updateId) => {
+                showGenericModal({
+                    title: 'Excluir Atualização',
+                    bodyHtml: '<p>Deseja remover esta atualização da timeline?</p>',
+                    buttons: [{
+                        label: 'Excluir',
+                        classes: 'danger',
+                        onClick: async () => {
+                            await fetch(HOOKS.EXCLUIR_ATUALIZACAO, { 
+                                method: 'POST', headers: {'Content-Type':'application/json'},
+                                body: JSON.stringify({ updateId }) 
+                            });
+                            Toast.success('Atualização removida');
+                            await loadData(); 
+                            renderProjectDetail(state.currentProjectId);
+                        }
+                    }]
+                });
+            };
+
+            window.changePhaseStatus = async (phaseId, status) => {
+                await fetch(HOOKS.ATUALIZAR_STATUS_FASE, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ phaseId, newStatus: status })
+                });
+                Toast.success('Status da fase alterado');
+                await loadData(); 
+                renderProjectDetail(state.currentProjectId);
+            };
+
+            // --- OUTROS FORMULÁRIOS ---
+            
             document.getElementById('login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value });
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+                    email: document.getElementById('login-email').value, 
+                    password: document.getElementById('login-password').value 
+                });
                 if (error) Toast.error(error.message);
                 else initApp(data.user);
             });
 
-            document.getElementById('logout-button').addEventListener('click', () => { supabaseClient.auth.signOut(); window.location.reload(); });
-            document.getElementById('admin-panel-button').addEventListener('click', () => { populateDropdowns(); showView('adminForms'); });
-            document.getElementById('back-from-admin-panel').addEventListener('click', () => { renderProjectList(state.currentClientId); showView('projectList'); });
-            document.getElementById('back-to-clients-button').addEventListener('click', () => { state.currentClientId = null; renderHeader(); showView('clientList'); });
-            document.getElementById('back-to-projects-button').addEventListener('click', () => { renderProjectList(state.currentClientId); showView('projectList'); });
+            document.getElementById('logout-button').addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                window.location.reload();
+            });
+
+            document.getElementById('admin-panel-button').addEventListener('click', () => {
+                populateDropdowns();
+                showView('adminForms');
+            });
+            document.getElementById('back-from-admin-panel').addEventListener('click', () => {
+                renderProjectList(state.currentClientId);
+                showView('projectList');
+            });
 
             document.getElementById('create-client-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await fetch(HOOKS.CRIAR_CLIENTE, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ clientName: document.getElementById('new-client-name').value }) });
-                Toast.success('Cliente criado'); e.target.reset(); await loadData(); populateDropdowns();
+                const name = document.getElementById('new-client-name').value;
+                await fetch(HOOKS.CRIAR_CLIENTE, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ clientName: name }) });
+                Toast.success('Cliente criado'); 
+                e.target.reset(); 
+                await loadData(); 
+                populateDropdowns();
             });
 
-            document.getElementById('phase-template-select').addEventListener('change', (e) => document.getElementById('new-project-phases').classList.toggle('hidden', e.target.value !== 'Customizado'));
+            document.getElementById('phase-template-select').addEventListener('change', (e) => {
+                const isCustom = e.target.value === 'Customizado';
+                document.getElementById('new-project-phases').classList.toggle('hidden', !isCustom);
+            });
             
             document.getElementById('create-project-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const phasesRaw = document.getElementById('new-project-phases').value;
                 const template = state.phaseTemplates.find(t => t.name === document.getElementById('phase-template-select').value);
-                const phases = template.name === 'Customizado' ? document.getElementById('new-project-phases').value.split('\n') : template.phases;
-                await fetch(HOOKS.CRIAR_PROJETO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ clientId: document.getElementById('project-client-select').value, projectName: document.getElementById('new-project-name').value, description: document.getElementById('new-project-description').value, phases }) });
-                Toast.success('Projeto criado'); e.target.reset(); await loadData();
+                const phases = template.name === 'Customizado' ? phasesRaw.split('\n') : template.phases;
+
+                await fetch(HOOKS.CRIAR_PROJETO, { 
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ 
+                        clientId: document.getElementById('project-client-select').value,
+                        projectName: document.getElementById('new-project-name').value,
+                        description: document.getElementById('new-project-description').value,
+                        phases 
+                    })
+                });
+                Toast.success('Projeto criado'); 
+                e.target.reset(); 
+                await loadData();
             });
 
             document.getElementById('progress-slider').addEventListener('input', (e) => document.getElementById('progress-percentage-display').innerText = e.target.value + '%');
             document.getElementById('save-progress-button').addEventListener('click', async () => {
-                await fetch(HOOKS.ATUALIZAR_PROGRESSO, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ versionId: state.currentVersionId, newProgress: parseInt(document.getElementById('progress-slider').value) }) });
+                const val = document.getElementById('progress-slider').value;
+                await fetch(HOOKS.ATUALIZAR_PROGRESSO, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ versionId: state.currentVersionId, newProgress: parseInt(val) })
+                });
                 Toast.success('Progresso salvo');
                 await loadData();
-                openProjectDetail(state.currentProjectId);
+                renderProjectDetail(state.currentProjectId);
             });
             
+            document.getElementById('back-to-clients-button').addEventListener('click', () => {
+                state.currentClientId = null;
+                renderHeader();
+                showView('clientList');
+            });
+            document.getElementById('back-to-projects-button').addEventListener('click', () => {
+                renderProjectList(state.currentClientId);
+                showView('projectList');
+            });
+
             function populateDropdowns() {
-                const selects = [document.getElementById('logo-client-select'), document.getElementById('project-client-select'), document.getElementById('user-client-select')];
-                selects.forEach(s => s.innerHTML = '<option value="">Selecione...</option>');
+                const logoSel = document.getElementById('logo-client-select');
+                const projSel = document.getElementById('project-client-select');
+                const userSel = document.getElementById('user-client-select');
+                [logoSel, projSel, userSel].forEach(s => s.innerHTML = '<option value="">Selecione...</option>');
+                
                 state.clients.forEach(c => {
-                    const opt = `<option value="${c.id}">${c.name}</option>`;
-                    selects.forEach(s => s.innerHTML += opt);
+                    const opt = document.createElement('option'); opt.value = c.id; opt.innerText = c.name;
+                    [logoSel, projSel, userSel].forEach(s => s.appendChild(opt.cloneNode(true)));
                 });
 
                 const tmplSel = document.getElementById('phase-template-select');
                 tmplSel.innerHTML = '';
-                state.phaseTemplates.forEach(t => tmplSel.innerHTML += `<option value="${t.name}">${t.name}</option>`);
+                state.phaseTemplates.forEach(t => {
+                    const opt = document.createElement('option'); opt.value = t.name; opt.innerText = t.name;
+                    tmplSel.appendChild(opt);
+                });
             }
 
+            // --- INIT ---
             async function initApp(user) {
                 state.user = user;
                 state.isAdmin = user.user_metadata.role === 'admin';
+                
                 await loadData();
                 renderHeader();
                 showView('app');
+
                 if (state.isAdmin) {
                     renderClientList();
                     showView('clientList');
