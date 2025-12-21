@@ -785,22 +785,40 @@
                     let totalPerdaValue = 0;
                     
                     data.forEach(log => {
-                        const summary = log.summary_data || {};
-                        const qtdPecas = summary.total_pecas || 0;
-                        const percentPerda = summary.percentual_perda || 0;
+                        // Lógica de segurança para garantir que summary_data seja um objeto
+                        let s = log.summary_data;
+                        if (typeof s === 'string') {
+                            try {
+                                s = JSON.parse(s);
+                            } catch (e) {
+                                console.error("Erro ao converter summary_data:", e);
+                                s = {};
+                            }
+                        }
+                        s = s || {};
 
-                        totalCortes += qtdPecas;
-                        totalPerdaValue += percentPerda;
+                        // Extração dos campos com fallback
+                        const bitola = s.bitola || "-";
+                        const produto = s.produto || "-";
+                        const qtd = parseInt(s.qtd || 0);
+                        const barra = s.barra || 0;
+                        const perda = parseFloat(s.perda || 0);
+
+                        // Soma para os KPIs
+                        totalCortes += qtd;
+                        totalPerdaValue += perda;
 
                         const row = document.createElement('tr');
-                        row.dataset.productName = (summary.produto || '').toLowerCase();
+                        row.dataset.productName = produto.toLowerCase();
                         row.innerHTML = `
-                            <td>${new Date(log.created_at).toLocaleDateString('pt-BR')}</td>
-                            <td>${summary.bitola || '-'}</td>
-                            <td>${summary.produto || '-'}</td>
-                            <td>${qtdPecas}</td>
-                            <td>${summary.tamanho_barra || '-'}</td>
-                            <td>${percentPerda.toFixed(2)}%</td>
+                            <td style="color: var(--text-secondary); font-size: 0.85em;">${new Date(log.created_at).toLocaleDateString('pt-BR')}</td>
+                            <td style="color: var(--primary-accent); font-weight: bold;">${bitola}</td>
+                            <td>${produto}</td>
+                            <td style="text-align: center;">${qtd}</td>
+                            <td style="text-align: center;">${barra}mm</td>
+                            <td style="font-weight: bold; color: ${perda > 3 ? 'var(--error-color)' : (perda > 1 ? 'var(--warning-color)' : 'var(--success-color)')}">
+                                ${perda.toFixed(2)}%
+                            </td>
                         `;
                         tableBody.appendChild(row);
                     });
