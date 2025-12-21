@@ -140,12 +140,11 @@
             margin-top: 4px;
         }
 
-        /* --- NOVOS ESTILOS PARA DASHBOARD --- */
+        /* --- ESTILOS DASHBOARD & SORTING --- */
         .pagination-btn { padding: 4px 8px; font-size: 12px; border: 1px solid var(--border-dark); background: var(--surface-dark); color: var(--text-primary); cursor: pointer; border-radius: 4px; }
         .pagination-btn.active { background: var(--primary-accent); border-color: var(--primary-accent); }
         .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .mini-filter-container { display: flex; gap: 8px; }
         .mini-filter { width: auto; padding: 4px 12px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-dark); background: var(--surface-dark); color: var(--text-secondary); cursor: pointer; border-radius: 6px; transition: all 0.2s; }
         .mini-filter:hover { background: var(--border-dark); color: var(--text-primary); }
         .mini-filter.active { background: var(--primary-accent); border-color: var(--primary-accent); color: white; }
@@ -156,6 +155,10 @@
             gap: 20px;
             margin-bottom: 24px;
         }
+
+        #table-header-modular th { cursor: pointer; user-select: none; transition: background 0.2s; }
+        #table-header-modular th:hover { background: rgba(255,255,255,0.05); }
+        .sort-icon { font-size: 0.8em; margin-left: 5px; opacity: 0.5; }
     </style>
 </head>
 <body>
@@ -521,6 +524,8 @@
                 currentPage: 1,
                 rowsPerPage: 15,
                 searchTerm: '',
+                currentSortCol: 'created_at',
+                currentSortOrder: 'desc',
                 lossChart: null,
                 volumeChart: null
             };
@@ -823,8 +828,52 @@
                 });
             }
 
-            // --- FUNÇÕES DE RELATÓRIO MODULAR (NOVA ESTRUTURA) ---
+            // --- FUNÇÕES DE RELATÓRIO MODULAR ---
             
+            function renderReportHeader() {
+                const headerContainer = document.getElementById('table-header-modular');
+                headerContainer.innerHTML = '';
+                const columns = [
+                    { key: 'created_at', label: 'Data'},
+                    { key: 'bitola', label: 'Bitola'},
+                    { key: 'produto', label: 'Produto'},
+                    { key: 'qtd', label: 'Qtd'},
+                    { key: 'barra', label: 'Barra'},
+                    { key: 'perda', label: '% Perda'}
+                ];
+
+                const tr = document.createElement('tr');
+                columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.dataset.col = col.key;
+                    th.textContent = col.label;
+                    
+                    const icon = document.createElement('span');
+                    icon.className = 'sort-icon';
+                    if (reportState.currentSortCol === col.key) {
+                        icon.textContent = reportState.currentSortOrder === 'asc' ? ' ▲' : ' ▼';
+                        icon.style.opacity = 1;
+                    } else {
+                        icon.textContent = ' ↕';
+                    }
+                    th.appendChild(icon);
+
+                    th.onclick = () => {
+                        if (reportState.currentSortCol === col.key) {
+                            reportState.currentSortOrder = reportState.currentSortOrder === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            reportState.currentSortCol = col.key;
+                            reportState.currentSortOrder = 'desc';
+                        }
+                        reportState.currentPage = 1;
+                        renderReportHeader(); 
+                        updateReportTable(); 
+                    };
+                    tr.appendChild(th);
+                });
+                headerContainer.appendChild(tr);
+            }
+
             // Renderiza os KPIs (ATUALIZADO)
             function renderReportKPIs(logs) {
                 const kpiContainer = document.getElementById('kpi-cards');
@@ -906,15 +955,41 @@
 
             // Renderiza a tabela de dados
             function updateReportTable() {
-                // Filtra primeiro pelo texto da busca
-                const textFilteredLogs = reportState.filteredLogs.filter(log => {
+                // Filtra pelo texto da busca
+                let textFilteredLogs = reportState.filteredLogs.filter(log => {
                     let s = {};
                     try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch(e) { s = {}; }
                     const productName = s.produto || s.nomeProduto || '';
                     return productName.toLowerCase().includes(reportState.searchTerm);
                 });
 
-                // Depois, fatia para a paginação
+                // Ordena os dados
+                const col = reportState.currentSortCol;
+                const order = reportState.currentSortOrder;
+                textFilteredLogs.sort((a, b) => {
+                    let sA = {}, sB = {};
+                    try { sA = (typeof a.summary_data === 'string') ? JSON.parse(a.summary_data) : (a.summary_data || {}); } catch(e){ sA = {}; }
+                    try { sB = (typeof b.summary_data === 'string') ? JSON.parse(b.summary_data) : (b.summary_data || {}); } catch(e){ sB = {}; }
+                    
+                    let valA, valB;
+
+                    if (col === 'created_at') {
+                        valA = new Date(a.created_at);
+                        valB = new Date(b.created_at);
+                        return order === 'asc' ? valA - valB : valB - valA;
+                    } else if (col === 'qtd' || col === 'barra' || col === 'perda') {
+                        valA = parseFloat(sA[col] || 0);
+                        valB = parseFloat(sB[col] || 0);
+                        return order === 'asc' ? valA - valB : valB - valA;
+                    } else { // string columns como 'produto', 'bitola'
+                        valA = (sA[col] || '').toString().toLowerCase();
+                        valB = (sB[col] || '').toString().toLowerCase();
+                        return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                    }
+                });
+
+
+                // Fatia para a paginação
                 const startIndex = (reportState.currentPage - 1) * reportState.rowsPerPage;
                 const paginatedLogs = textFilteredLogs.slice(startIndex, startIndex + reportState.rowsPerPage);
 
@@ -930,7 +1005,7 @@
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td style="color: var(--text-secondary); font-size: 0.85em;">${new Date(log.created_at).toLocaleDateString('pt-BR')}</td>
-                            <td style="color: var(--primary-accent); font-weight: bold;">${s.bitola || s.Bitola || s.produtoPrincipal?.bitola || "-"}</td>
+                            <td style="color: var(--primary-accent); font-weight: bold;">${s.bitola || s.Bitola || "-"}</td>
                             <td>${s.produto || s.nomeProduto || "-"}</td>
                             <td style="text-align: center;">${parseInt(s.qtd || 0)}</td>
                             <td style="text-align: center;">${s.barra || s.tamanhoBarra || 0}mm</td>
@@ -976,7 +1051,7 @@
                 paginationContainer.appendChild(nextBtn);
             }
 
-            // Função que atualiza toda a view do dashboard (ATUALIZADA)
+            // Função que atualiza toda a view do dashboard
             function updateDashboardView(filter) {
                 if (filter.filterType === 'days') {
                     if (filter.value === 'all') {
@@ -985,15 +1060,15 @@
                         const days = parseInt(filter.value, 10);
                         const cutOffDate = new Date();
                         cutOffDate.setDate(cutOffDate.getDate() - days);
-                        cutOffDate.setHours(0, 0, 0, 0); // Garante que a comparação comece no início do dia
+                        cutOffDate.setHours(0, 0, 0, 0);
                         reportState.filteredLogs = reportState.allLogs.filter(log => new Date(log.created_at) >= cutOffDate);
                     }
                 } else if (filter.filterType === 'range') {
                     const startDate = new Date(filter.start);
-                    startDate.setHours(0, 0, 0, 0); // Usa o início do dia para a data de início
+                    startDate.setHours(0, 0, 0, 0);
 
                     const endDate = new Date(filter.end);
-                    endDate.setHours(23, 59, 59, 999); // Usa o final do dia para a data de fim
+                    endDate.setHours(23, 59, 59, 999);
 
                     reportState.filteredLogs = reportState.allLogs.filter(log => {
                         const logDate = new Date(log.created_at);
@@ -1003,19 +1078,18 @@
                 
                 renderReportKPIs(reportState.filteredLogs);
                 renderCharts(reportState.filteredLogs);
-                reportState.currentPage = 1; // Reseta a paginação a cada novo filtro
-                updateReportTable(); // Atualiza a tabela com os dados já filtrados
+                reportState.currentPage = 1; 
+                updateReportTable();
             }
 
-            // Função principal dos relatórios (roteador - ATUALIZADA)
+            // Função principal dos relatórios (roteador)
             async function initializeReportsDashboard(projectId) {
-                reportState = { allLogs: [], filteredLogs: [], currentPage: 1, rowsPerPage: 15, searchTerm: '', lossChart: reportState.lossChart, volumeChart: reportState.volumeChart };
+                reportState = { ...reportState, allLogs: [], filteredLogs: [], currentPage: 1, currentSortCol: 'created_at', currentSortOrder: 'desc' };
                 const tableBody = document.getElementById('automation-history-body');
                 const kpiContainer = document.getElementById('kpi-cards');
                 tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Carregando dados...</td></tr>';
                 kpiContainer.innerHTML = '';
                 
-                // Limpar campos de data ao iniciar
                 document.getElementById('date-start').value = '';
                 document.getElementById('date-end').value = '';
 
@@ -1024,15 +1098,13 @@
                     if (error) throw error;
                     if (!data || data.length === 0) { tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum registro encontrado.</td></tr>'; return; }
                     
-                    document.getElementById('table-header-modular').innerHTML = `<tr><th>Data</th><th>Bitola</th><th>Produto</th><th>Qtd</th><th>Barra</th><th>% Perda</th></tr>`;
                     reportState.allLogs = data;
+                    renderReportHeader(); // Renderiza o cabeçalho interativo
 
-                    // Remover listeners antigos para evitar duplicação
                     const oldApplyBtn = document.getElementById('btn-apply-date-filter');
                     const newApplyBtn = oldApplyBtn.cloneNode(true);
                     oldApplyBtn.parentNode.replaceChild(newApplyBtn, oldApplyBtn);
 
-                    // Adicionar listeners para os filtros
                     document.querySelectorAll('.mini-filter').forEach(btn => {
                         btn.onclick = (e) => {
                             document.querySelectorAll('.mini-filter.active').forEach(b => b.classList.remove('active'));
@@ -1051,12 +1123,11 @@
                         updateDashboardView({ filterType: 'range', start: startDate, end: endDate });
                     });
                     
-                    // Estado inicial
                     document.querySelector('.mini-filter[data-days="all"]').click();
 
                 } catch (e) {
                     console.error("Erro ao buscar logs:", e);
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Falha ao carregar dados de automação.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Falha ao carregar dados.</td></tr>';
                 }
             }
 
@@ -1230,7 +1301,6 @@
                 if (isAutomationProject) {
                     tabContainer.classList.remove('hidden');
                     
-                    // Estado inicial ao abrir a página de detalhes
                     timelineContent.classList.remove('hidden');
                     reportsContent.classList.add('hidden');
                     btnTimeline.style.background = 'var(--primary-accent)';
@@ -1248,7 +1318,7 @@
                         reportsContent.classList.remove('hidden');
                         btnReports.style.background = 'var(--primary-accent)';
                         btnTimeline.style.background = 'transparent';
-                        initializeReportsDashboard(projectId); // Chamar a função principal aqui
+                        initializeReportsDashboard(projectId);
                     };
                 } else {
                     tabContainer.classList.add('hidden');
@@ -1256,7 +1326,6 @@
                     reportsContent.classList.add('hidden');
                 }
 
-                // Listeners para os controles da tabela
                 document.getElementById('report-search').oninput = (e) => {
                     reportState.searchTerm = e.target.value.toLowerCase();
                     reportState.currentPage = 1;
