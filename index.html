@@ -499,6 +499,9 @@
 
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+            let lossChartInstance = null; 
+            let volumeChartInstance = null;
+
             // --- ESTADO GLOBAL ---
             let state = {
                 user: null,
@@ -525,9 +528,7 @@
                 rowsPerPage: 15,
                 searchTerm: '',
                 currentSortCol: 'created_at',
-                currentSortOrder: 'desc',
-                lossChart: null,
-                volumeChart: null
+                currentSortOrder: 'desc'
             };
 
             // --- UTILS ---
@@ -932,9 +933,9 @@
                     colors: ['#60a5fa']
                 };
 
-                if (reportState.volumeChart) reportState.volumeChart.destroy();
-                reportState.volumeChart = new ApexCharts(document.querySelector("#volume-chart"), volumeOptions);
-                reportState.volumeChart.render();
+                if (volumeChartInstance) volumeChartInstance.destroy();
+                volumeChartInstance = new ApexCharts(document.querySelector("#volume-chart"), volumeOptions);
+                volumeChartInstance.render();
                 
                 // Gráfico de Perda (Média de Perda)
                 const lossData = sortedDates.map(date => (dataByDay[date].totalLoss / dataByDay[date].count).toFixed(2));
@@ -948,9 +949,9 @@
                     colors: ['#3b82f6']
                 };
 
-                if (reportState.lossChart) reportState.lossChart.destroy();
-                reportState.lossChart = new ApexCharts(document.querySelector("#loss-chart"), lossOptions);
-                reportState.lossChart.render();
+                if (lossChartInstance) lossChartInstance.destroy();
+                lossChartInstance = new ApexCharts(document.querySelector("#loss-chart"), lossOptions);
+                lossChartInstance.render();
             }
 
             // Renderiza a tabela de dados
@@ -1082,21 +1083,43 @@
                 updateReportTable();
             }
 
-            // Função principal dos relatórios (roteador)
+            // Função principal dos relatórios (roteador - ATUALIZADA)
             async function initializeReportsDashboard(projectId) {
-                reportState = { ...reportState, allLogs: [], filteredLogs: [], currentPage: 1, currentSortCol: 'created_at', currentSortOrder: 'desc' };
-                const tableBody = document.getElementById('automation-history-body');
+                const chartsGrid = document.getElementById('charts-grid');
                 const kpiContainer = document.getElementById('kpi-cards');
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Carregando dados...</td></tr>';
-                kpiContainer.innerHTML = '';
+                const tableBody = document.getElementById('automation-history-body');
+
+                // 1. Limpeza total de instâncias anteriores de gráficos para evitar conflitos
+                if (lossChartInstance) { lossChartInstance.destroy(); lossChartInstance = null; }
+                if (volumeChartInstance) { volumeChartInstance.destroy(); volumeChartInstance = null; }
+                
+                reportState = { ...reportState, allLogs: [], filteredLogs: [], currentPage: 1, currentSortCol: 'created_at', currentSortOrder: 'desc' };
                 
                 document.getElementById('date-start').value = '';
                 document.getElementById('date-end').value = '';
 
                 try {
-                    const { data, error } = await supabaseClient.from('laborai_automation_logs').select('*').eq('project_id', projectId).order('created_at', { ascending: false });
+                    const { data, error } = await supabaseClient
+                        .from('laborai_automation_logs')
+                        .select('*')
+                        .eq('project_id', projectId)
+                        .order('created_at', { ascending: false });
+
                     if (error) throw error;
-                    if (!data || data.length === 0) { tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum registro encontrado.</td></tr>'; return; }
+
+                    // 2. Se não houver dados, esconda os gráficos e KPIs e pare a execução
+                    if (!data || data.length === 0) {
+                        chartsGrid.style.display = 'none';
+                        kpiContainer.style.display = 'none';
+                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-secondary);">Este projeto ainda não possui dados de automação registrados.</td></tr>';
+                        document.getElementById('table-header-modular').innerHTML = ''; // Limpa o cabeçalho
+                        document.getElementById('pagination-controls').innerHTML = ''; // Limpa a paginação
+                        return;
+                    }
+
+                    // 3. Se houver dados, mostre os containers
+                    chartsGrid.style.display = 'grid';
+                    kpiContainer.style.display = 'grid';
                     
                     reportState.allLogs = data;
                     renderReportHeader(); // Renderiza o cabeçalho interativo
