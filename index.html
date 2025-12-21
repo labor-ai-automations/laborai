@@ -127,6 +127,7 @@
             padding: 15px;
             border-radius: 8px;
             border: 1px solid var(--border-dark);
+            text-align: center; /* Adicionado para centralizar KPI */
         }
         .kpi-card .value {
             font-size: 1.75rem;
@@ -139,9 +140,22 @@
             margin-top: 4px;
         }
 
-        .pagination-btn { padding: 5px 12px; border: 1px solid var(--border-dark); background: var(--surface-dark); color: var(--text-primary); cursor: pointer; border-radius: 4px; }
+        /* --- NOVOS ESTILOS PARA DASHBOARD --- */
+        .pagination-btn { padding: 4px 8px; font-size: 12px; border: 1px solid var(--border-dark); background: var(--surface-dark); color: var(--text-primary); cursor: pointer; border-radius: 4px; }
         .pagination-btn.active { background: var(--primary-accent); border-color: var(--primary-accent); }
         .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .mini-filter-container { display: flex; gap: 8px; }
+        .mini-filter { width: auto; padding: 4px 12px; font-size: 13px; font-weight: 500; border: 1px solid var(--border-dark); background: var(--surface-dark); color: var(--text-secondary); cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+        .mini-filter:hover { background: var(--border-dark); color: var(--text-primary); }
+        .mini-filter.active { background: var(--primary-accent); border-color: var(--primary-accent); color: white; }
+
+        #charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
     </style>
 </head>
 <body>
@@ -266,14 +280,30 @@
                 <!-- Conteúdo dos Relatórios -->
                 <div id="project-reports-content" class="hidden">
                     <div id="reports-dashboard-container">
-                        <!-- Area do Gráfico -->
-                        <div id="chart-container" style="background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                            <h4 style="margin-top:0;">📊 Desempenho ao Longo do Tempo</h4>
-                            <div id="usage-chart"></div>
+                        <!-- Barra de Filtros -->
+                        <div id="reports-filter-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <h3 style="margin: 0;">Dashboard de Uso</h3>
+                            <div class="mini-filter-container">
+                                <button class="mini-filter" data-days="7">7 dias</button>
+                                <button class="mini-filter" data-days="30">30 dias</button>
+                                <button class="mini-filter active" data-days="0">Tudo</button>
+                            </div>
                         </div>
                         
-                        <!-- KPIs e Busca -->
+                        <!-- KPIs -->
                         <div id="kpi-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 24px;"></div>
+                        
+                        <!-- Gráficos -->
+                        <div id="charts-grid">
+                            <div class="chart-card" style="background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px;">
+                                <h4 style="margin-top:0;">📈 Soma de Peças por Dia</h4>
+                                <div id="volume-chart"></div>
+                            </div>
+                            <div class="chart-card" style="background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px;">
+                                <h4 style="margin-top:0;">📉 Média de Perda Diária (%)</h4>
+                                <div id="loss-chart"></div>
+                            </div>
+                        </div>
                         
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 15px;">
                             <input type="text" id="report-search" placeholder="🔍 Pesquisar produto..." style="margin-bottom: 0; flex: 1;">
@@ -482,10 +512,12 @@
             // --- ESTADO DOS RELATÓRIOS ---
             let reportState = {
                 allLogs: [],
+                filteredLogs: [],
                 currentPage: 1,
                 rowsPerPage: 15,
                 searchTerm: '',
-                chart: null // To hold the chart instance
+                lossChart: null,
+                volumeChart: null
             };
 
             // --- UTILS ---
@@ -786,102 +818,128 @@
                 });
             }
 
-            // --- FUNÇÕES DE RELATÓRIO MODULAR ---
+            // --- FUNÇÕES DE RELATÓRIO MODULAR (NOVA ESTRUTURA) ---
             
-            // Renderiza o cabeçalho para relatórios de Plano de Corte
-            function renderCuttingPlanHeader() {
-                const header = document.getElementById('table-header-modular');
-                header.innerHTML = `
-                    <tr>
-                        <th style="padding: 12px 10px; text-align: left;">Data</th>
-                        <th style="padding: 12px 10px; text-align: left;">Bitola</th>
-                        <th style="padding: 12px 10px; text-align: left;">Produto</th>
-                        <th style="padding: 12px 10px; text-align: left;">Qtd</th>
-                        <th style="padding: 12px 10px; text-align: left;">Barra</th>
-                        <th style="padding: 12px 10px; text-align: left;">% Perda</th>
-                    </tr>
+            // Renderiza os KPIs
+            function renderReportKPIs(logs) {
+                const kpiContainer = document.getElementById('kpi-cards');
+                let totalCortes = 0, totalPerdaValue = 0, totalMetros = 0;
+
+                logs.forEach(log => {
+                    let s = {};
+                    try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch (e) { s = {}; }
+                    totalCortes += parseInt(s.qtd || 0);
+                    totalPerdaValue += parseFloat(s.perda || 0);
+                    totalMetros += parseFloat(s.barra || 0) / 1000; // Converte mm para m
+                });
+
+                const avgPerda = logs.length > 0 ? (totalPerdaValue / logs.length) : 0;
+                kpiContainer.innerHTML = `
+                    <div class="kpi-card"><div class="value">${logs.length}</div><div class="label">Total de Cálculos</div></div>
+                    <div class="kpi-card"><div class="value">${totalCortes}</div><div class="label">Total de Peças</div></div>
+                    <div class="kpi-card"><div class="value">${totalMetros.toFixed(2)}</div><div class="label">Total de Metros</div></div>
+                    <div class="kpi-card"><div class="value">${avgPerda.toFixed(2)}%</div><div class="label">Média de Perda</div></div>
                 `;
             }
 
-            // Renderiza as linhas da tabela para relatórios de Plano de Corte
-            function renderCuttingPlanRows(logs) {
-                const tableBody = document.getElementById('automation-history-body');
-                tableBody.innerHTML = '';
-                if (logs.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum resultado encontrado.</td></tr>';
-                    return;
-                }
-                logs.forEach(log => {
-                    let s = {};
-                    try {
-                        s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {});
-                    } catch (e) {
-                        console.error("Erro ao converter summary_data:", e, log.summary_data);
-                        s = {};
-                    }
-
-                    const bitola = s.bitola || s.Bitola || s.produtoPrincipal?.bitola || "-";
-                    const produto = s.produto || s.nomeProduto || "-";
-                    const qtd = parseInt(s.qtd || 0);
-                    const barra = s.barra || s.tamanhoBarra || 0;
-                    const perda = parseFloat(s.perda || 0);
-
-                    const row = document.createElement('tr');
-                    row.dataset.productName = produto.toLowerCase();
-                    row.innerHTML = `
-                        <td style="color: var(--text-secondary); font-size: 0.85em;">${new Date(log.created_at).toLocaleDateString('pt-BR')}</td>
-                        <td style="color: var(--primary-accent); font-weight: bold;">${bitola}</td>
-                        <td>${produto}</td>
-                        <td style="text-align: center;">${qtd}</td>
-                        <td style="text-align: center;">${barra}mm</td>
-                        <td style="font-weight: bold; color: ${perda > 3 ? 'var(--error-color)' : (perda > 1 ? 'var(--warning-color)' : 'var(--success-color)')}">
-                            ${perda.toFixed(2)}%
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            }
-
-            // Renderiza o gráfico para relatórios de Plano de Corte
-            function renderCuttingPlanCharts(logs) {
-                const chartContainer = document.getElementById('usage-chart');
-                chartContainer.innerHTML = '';
-
+            // Renderiza os dois gráficos
+            function renderCharts(logs) {
                 const dataByDay = logs.reduce((acc, log) => {
                     const date = new Date(log.created_at).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-                    let s = {};
-                    try {
-                        s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {});
-                    } catch(e) { s = {}; }
-                    const perda = parseFloat(s.perda || 0);
-
-                    if (!acc[date]) acc[date] = { totalLoss: 0, count: 0 };
-                    acc[date].totalLoss += perda;
+                    let s = {}; try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch(e) { s = {}; }
+                    
+                    const loss = parseFloat(s.perda || 0);
+                    const qty = parseInt(s.qtd || 0);
+                    
+                    if (!acc[date]) {
+                        acc[date] = { totalLoss: 0, totalQty: 0, count: 0 };
+                    }
+                    acc[date].totalLoss += loss;
+                    acc[date].totalQty += qty;
                     acc[date].count += 1;
                     return acc;
                 }, {});
 
-                const chartData = Object.entries(dataByDay).map(([date, values]) => ({
-                    x: date,
-                    y: (values.totalLoss / values.count).toFixed(2)
-                })).sort((a,b) => new Date(a.x.split('/').reverse().join('-')) - new Date(b.x.split('/').reverse().join('-')));
-
-                const options = {
-                    series: [{ name: 'Média de Perda (%)', data: chartData.map(d => d.y) }],
-                    chart: { type: 'area', height: 350, zoom: { enabled: false }, toolbar: { show: false }, foreColor: 'var(--text-secondary)' },
+                const sortedDates = Object.keys(dataByDay).sort((a,b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
+                
+                const commonChartOptions = {
+                    chart: { zoom: { enabled: false }, toolbar: { show: false }, foreColor: 'var(--text-secondary)' },
                     dataLabels: { enabled: false },
                     stroke: { curve: 'smooth' },
-                    xaxis: { type: 'category', categories: chartData.map(d => d.x) },
-                    yaxis: { title: { text: '% Perda' } },
-                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.9, stops: [0, 90, 100] } },
                     tooltip: { theme: 'dark' },
-                    theme: { mode: 'dark' },
+                    theme: { mode: 'dark' }
+                };
+
+                // Gráfico de Volume (Soma de Peças)
+                const volumeData = sortedDates.map(date => dataByDay[date].totalQty);
+                const volumeOptions = {
+                    ...commonChartOptions,
+                    series: [{ name: 'Peças', data: volumeData }],
+                    chart: {...commonChartOptions.chart, type: 'bar', height: 250 },
+                    xaxis: { categories: sortedDates },
+                    colors: ['#60a5fa']
+                };
+
+                if (reportState.volumeChart) reportState.volumeChart.destroy();
+                reportState.volumeChart = new ApexCharts(document.querySelector("#volume-chart"), volumeOptions);
+                reportState.volumeChart.render();
+                
+                // Gráfico de Perda (Média de Perda)
+                const lossData = sortedDates.map(date => (dataByDay[date].totalLoss / dataByDay[date].count).toFixed(2));
+                const lossOptions = {
+                    ...commonChartOptions,
+                    series: [{ name: 'Média de Perda', data: lossData }],
+                    chart: {...commonChartOptions.chart, type: 'area', height: 250 },
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.9, stops: [0, 90, 100] }},
+                    xaxis: { categories: sortedDates },
+                    yaxis: { labels: { formatter: (val) => `${val}%` }},
                     colors: ['#3b82f6']
                 };
 
-                if (reportState.chart) reportState.chart.destroy();
-                reportState.chart = new ApexCharts(chartContainer, options);
-                reportState.chart.render();
+                if (reportState.lossChart) reportState.lossChart.destroy();
+                reportState.lossChart = new ApexCharts(document.querySelector("#loss-chart"), lossOptions);
+                reportState.lossChart.render();
+            }
+
+            // Renderiza a tabela de dados
+            function updateReportTable() {
+                // Filtra primeiro pelo texto da busca
+                const textFilteredLogs = reportState.filteredLogs.filter(log => {
+                    let s = {};
+                    try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch(e) { s = {}; }
+                    const productName = s.produto || s.nomeProduto || '';
+                    return productName.toLowerCase().includes(reportState.searchTerm);
+                });
+
+                // Depois, fatia para a paginação
+                const startIndex = (reportState.currentPage - 1) * reportState.rowsPerPage;
+                const paginatedLogs = textFilteredLogs.slice(startIndex, startIndex + reportState.rowsPerPage);
+
+                const tableBody = document.getElementById('automation-history-body');
+                tableBody.innerHTML = '';
+                if (paginatedLogs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum resultado encontrado.</td></tr>';
+                } else {
+                    paginatedLogs.forEach(log => {
+                        let s = {};
+                        try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch (e) { s = {}; }
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td style="color: var(--text-secondary); font-size: 0.85em;">${new Date(log.created_at).toLocaleDateString('pt-BR')}</td>
+                            <td style="color: var(--primary-accent); font-weight: bold;">${s.bitola || s.Bitola || s.produtoPrincipal?.bitola || "-"}</td>
+                            <td>${s.produto || s.nomeProduto || "-"}</td>
+                            <td style="text-align: center;">${parseInt(s.qtd || 0)}</td>
+                            <td style="text-align: center;">${s.barra || s.tamanhoBarra || 0}mm</td>
+                            <td style="font-weight: bold; color: ${parseFloat(s.perda||0) > 3 ? 'var(--error-color)' : (parseFloat(s.perda||0) > 1 ? 'var(--warning-color)' : 'var(--success-color)')}">
+                                ${parseFloat(s.perda || 0).toFixed(2)}%
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+                
+                renderPagination(textFilteredLogs.length);
             }
 
             // Renderiza os controles de paginação
@@ -895,7 +953,7 @@
                 prevBtn.className = 'pagination-btn';
                 prevBtn.innerText = '«';
                 prevBtn.disabled = reportState.currentPage === 1;
-                prevBtn.onclick = () => { reportState.currentPage--; updateReportView(); };
+                prevBtn.onclick = () => { reportState.currentPage--; updateReportTable(); };
                 paginationContainer.appendChild(prevBtn);
 
                 for (let i = 1; i <= totalPages; i++) {
@@ -903,7 +961,7 @@
                     pageBtn.className = 'pagination-btn';
                     if (i === reportState.currentPage) pageBtn.classList.add('active');
                     pageBtn.innerText = i;
-                    pageBtn.onclick = () => { reportState.currentPage = i; updateReportView(); };
+                    pageBtn.onclick = () => { reportState.currentPage = i; updateReportTable(); };
                     paginationContainer.appendChild(pageBtn);
                 }
                 
@@ -911,33 +969,31 @@
                 nextBtn.className = 'pagination-btn';
                 nextBtn.innerText = '»';
                 nextBtn.disabled = reportState.currentPage === totalPages;
-                nextBtn.onclick = () => { reportState.currentPage++; updateReportView(); };
+                nextBtn.onclick = () => { reportState.currentPage++; updateReportTable(); };
                 paginationContainer.appendChild(nextBtn);
             }
 
-            // Atualiza a visualização da tabela e da paginação
-            function updateReportView() {
-                const filteredLogs = reportState.allLogs.filter(log => {
-                    let s = {};
-                    try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch(e) { s = {}; }
-                    const productName = s.produto || s.nomeProduto || '';
-                    return productName.toLowerCase().includes(reportState.searchTerm);
-                });
-
-                const startIndex = (reportState.currentPage - 1) * reportState.rowsPerPage;
-                const paginatedLogs = filteredLogs.slice(startIndex, startIndex + reportState.rowsPerPage);
-
-                renderCuttingPlanRows(paginatedLogs); 
-                renderPagination(filteredLogs.length);
+            // Função que atualiza toda a view do dashboard (exceto a busca inicial)
+            function updateDashboardView(filterDays = null) {
+                if (filterDays) {
+                    const cutOffDate = new Date();
+                    cutOffDate.setDate(cutOffDate.getDate() - filterDays);
+                    reportState.filteredLogs = reportState.allLogs.filter(log => new Date(log.created_at) >= cutOffDate);
+                } else {
+                    reportState.filteredLogs = [...reportState.allLogs]; // Copia todos
+                }
+                
+                renderReportKPIs(reportState.filteredLogs);
+                renderCharts(reportState.filteredLogs);
+                reportState.currentPage = 1; // Reseta a paginação
+                updateReportTable(); // Atualiza a tabela com os dados já filtrados por tempo
             }
 
             // Função principal dos relatórios (roteador)
-            async function renderAutomationReports(projectId) {
-                reportState = { allLogs: [], currentPage: 1, rowsPerPage: 15, searchTerm: '', chart: reportState.chart };
-
+            async function initializeReportsDashboard(projectId) {
+                reportState = { allLogs: [], filteredLogs: [], currentPage: 1, rowsPerPage: 15, searchTerm: '', lossChart: reportState.lossChart, volumeChart: reportState.volumeChart };
                 const tableBody = document.getElementById('automation-history-body');
                 const kpiContainer = document.getElementById('kpi-cards');
-                const chartContainer = document.getElementById('chart-container');
                 tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Carregando dados...</td></tr>';
                 kpiContainer.innerHTML = '';
 
@@ -951,42 +1007,29 @@
                     if (error) throw error;
                     if (!data || data.length === 0) {
                         tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum registro de automação encontrado.</td></tr>';
-                        chartContainer.classList.add('hidden');
                         return;
                     }
+                    
+                    document.getElementById('table-header-modular').innerHTML = `<tr><th>Data</th><th>Bitola</th><th>Produto</th><th>Qtd</th><th>Barra</th><th>% Perda</th></tr>`;
 
                     reportState.allLogs = data;
-                    chartContainer.classList.remove('hidden');
 
-                    const project = state.projects.find(p => p.id === projectId);
-                    if (project && project.name.includes('Plano de Corte')) {
-                        renderCuttingPlanHeader();
-                        renderCuttingPlanCharts(reportState.allLogs);
-                        updateReportView(); // Render inicial
-                    } else {
-                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Tipo de relatório não configurado.</td></tr>';
-                        chartContainer.classList.add('hidden');
-                    }
-
-                    let totalCortes = 0, totalPerdaValue = 0;
-                    data.forEach(log => {
-                        let s = {};
-                        try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch (e) { s = {}; }
-                        totalCortes += parseInt(s.qtd || 0);
-                        totalPerdaValue += parseFloat(s.perda || 0);
+                    // Adicionar listeners para os filtros de tempo
+                    document.querySelectorAll('.mini-filter').forEach(btn => {
+                        btn.onclick = (e) => {
+                            // Atualiza a classe 'active'
+                            document.querySelector('.mini-filter.active').classList.remove('active');
+                            e.target.classList.add('active');
+                            const days = parseInt(e.target.dataset.days, 10);
+                            updateDashboardView(days === 0 ? null : days);
+                        };
                     });
-
-                    const avgPerda = data.length > 0 ? (totalPerdaValue / data.length) : 0;
-                    kpiContainer.innerHTML = `
-                        <div class="kpi-card"><div class="value">${data.length}</div><div class="label">Total de Cálculos</div></div>
-                        <div class="kpi-card"><div class="value">${totalCortes}</div><div class="label">Peças Cortadas</div></div>
-                        <div class="kpi-card"><div class="value">${avgPerda.toFixed(2)}%</div><div class="label">Média de Perda</div></div>
-                    `;
+                    
+                    updateDashboardView(); // Renderização inicial com todos os dados
 
                 } catch (e) {
                     console.error("Erro ao buscar logs:", e);
                     tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Falha ao carregar dados de automação.</td></tr>';
-                    chartContainer.classList.add('hidden');
                 }
             }
 
@@ -1154,12 +1197,13 @@
                 const timelineContent = document.getElementById('project-timeline-content');
                 const reportsContent = document.getElementById('project-reports-content');
 
-                const automationKeywords = ['Plano de Corte', 'Otimização', 'Calculadora'];
+                const automationKeywords = ['Plano de Corte', 'Otimização', 'Cálculo'];
                 const isAutomationProject = automationKeywords.some(key => project.name.includes(key));
 
                 if (isAutomationProject) {
                     tabContainer.classList.remove('hidden');
                     
+                    // Estado inicial ao abrir a página de detalhes
                     timelineContent.classList.remove('hidden');
                     reportsContent.classList.add('hidden');
                     btnTimeline.style.background = 'var(--primary-accent)';
@@ -1177,7 +1221,7 @@
                         reportsContent.classList.remove('hidden');
                         btnReports.style.background = 'var(--primary-accent)';
                         btnTimeline.style.background = 'transparent';
-                        renderAutomationReports(projectId);
+                        initializeReportsDashboard(projectId); // Chamar a função principal aqui
                     };
                 } else {
                     tabContainer.classList.add('hidden');
@@ -1185,16 +1229,17 @@
                     reportsContent.classList.add('hidden');
                 }
 
+                // Listeners para os controles da tabela
                 document.getElementById('report-search').oninput = (e) => {
                     reportState.searchTerm = e.target.value.toLowerCase();
                     reportState.currentPage = 1;
-                    updateReportView();
+                    updateReportTable();
                 };
 
                 document.getElementById('rows-per-page').onchange = (e) => {
                     reportState.rowsPerPage = parseInt(e.target.value, 10);
                     reportState.currentPage = 1;
-                    updateReportView();
+                    updateReportTable();
                 };
                 
                 showView('projectDetail');
