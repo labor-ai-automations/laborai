@@ -280,13 +280,18 @@
                 <!-- Conteúdo dos Relatórios -->
                 <div id="project-reports-content" class="hidden">
                     <div id="reports-dashboard-container">
-                        <!-- Barra de Filtros -->
-                        <div id="reports-filter-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                            <h3 style="margin: 0;">Dashboard de Uso</h3>
-                            <div class="mini-filter-container">
-                                <button class="mini-filter" data-days="7">7 dias</button>
-                                <button class="mini-filter" data-days="30">30 dias</button>
-                                <button class="mini-filter active" data-days="0">Tudo</button>
+                        <!-- Barra de Filtros ATUALIZADA -->
+                        <div class="filter-bar" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: center; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px;">
+                            <div style="display: flex; gap: 8px;">
+                                <button class="secondary icon-btn mini-filter" data-days="7">7 dias</button>
+                                <button class="secondary icon-btn mini-filter" data-days="30">30 dias</button>
+                                <button class="secondary icon-btn mini-filter" data-days="all">Tudo</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid var(--border-dark); padding-left: 15px;">
+                                <input type="date" id="date-start" style="width: auto; margin-bottom: 0;">
+                                <span style="color: var(--text-secondary);">até</span>
+                                <input type="date" id="date-end" style="width: auto; margin-bottom: 0;">
+                                <button id="btn-apply-date-filter" class="primary icon-btn" style="width: auto; padding: 8px 15px;">Aplicar Período</button>
                             </div>
                         </div>
                         
@@ -820,24 +825,22 @@
 
             // --- FUNÇÕES DE RELATÓRIO MODULAR (NOVA ESTRUTURA) ---
             
-            // Renderiza os KPIs
+            // Renderiza os KPIs (ATUALIZADO)
             function renderReportKPIs(logs) {
                 const kpiContainer = document.getElementById('kpi-cards');
-                let totalCortes = 0, totalPerdaValue = 0, totalMetros = 0;
+                let totalCortes = 0, totalPerdaValue = 0;
 
                 logs.forEach(log => {
                     let s = {};
                     try { s = (typeof log.summary_data === 'string') ? JSON.parse(log.summary_data) : (log.summary_data || {}); } catch (e) { s = {}; }
                     totalCortes += parseInt(s.qtd || 0);
                     totalPerdaValue += parseFloat(s.perda || 0);
-                    totalMetros += parseFloat(s.barra || 0) / 1000; // Converte mm para m
                 });
 
                 const avgPerda = logs.length > 0 ? (totalPerdaValue / logs.length) : 0;
                 kpiContainer.innerHTML = `
                     <div class="kpi-card"><div class="value">${logs.length}</div><div class="label">Total de Cálculos</div></div>
                     <div class="kpi-card"><div class="value">${totalCortes}</div><div class="label">Total de Peças</div></div>
-                    <div class="kpi-card"><div class="value">${totalMetros.toFixed(2)}</div><div class="label">Total de Metros</div></div>
                     <div class="kpi-card"><div class="value">${avgPerda.toFixed(2)}%</div><div class="label">Média de Perda</div></div>
                 `;
             }
@@ -973,59 +976,83 @@
                 paginationContainer.appendChild(nextBtn);
             }
 
-            // Função que atualiza toda a view do dashboard (exceto a busca inicial)
-            function updateDashboardView(filterDays = null) {
-                if (filterDays) {
-                    const cutOffDate = new Date();
-                    cutOffDate.setDate(cutOffDate.getDate() - filterDays);
-                    reportState.filteredLogs = reportState.allLogs.filter(log => new Date(log.created_at) >= cutOffDate);
-                } else {
-                    reportState.filteredLogs = [...reportState.allLogs]; // Copia todos
+            // Função que atualiza toda a view do dashboard (ATUALIZADA)
+            function updateDashboardView(filter) {
+                if (filter.filterType === 'days') {
+                    if (filter.value === 'all') {
+                        reportState.filteredLogs = [...reportState.allLogs];
+                    } else {
+                        const days = parseInt(filter.value, 10);
+                        const cutOffDate = new Date();
+                        cutOffDate.setDate(cutOffDate.getDate() - days);
+                        cutOffDate.setHours(0, 0, 0, 0); // Garante que a comparação comece no início do dia
+                        reportState.filteredLogs = reportState.allLogs.filter(log => new Date(log.created_at) >= cutOffDate);
+                    }
+                } else if (filter.filterType === 'range') {
+                    const startDate = new Date(filter.start);
+                    startDate.setHours(0, 0, 0, 0); // Usa o início do dia para a data de início
+
+                    const endDate = new Date(filter.end);
+                    endDate.setHours(23, 59, 59, 999); // Usa o final do dia para a data de fim
+
+                    reportState.filteredLogs = reportState.allLogs.filter(log => {
+                        const logDate = new Date(log.created_at);
+                        return logDate >= startDate && logDate <= endDate;
+                    });
                 }
                 
                 renderReportKPIs(reportState.filteredLogs);
                 renderCharts(reportState.filteredLogs);
-                reportState.currentPage = 1; // Reseta a paginação
-                updateReportTable(); // Atualiza a tabela com os dados já filtrados por tempo
+                reportState.currentPage = 1; // Reseta a paginação a cada novo filtro
+                updateReportTable(); // Atualiza a tabela com os dados já filtrados
             }
 
-            // Função principal dos relatórios (roteador)
+            // Função principal dos relatórios (roteador - ATUALIZADA)
             async function initializeReportsDashboard(projectId) {
                 reportState = { allLogs: [], filteredLogs: [], currentPage: 1, rowsPerPage: 15, searchTerm: '', lossChart: reportState.lossChart, volumeChart: reportState.volumeChart };
                 const tableBody = document.getElementById('automation-history-body');
                 const kpiContainer = document.getElementById('kpi-cards');
                 tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Carregando dados...</td></tr>';
                 kpiContainer.innerHTML = '';
+                
+                // Limpar campos de data ao iniciar
+                document.getElementById('date-start').value = '';
+                document.getElementById('date-end').value = '';
 
                 try {
-                    const { data, error } = await supabaseClient
-                        .from('laborai_automation_logs')
-                        .select('*')
-                        .eq('project_id', projectId)
-                        .order('created_at', { ascending: false });
-
+                    const { data, error } = await supabaseClient.from('laborai_automation_logs').select('*').eq('project_id', projectId).order('created_at', { ascending: false });
                     if (error) throw error;
-                    if (!data || data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum registro de automação encontrado.</td></tr>';
-                        return;
-                    }
+                    if (!data || data.length === 0) { tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum registro encontrado.</td></tr>'; return; }
                     
                     document.getElementById('table-header-modular').innerHTML = `<tr><th>Data</th><th>Bitola</th><th>Produto</th><th>Qtd</th><th>Barra</th><th>% Perda</th></tr>`;
-
                     reportState.allLogs = data;
 
-                    // Adicionar listeners para os filtros de tempo
+                    // Remover listeners antigos para evitar duplicação
+                    const oldApplyBtn = document.getElementById('btn-apply-date-filter');
+                    const newApplyBtn = oldApplyBtn.cloneNode(true);
+                    oldApplyBtn.parentNode.replaceChild(newApplyBtn, oldApplyBtn);
+
+                    // Adicionar listeners para os filtros
                     document.querySelectorAll('.mini-filter').forEach(btn => {
                         btn.onclick = (e) => {
-                            // Atualiza a classe 'active'
-                            document.querySelector('.mini-filter.active').classList.remove('active');
+                            document.querySelectorAll('.mini-filter.active').forEach(b => b.classList.remove('active'));
                             e.target.classList.add('active');
-                            const days = parseInt(e.target.dataset.days, 10);
-                            updateDashboardView(days === 0 ? null : days);
+                            document.getElementById('date-start').value = '';
+                            document.getElementById('date-end').value = '';
+                            updateDashboardView({ filterType: 'days', value: e.target.dataset.days });
                         };
                     });
+
+                    newApplyBtn.addEventListener('click', () => {
+                        const startDate = document.getElementById('date-start').value;
+                        const endDate = document.getElementById('date-end').value;
+                        if (!startDate || !endDate) { Toast.error('Selecione data de início e fim.'); return; }
+                        document.querySelectorAll('.mini-filter.active').forEach(b => b.classList.remove('active'));
+                        updateDashboardView({ filterType: 'range', start: startDate, end: endDate });
+                    });
                     
-                    updateDashboardView(); // Renderização inicial com todos os dados
+                    // Estado inicial
+                    document.querySelector('.mini-filter[data-days="all"]').click();
 
                 } catch (e) {
                     console.error("Erro ao buscar logs:", e);
