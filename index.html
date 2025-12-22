@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -1220,14 +1219,21 @@
                 const listEl = document.getElementById('project-contacts-list');
                 listEl.innerHTML = '<div style="padding: 15px; color: var(--text-secondary);">Carregando contatos...</div>';
 
+                console.log(`Buscando contatos para o projectId: ${projectId}`); // LOG 1: Verificar ID
+
                 try {
-                    const { data, error } = await supabaseClient
+                    const { data, error, status } = await supabaseClient
                         .from('laborai_project_contacts')
                         .select('*')
                         .eq('project_id', projectId)
                         .order('name');
                     
-                    if (error) throw error;
+                    console.log('Resposta do Supabase:', { data, error, status }); // LOG 2: Ver resposta completa
+
+                    if (error) {
+                        // Lança o erro para ser capturado pelo bloco catch
+                        throw error;
+                    }
 
                     if (data.length === 0) {
                         listEl.innerHTML = '<div style="padding: 15px; color: var(--text-secondary);">Nenhum contato específico para este projeto.</div>';
@@ -1251,7 +1257,9 @@
                     });
 
                 } catch (err) {
-                    listEl.innerHTML = `<div style="padding: 15px; color: var(--error-color);">Erro ao carregar contatos: ${err.message}</div>`;
+                    console.error('ERRO DETALHADO ao buscar contatos:', err); // LOG 3: Ver erro detalhado
+                    listEl.innerHTML = `<div style="padding: 15px; color: var(--error-color);">Erro ao carregar contatos. Verifique o console para mais detalhes (F12).</div>`;
+                    Toast.error(`Falha ao buscar contatos: ${err.message}`);
                 }
             }
 
