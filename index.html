@@ -500,6 +500,7 @@
                 EXCLUIR_CONTATO: `${N8N_BASE}/excluir-contato-cliente`,
                 CRIAR_CONTATO_PROJETO: `${N8N_BASE}/criar-contato-projeto`,
                 EXCLUIR_CONTATO_PROJETO: `${N8N_BASE}/excluir-contato-projeto`,
+                ATUALIZAR_CONTATO_PROJETO: `${N8N_BASE}/atualizar-contato-projeto`,
                 EDITAR_PROJETO: `${N8N_BASE}/editar-projeto`, 
                 EXCLUIR_PROJETO: `${N8N_BASE}/excluir-projeto`, 
                 EXCLUIR_ATUALIZACAO: `${N8N_BASE}/excluir-atualizacao`
@@ -1223,21 +1224,14 @@
                 const listEl = document.getElementById('project-contacts-list');
                 listEl.innerHTML = '<div style="padding: 15px; color: var(--text-secondary);">Carregando contatos...</div>';
 
-                console.log(`Buscando contatos para o projectId: ${projectId}`); // LOG 1: Verificar ID
-
                 try {
-                    const { data, error, status } = await supabaseClient
+                    const { data, error } = await supabaseClient
                         .from('laborai_project_contacts')
                         .select('*')
                         .eq('project_id', projectId)
                         .order('name');
                     
-                    console.log('Resposta do Supabase:', { data, error, status }); // LOG 2: Ver resposta completa
-
-                    if (error) {
-                        // Lança o erro para ser capturado pelo bloco catch
-                        throw error;
-                    }
+                    if (error) throw error;
 
                     if (data.length === 0) {
                         listEl.innerHTML = '<div style="padding: 15px; color: var(--text-secondary);">Nenhum contato específico para este projeto.</div>';
@@ -1247,7 +1241,7 @@
                     listEl.innerHTML = '';
                     data.forEach(c => {
                         const item = document.createElement('div');
-                        item.className = 'contact-item'; // Re-using existing style
+                        item.className = 'contact-item';
                         item.innerHTML = `
                             <div>
                                 <strong>${escapeHtml(c.name)}</strong> 
@@ -1255,14 +1249,16 @@
                                 <br>
                                 <span style="color: var(--text-secondary); font-family: monospace;">${escapeHtml(c.whatsapp)}</span>
                             </div>
-                            <button class="danger icon-btn" onclick="deleteProjectContact('${c.id}')" title="Remover do projeto">🗑️</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="secondary icon-btn" onclick='handleEditProjectContact(${JSON.stringify(c).replace(/'/g, "&apos;")})' title="Editar contato">✏️</button>
+                                <button class="danger icon-btn" onclick="deleteProjectContact('${c.id}')" title="Remover do projeto">🗑️</button>
+                            </div>
                         `;
                         listEl.appendChild(item);
                     });
 
                 } catch (err) {
-                    console.error('ERRO DETALHADO ao buscar contatos:', err); // LOG 3: Ver erro detalhado
-                    listEl.innerHTML = `<div style="padding: 15px; color: var(--error-color);">Erro ao carregar contatos. Verifique o console para mais detalhes (F12).</div>`;
+                    listEl.innerHTML = `<div style="padding: 15px; color: var(--error-color);">Erro ao carregar contatos.</div>`;
                     Toast.error(`Falha ao buscar contatos: ${err.message}`);
                 }
             }
@@ -1270,7 +1266,7 @@
             window.deleteProjectContact = async (contactId) => {
                 showGenericModal({
                     title: 'Remover Contato do Projeto',
-                    bodyHtml: '<p>Tem certeza que deseja remover este contato <strong>apenas deste projeto</strong>? Ele não será excluído dos contatos globais.</p>',
+                    bodyHtml: '<p>Tem certeza que deseja remover este contato <strong>apenas deste projeto</strong>?</p>',
                     buttons: [{
                         label: 'Remover',
                         classes: 'danger',
@@ -1285,6 +1281,47 @@
                                 await renderProjectContactsList(state.currentProjectId);
                             } catch(err) {
                                 Toast.error(err.message);
+                            }
+                        }
+                    }]
+                });
+            };
+
+            window.handleEditProjectContact = async (contact) => {
+                showGenericModal({
+                    title: 'Editar Contato do Projeto',
+                    bodyHtml: `
+                        <label>Nome:</label>
+                        <input type="text" id="edit-project-contact-name" value="${escapeHtml(contact.name)}" required style="margin-bottom: 8px; width: 100%; box-sizing: border-box;">
+                        <label>Cargo:</label>
+                        <input type="text" id="edit-project-contact-role" value="${escapeHtml(contact.role || '')}" style="margin-bottom: 8px; width: 100%; box-sizing: border-box;">
+                        <label>WhatsApp:</label>
+                        <input type="text" id="edit-project-contact-whatsapp" value="${escapeHtml(contact.whatsapp)}" required style="margin-bottom: 8px; width: 100%; box-sizing: border-box;">
+                    `,
+                    buttons: [{
+                        label: 'Salvar Alterações',
+                        classes: 'primary',
+                        onClick: async () => {
+                            const payload = {
+                                contactId: contact.id,
+                                name: document.getElementById('edit-project-contact-name').value,
+                                role: document.getElementById('edit-project-contact-role').value,
+                                whatsapp: document.getElementById('edit-project-contact-whatsapp').value
+                            };
+                            
+                            try {
+                                const res = await fetch(HOOKS.ATUALIZAR_CONTATO_PROJETO, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                                if (!res.ok) throw new Error('Falha ao atualizar o contato.');
+                                
+                                Toast.success('Contato atualizado!');
+                                await renderProjectContactsList(state.currentProjectId);
+                            } catch (err) {
+                                Toast.error(err.message);
+                                throw err; // Impede que o modal feche em caso de erro
                             }
                         }
                     }]
