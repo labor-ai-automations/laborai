@@ -625,7 +625,11 @@
             };
 
             // --- AJUSTE LIGHTBOX GLOBAL ---
-            window.openImageLightbox = function(update) {
+            window.openImageLightbox = function(updateId) {
+                const result = findUpdateInState(updateId);
+                if (!result) return;
+                const { update } = result;
+
                 const lightbox = document.getElementById('image-lightbox');
                 const img = document.getElementById('lightbox-img');
                 const downloadLink = document.getElementById('lightbox-download-link');
@@ -810,7 +814,7 @@
                     if (state.isAdmin && !state.isSimulatingClient) {
                         adminActions = `
                             <div class="admin-toolbar" style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
-                                <button class="secondary icon-btn" onclick="event.stopPropagation(); handleEditProject(${JSON.stringify(project)})">✏️ Editar</button>
+                                <button class="secondary icon-btn" onclick="event.stopPropagation(); handleEditProject('${project.id}')">✏️ Editar</button>
                                 <button class="danger icon-btn" onclick="event.stopPropagation(); handleDeleteProject('${project.id}')">🗑️</button>
                             </div>
                         `;
@@ -1389,9 +1393,8 @@
                             if (upd.update_type === 'image' && upd.content_url) {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
                                 if (directImageUrl && directImageUrl.length > 30) { 
-                                    const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
                                     content += `<img src="${directImageUrl}" 
-                                                     onclick='openImageLightbox(${safeUpd})' 
+                                                     onclick="openImageLightbox('${upd.id}')" 
                                                      onerror="this.style.display='none'" 
                                                      style="margin-top:10px; display: block; border-radius: 4px; max-width: 100%;">`;
                                 }
@@ -1404,10 +1407,9 @@
 
                             let updActions = '';
                             if (isAdminMode) {
-                                const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
                                 updActions = `
                                     <div class="update-actions">
-                                        <button class="icon-btn secondary" title="Editar" onclick='handleEditUpdate(${safeUpd})'>✏️</button>
+                                        <button class="icon-btn secondary" title="Editar" onclick="handleEditUpdate('${upd.id}')">✏️</button>
                                         <button class="icon-btn" style="background:#25D366; color:white;" title="Notificar WhatsApp" onclick="notifyWhatsApp('${upd.id}', '${project.id}', '${project.client_id}')">📱</button>
                                         <button class="icon-btn danger" title="Excluir" onclick="deleteUpdate('${upd.id}')">🗑️</button>
                                     </div>
@@ -1816,7 +1818,12 @@
                 });
             };
 
-            window.handleEditProject = (project) => {
+            window.handleEditProject = (projectId) => {
+                const project = state.projects.find(p => p.id === projectId);
+                if (!project) {
+                    Toast.error("Projeto não encontrado");
+                    return;
+                }
                 showGenericModal({
                     title: 'Editar Projeto',
                     bodyHtml: `
@@ -1870,7 +1877,14 @@
                 });
             };
 
-            window.handleEditUpdate = async (update) => {
+            window.handleEditUpdate = async (updateId) => {
+                const result = findUpdateInState(updateId);
+                if (!result) {
+                    Toast.error("Atualização não encontrada.");
+                    return;
+                }
+                const { update } = result;
+
                 showGenericModal({
                     title: 'Editar Atualização',
                     bodyHtml: `
