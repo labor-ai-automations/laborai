@@ -1249,7 +1249,7 @@
                                 <strong>${escapeHtml(c.name)}</strong> 
                                 <span style="color: var(--text-secondary);">${c.role ? `(${escapeHtml(c.role)})` : ''}</span>
                                 <br>
-                                <small style="font-family: monospace;">${escapeHtml(c.whatsapp)}</small>
+                                <span style="color: var(--text-secondary); font-family: monospace;">${escapeHtml(c.whatsapp)}</span>
                             </div>
                             <button class="danger icon-btn" onclick="deleteProjectContact('${c.id}')" title="Remover do projeto">🗑️</button>
                         `;
