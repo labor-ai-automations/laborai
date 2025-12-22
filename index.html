@@ -1408,7 +1408,7 @@
                                 updActions = `
                                     <div class="update-actions">
                                         <button class="icon-btn secondary" title="Editar" onclick='handleEditUpdate(${safeUpd})'>✏️</button>
-                                        <button class="icon-btn" style="background:#25D366; color:white;" title="Notificar WhatsApp" onclick="notifyWhatsApp('${upd.id}', '${project.id}')">📱</button>
+                                        <button class="icon-btn" style="background:#25D366; color:white;" title="Notificar WhatsApp" onclick="notifyWhatsApp('${upd.id}', '${project.id}', '${project.client_id}')">📱</button>
                                         <button class="icon-btn danger" title="Excluir" onclick="deleteUpdate('${upd.id}')">🗑️</button>
                                     </div>
                                 `;
@@ -1682,7 +1682,7 @@
             }
 
 
-            window.notifyWhatsApp = async (updateId, projectId) => {
+            window.notifyWhatsApp = async (updateId, projectId, clientId) => {
                 const result = findUpdateInState(updateId);
                 if (!result) {
                     Toast.error("Atualização não encontrada. Recarregue a página.");
@@ -1692,7 +1692,7 @@
 
                 try {
                     const [clientContactsRes, projectContactsRes] = await Promise.all([
-                        supabaseClient.from('laborai_client_contacts').select('*').eq('client_id', project.client_id),
+                        supabaseClient.from('laborai_client_contacts').select('*').eq('client_id', clientId),
                         supabaseClient.from('laborai_project_contacts').select('*').eq('project_id', projectId)
                     ]);
                     
