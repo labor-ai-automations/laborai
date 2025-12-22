@@ -1729,6 +1729,20 @@
                 }
                 const { update, project } = result;
 
+                const renderContactCheckboxItem = (contact) => `
+                    <label class="contact-item" style="cursor: pointer; padding: 12px; border-radius: 6px; transition: background 0.2s;">
+                        <div style="flex: 1; display: flex; align-items: center; gap: 12px;">
+                            <input type="checkbox" class="contact-checkbox" value="${contact.id}" checked style="width: auto; margin: 0;">
+                            <div>
+                                <strong>${escapeHtml(contact.name)}</strong>
+                                <span style="color: var(--text-secondary);">${contact.role ? ` (${escapeHtml(contact.role)})` : ''}</span>
+                                <br>
+                                <span style="font-family: monospace; font-size: 0.9em; color: var(--primary-accent);">${escapeHtml(contact.whatsapp)}</span>
+                            </div>
+                        </div>
+                    </label>
+                `;
+
                 try {
                     const [clientContactsRes, projectContactsRes] = await Promise.all([
                         supabaseClient.from('laborai_client_contacts').select('*').eq('client_id', clientId),
@@ -1741,17 +1755,19 @@
                     const projectContacts = projectContactsRes.data;
 
                     let bodyHtml = '<div style="max-height: 40vh; overflow-y: auto;">';
+                    
                     if (clientContacts.length > 0) {
-                        bodyHtml += '<h4 style="margin-top:0;">Contatos Globais (Cliente)</h4>';
-                        clientContacts.forEach(c => bodyHtml += `<label style="display: block; padding: 5px; cursor:pointer;"><input type="checkbox" class="contact-checkbox" value="${c.id}" checked> ${escapeHtml(c.name)}</label>`);
+                        bodyHtml += '<h4 style="margin-top:0; margin-bottom: 5px;">Contatos Globais (Cliente)</h4>';
+                        clientContacts.forEach(c => bodyHtml += renderContactCheckboxItem(c));
                     }
                     if (projectContacts.length > 0) {
-                        bodyHtml += '<h4 style="margin-top:15px;">Contatos Específicos (Projeto)</h4>';
-                        projectContacts.forEach(c => bodyHtml += `<label style="display: block; padding: 5px; cursor:pointer;"><input type="checkbox" class="contact-checkbox" value="${c.id}" checked> ${escapeHtml(c.name)}</label>`);
+                        bodyHtml += '<h4 style="margin-top:15px; margin-bottom: 5px;">Contatos Específicos (Projeto)</h4>';
+                        projectContacts.forEach(c => bodyHtml += renderContactCheckboxItem(c));
                     }
                     if (clientContacts.length === 0 && projectContacts.length === 0) {
                         bodyHtml += '<p>Nenhum contato encontrado. Adicione contatos na aba "Contatos do Projeto".</p>';
                     }
+
                     bodyHtml += '</div>';
 
                     showGenericModal({
