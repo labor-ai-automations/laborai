@@ -610,10 +610,11 @@
                         button.innerText = '...';
                         try {
                             await btnConfig.onClick();
-                            closeModal();
+                            if (btnConfig.closeOnClick !== false) {
+                                closeModal();
+                            }
                         } catch (e) {
                             console.error(e);
-                            // Toast.error("Erro na ação"); // Don't show generic error, allow custom error handling
                         } finally {
                             button.disabled = false;
                             button.innerText = originalText;
@@ -1776,6 +1777,7 @@
                         buttons: (clientContacts.length > 0 || projectContacts.length > 0) ? [{
                             label: 'Compor Mensagem →',
                             classes: 'primary',
+                            closeOnClick: false,
                             onClick: async () => {
                                 const selectedContactIds = Array.from(document.querySelectorAll('.contact-checkbox:checked')).map(cb => cb.value);
                                 if (selectedContactIds.length === 0) {
