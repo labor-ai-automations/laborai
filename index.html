@@ -165,7 +165,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- TELA DE LOGIN -->
     <div id="login-section">
         <div class="login-card">
             <h2>Portal LaborAI</h2>
@@ -178,11 +177,9 @@
         </div>
     </div>
 
-    <!-- APLICAÇÃO PRINCIPAL -->
     <div id="app-container" class="container hidden">
         <header id="app-header">
             <div class="header-left">
-                <!-- Logo do Cliente (Carregada Dinamicamente) -->
                 <img id="header-client-logo" class="client-logo-header-img hidden" alt="Logo">
                 <div>
                     <strong style="font-size: 1.2rem;">LaborAI</strong>
@@ -191,7 +188,6 @@
             </div>
             <div style="display: flex; align-items: center;">
                 
-                <!-- Toggle "Ver como Cliente" (Apenas Admin) -->
                 <div id="admin-simulation-toggle" class="toggle-container hidden">
                     <span style="font-size: 0.9em; color: var(--text-secondary);">Ver como Cliente</span>
                     <label class="switch">
@@ -202,7 +198,6 @@
 
                 <span id="user-email" style="font-size: 0.9em; margin-right: 16px; color: var(--text-secondary);"></span>
                 
-                <!-- Botão Painel Admin (Apenas Admin) -->
                 <button id="admin-panel-button" class="hidden secondary" style="width: auto; padding: 6px 12px; margin-right: 10px;">
                     ⚙️ Painel & Criação
                 </button>
@@ -212,38 +207,31 @@
         </header>
 
         <main id="main-content">
-            <!-- VIEW 1: Lista de Clientes (Home do Admin) -->
             <div id="client-list-view" class="hidden">
                 <h3>Meus Clientes</h3>
                 <div id="clients-list" class="card-grid"></div>
             </div>
 
-            <!-- VIEW 2: Lista de Projetos (Home do Cliente / Navegação Admin) -->
             <div id="project-list-view" class="hidden">
-                <button id="back-to-clients-button" class="secondary hidden" style="margin-bottom: 20px;">&larr; Voltar para Clientes</button>
-                <!-- Adicionar logo após o botão de voltar -->
+                <button id="back-to-clients-button" class="secondary hidden" style="margin-bottom: 20px;">← Voltar para Clientes</button>
                 <h2 style="font-weight: 500; border-bottom: 1px solid var(--border-dark); padding-bottom: 16px; margin-bottom: 24px;">Projetos</h2>
                 <div id="project-list-content" class="card-grid"></div>
             </div>
 
-            <!-- VIEW 3: Detalhes do Projeto (Timeline) -->
             <div id="project-detail-view" class="hidden">
-                <button id="back-to-projects-button" class="secondary" style="margin-bottom: 20px;">&larr; Voltar para Projetos</button>
+                <button id="back-to-projects-button" class="secondary" style="margin-bottom: 20px;">← Voltar para Projetos</button>
                 
-                <!-- Cabeçalho do Projeto Refatorado -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                     <h2 id="project-detail-name" style="margin: 0;">Nome do Projeto</h2>
                     <button id="toggle-add-update-form" class="primary icon-btn hidden">[+] Nova Atualização</button>
                 </div>
 
-                <!-- Container de Abas -->
                 <div class="tab-container hidden" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-dark); padding-bottom: 10px;">
                     <button id="btn-view-timeline" class="secondary icon-btn" style="background: var(--primary-accent);">🕒 Linha do Tempo</button>
                     <button id="btn-view-reports" class="secondary icon-btn">📊 Relatórios de Uso</button>
                     <button id="btn-view-contacts" class="secondary icon-btn">👥 Contatos do Projeto</button>
                 </div>
 
-                <!-- Conteúdo da Linha do Tempo -->
                 <div id="project-timeline-content">
                     <div id="project-description-container" class="admin-section-card" style="margin-bottom: 24px; padding: 20px;">
                         <h3 style="margin-top: 0; margin-bottom: 10px;">Sobre o Projeto</h3>
@@ -281,10 +269,8 @@
                     </div>
                 </div>
 
-                <!-- Conteúdo dos Relatórios -->
                 <div id="project-reports-content" class="hidden">
                     <div id="reports-dashboard-container">
-                        <!-- Barra de Filtros ATUALIZADA -->
                         <div class="filter-bar" style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: center; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px;">
                             <div style="display: flex; gap: 8px;">
                                 <button class="secondary icon-btn mini-filter" data-days="7">7 dias</button>
@@ -299,10 +285,8 @@
                             </div>
                         </div>
                         
-                        <!-- KPIs -->
                         <div id="kpi-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 24px;"></div>
                         
-                        <!-- Gráficos -->
                         <div id="charts-grid">
                             <div class="chart-card" style="background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px; padding: 20px;">
                                 <h4 style="margin-top:0;">📈 Soma de Peças por Dia</h4>
@@ -323,7 +307,6 @@
                             </select>
                         </div>
                 
-                        <!-- Tabela -->
                         <div style="overflow-x: auto; background: var(--surface-dark); border: 1px solid var(--border-dark); border-radius: 8px;">
                             <table id="automation-history-table" style="width: 100%; border-collapse: collapse;">
                                 <thead id="table-header-modular"></thead>
@@ -331,25 +314,20 @@
                             </table>
                         </div>
                 
-                        <!-- Controles de Paginação -->
                         <div id="pagination-controls" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px; padding-bottom: 40px;"></div>
                     </div>
                 </div>
 
-                <!-- Conteúdo dos Contatos do Projeto -->
                 <div id="project-contacts-content" class="hidden">
-                    <!-- Conteúdo será renderizado aqui pelo JS -->
-                </div>
+                    </div>
 
             </div>
 
-            <!-- VIEW 4: Painel Administrativo (Formulários de Criação) -->
             <div id="admin-forms-view" class="hidden">
-                <button id="back-from-admin-panel" class="secondary" style="margin-bottom: 20px;">&larr; Voltar</button>
+                <button id="back-from-admin-panel" class="secondary" style="margin-bottom: 20px;">← Voltar</button>
                 <h2>Painel de Gestão & Criação</h2>
                 
                 <div class="card-grid">
-                    <!-- Upload de Logo -->
                     <div class="admin-section-card" style="margin-top: 0;">
                         <h3>🖼️ Logo do Cliente</h3>
                         <form id="upload-logo-form">
@@ -361,7 +339,6 @@
                         </form>
                     </div>
 
-                    <!-- Criar Cliente -->
                     <div class="admin-section-card" style="margin-top: 0;">
                         <h3>🏢 Novo Cliente</h3>
                         <form id="create-client-form">
@@ -371,7 +348,6 @@
                         </form>
                     </div>
 
-                    <!-- Criar Usuário -->
                     <div class="admin-section-card" style="margin-top: 0;">
                         <h3>👤 Novo Usuário</h3>
                         <form id="create-user-form">
@@ -386,7 +362,6 @@
                     </div>
                 </div>
 
-                <!-- Criar Projeto -->
                 <div class="admin-section-card">
                     <h3>🚀 Novo Projeto</h3>
                     <form id="create-project-form">
@@ -406,7 +381,6 @@
         </main>
     </div>
 
-    <!-- MODAL: Nova Versão -->
     <div id="new-version-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Iniciar Nova Versão</h3>
@@ -421,18 +395,14 @@
         </div>
     </div>
 
-    <!-- MODAL: Gerenciar Contatos -->
     <div id="contacts-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Gerenciar Contatos</h3>
             <p id="contacts-modal-client-name" style="color: var(--text-secondary); margin-bottom: 15px;"></p>
             
-            <!-- Lista -->
             <div id="contacts-list" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border-dark); border-radius: 6px;">
-                <!-- Itens inseridos via JS -->
-            </div>
+                </div>
 
-            <!-- Adicionar Novo -->
             <h4 style="border-top: 1px solid var(--border-dark); padding-top: 15px;">Adicionar Novo</h4>
             <form id="add-contact-form">
                 <input type="text" id="contact-name" placeholder="Nome" required style="margin-bottom: 8px;">
@@ -444,20 +414,16 @@
         </div>
     </div>
 
-    <!-- MODAL GENÉRICO PARA AÇÕES -->
     <div id="generic-modal" class="modal hidden">
         <div class="modal-content" style="max-width: 500px;">
             <h3 id="modal-title">Título Padrão</h3>
             <div id="modal-body" style="margin: 20px 0;">
-                <!-- Conteúdo será injetado aqui via JS -->
-            </div>
+                </div>
             <div id="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
-                <!-- Botões serão injetados aqui via JS -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- LIGHTBOX PARA IMAGENS -->
     <div id="image-lightbox" class="modal hidden">
         <div class="modal-content" style="max-width: 90%; max-height: 90%; display: flex; gap: 20px; padding: 20px;">
             <div style="flex: 2; display: flex; justify-content: center; align-items: center; position: relative;">
@@ -555,12 +521,12 @@
             function escapeHtml(text) {
                 if (!text) return '';
                 return text
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;")
-                    .replace(/`/g, "&#96;"); // Importante para template literals
+                    .replace(/&/g, "&")
+                    .replace(/</g, "<")
+                    .replace(/>/g, ">")
+                    .replace(/"/g, """)
+                    .replace(/'/g, "'")
+                    .replace(/`/g, "`"); // Importante para template literals
             }
             
             // --- AJUSTE 1: getGoogleDriveDirectImage CORRIGIDA ---
@@ -765,7 +731,7 @@
                             ${logoHtml}
                         </div>
                         <div style="margin-top: 15px; border-top: 1px solid var(--border-dark); padding-top: 10px;">
-                            <button class="secondary" style="width: 100%;" onclick="openClientProjects('${client.id}')">📂 Ver Projetos &rarr;</button>
+                            <button class="secondary" style="width: 100%;" onclick="openClientProjects('${client.id}')">📂 Ver Projetos →</button>
                         </div>
                     `;
                     container.appendChild(card);
@@ -1172,8 +1138,7 @@
                             Adicione aqui pessoas que devem ser notificadas sobre atualizações APENAS deste projeto.
                         </p>
                         <div id="project-contacts-list" style="margin-bottom: 24px; border: 1px solid var(--border-dark); border-radius: 6px;">
-                            <!-- List will be rendered here -->
-                        </div>
+                            </div>
 
                         <h4 style="border-top: 1px solid var(--border-dark); padding-top: 15px;">Adicionar Novo Contato ao Projeto</h4>
                         <form id="add-project-contact-form">
@@ -1380,7 +1345,7 @@
                             if (upd.update_type === 'image' && upd.content_url) {
                                 const directImageUrl = getGoogleDriveDirectImage(upd.content_url);
                                 if (directImageUrl && directImageUrl.length > 30) { 
-                                    const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
+                                    const safeUpd = JSON.stringify(upd).replace(/'/g, "'");
                                     content += `<img src="${directImageUrl}" 
                                                      onclick='openImageLightbox(${safeUpd})' 
                                                      onerror="this.style.display='none'" 
@@ -1395,7 +1360,7 @@
 
                             let updActions = '';
                             if (isAdminMode) {
-                                const safeUpd = JSON.stringify(upd).replace(/'/g, "&apos;");
+                                const safeUpd = JSON.stringify(upd).replace(/'/g, "'");
                                 updActions = `
                                     <div class="update-actions">
                                         <button class="icon-btn secondary" title="Editar" onclick='handleEditUpdate(${safeUpd})'>✏️</button>
