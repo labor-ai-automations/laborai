@@ -1678,7 +1678,6 @@
                                     throw new Error("Empty message");
                                 }
                                 
-                                // Início do código corrigido
                                 const payload = {
                                     updateId: update.id,
                                     contactIds: contactIds,
@@ -1689,7 +1688,6 @@
                                 if (imageUrl) {
                                     payload.imageUrl = imageUrl;
                                 }
-                                // Fim do código corrigido
 
                                 await fetch(HOOKS.NOTIFICAR_WHATSAPP, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                                 Toast.success("Notificações enviadas para a fila!");
