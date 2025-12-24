@@ -1678,12 +1678,18 @@
                                     throw new Error("Empty message");
                                 }
                                 
+                                // Início do código corrigido
                                 const payload = {
                                     updateId: update.id,
                                     contactIds: contactIds,
-                                    messageText: messageText,
-                                    imageUrl: getGoogleDriveDirectImage(update.content_url) || null
+                                    messageText: messageText
                                 };
+
+                                const imageUrl = getGoogleDriveDirectImage(update.content_url);
+                                if (imageUrl) {
+                                    payload.imageUrl = imageUrl;
+                                }
+                                // Fim do código corrigido
 
                                 await fetch(HOOKS.NOTIFICAR_WHATSAPP, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                                 Toast.success("Notificações enviadas para a fila!");
