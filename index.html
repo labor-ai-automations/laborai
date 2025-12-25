@@ -1635,8 +1635,9 @@
                     const { data: templates, error } = await supabaseClient.from('laborai_message_templates').select('*');
                     if (error) throw error;
 
-                    const updateType = update.content_url ? 'image' : 'text';
-                    let selectedTemplate = templates.find(t => t.update_type_trigger === updateType) || templates[0];
+                    const hasImage = update.update_type === 'image' && update.content_url;
+                    const updateTypeTrigger = hasImage ? 'image' : 'text';
+                    let selectedTemplate = templates.find(t => t.update_type_trigger === updateTypeTrigger) || templates[0];
 
                     const replacePlaceholders = (text) => {
                         return text
@@ -1678,18 +1679,19 @@
                                     throw new Error("Empty message");
                                 }
                                 
-                                // INÍCIO DO CÓDIGO CORRIGIDO - IMPLEMENTE EXATAMENTE ISTO
                                 const payload = {
                                     updateId: update.id,
                                     contactIds: contactIds,
                                     messageText: messageText
                                 };
 
-                                const imageUrl = getGoogleDriveDirectImage(update.content_url);
-                                if (imageUrl) {
-                                    payload.imageUrl = imageUrl;
+                                // CORREÇÃO DEFINITIVA: Checa o tipo da atualização antes de tentar pegar a URL
+                                if (update.update_type === 'image' && update.content_url) {
+                                    const imageUrl = getGoogleDriveDirectImage(update.content_url);
+                                    if (imageUrl) {
+                                        payload.imageUrl = imageUrl;
+                                    }
                                 }
-                                // FIM DO CÓDIGO CORRIGIDO
 
                                 await fetch(HOOKS.NOTIFICAR_WHATSAPP, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                                 Toast.success("Notificações enviadas para a fila!");
