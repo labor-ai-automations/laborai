@@ -231,9 +231,17 @@
                 <button id="back-to-projects-button" class="secondary" style="margin-bottom: 20px;">&larr; Voltar para Projetos</button>
                 
                 <!-- Cabeçalho do Projeto Refatorado -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <h2 id="project-detail-name" style="margin: 0;">Nome do Projeto</h2>
-                    <button id="toggle-add-update-form" class="primary icon-btn hidden">[+] Nova Atualização</button>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                    <div>
+                        <h2 id="project-detail-name" style="margin: 0;">Nome do Projeto</h2>
+                        <div style="margin-top: 8px;">
+                            <select id="version-selector-dropdown"></select>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="toggle-add-update-form" class="primary icon-btn hidden">[+] Nova Atualização</button>
+                        <button id="start-new-version-button" class="primary icon-btn hidden">🚀 Iniciar Nova Versão</button>
+                    </div>
                 </div>
 
                 <!-- Container de Abas -->
@@ -1329,8 +1337,8 @@
                 });
             };
 
-            // 4. DETALHES DO PROJETO (TIMELINE)
-            function renderProjectDetail(projectId) {
+            // 4. DETALHES DO PROJETO (TIMELINE) - REVISED FOR VERSIONING
+            function renderProjectDetail(projectId, selectedVersionId = null) {
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
 
@@ -1341,10 +1349,31 @@
                 const versions = project.laborai_project_versions || [];
                 versions.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                 
+                // Determine active version
+                let activeVersion = null;
+                if (selectedVersionId) {
+                    activeVersion = versions.find(v => v.id === selectedVersionId);
+                }
+                if (!activeVersion) {
+                    activeVersion = versions[0];
+                }
+
+                // Populate and set version dropdown
+                const versionDropdown = document.getElementById('version-selector-dropdown');
+                versionDropdown.innerHTML = '';
+                versions.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.id;
+                    opt.innerText = `${v.version_number} - ${new Date(v.created_at).toLocaleDateString('pt-BR')}`;
+                    versionDropdown.appendChild(opt);
+                });
+                if(activeVersion) {
+                    versionDropdown.value = activeVersion.id;
+                }
+
                 const contentDiv = document.getElementById('project-detail-content');
                 contentDiv.innerHTML = '';
-
-                const activeVersion = versions[0];
+                
                 state.currentVersionId = activeVersion ? activeVersion.id : null;
                 const progress = activeVersion?.progress_percentage || 0;
 
@@ -1355,6 +1384,13 @@
 
                 const isAdminMode = state.isAdmin && !state.isSimulatingClient;
                 document.getElementById('admin-progress-controls').classList.toggle('hidden', !isAdminMode);
+                document.getElementById('toggle-add-update-form').classList.toggle('hidden', !isAdminMode);
+
+                // Show "Start New Version" button logic
+                const newVersionBtn = document.getElementById('start-new-version-button');
+                const canStartNewVersion = isAdminMode && activeVersion?.progress_percentage >= 100;
+                newVersionBtn.classList.toggle('hidden', !canStartNewVersion);
+
 
                 if (isAdminMode && activeVersion) {
                     document.getElementById('progress-slider').value = progress;
@@ -1368,13 +1404,11 @@
                     });
                 }
 
-                document.getElementById('toggle-add-update-form').classList.toggle('hidden', !isAdminMode);
 
                 if (activeVersion) {
-                    const version = activeVersion;
                     const vDiv = document.createElement('div');
                     
-                    const phases = version.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
+                    const phases = activeVersion.laborai_project_phases.sort((a,b) => a.phase_order - b.phase_order);
                     
                     phases.forEach(phase => {
                         const isCompleted = phase.status === 'completed';
@@ -1482,6 +1516,7 @@
                 const project = state.projects.find(p => p.id === projectId);
                 if (!project) return;
 
+                // Call with no second argument to default to the latest version
                 renderProjectDetail(projectId);
 
                 const tabContainer = document.querySelector('#project-detail-view .tab-container');
@@ -1583,7 +1618,7 @@
                             
                             Toast.success('Atualização criada!');
                             await loadData();
-                            renderProjectDetail(state.currentProjectId);
+                            renderProjectDetail(state.currentProjectId, state.currentVersionId);
                             document.getElementById('generic-modal').classList.add('hidden');
                         } catch (err) {
                             Toast.error('Falha ao salvar. Verifique os dados.');
@@ -1975,7 +2010,7 @@
                             
                             Toast.success('Atualização salva!');
                             await loadData();
-                            renderProjectDetail(state.currentProjectId);
+                            renderProjectDetail(state.currentProjectId, state.currentVersionId);
                         }
                     }]
                 });
@@ -1995,7 +2030,7 @@
                             });
                             Toast.success('Atualização removida');
                             await loadData(); 
-                            renderProjectDetail(state.currentProjectId);
+                            renderProjectDetail(state.currentProjectId, state.currentVersionId);
                         }
                     }]
                 });
@@ -2008,7 +2043,7 @@
                 });
                 Toast.success('Status da fase alterado');
                 await loadData(); 
-                renderProjectDetail(state.currentProjectId);
+                renderProjectDetail(state.currentProjectId, state.currentVersionId);
             };
 
             // --- OUTROS FORMULÁRIOS ---
@@ -2036,6 +2071,58 @@
                 renderProjectList(state.currentClientId);
                 showView('projectList');
             });
+
+            // --- VERSIONING LISTENERS ---
+            document.getElementById('start-new-version-button').addEventListener('click', () => {
+                document.getElementById('new-version-modal').classList.remove('hidden');
+            });
+
+            document.getElementById('new-version-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.innerText;
+                btn.disabled = true;
+                btn.innerText = 'Criando...';
+
+                try {
+                    const payload = {
+                        projectId: state.currentProjectId,
+                        newVersionNumber: document.getElementById('new-version-number').value,
+                        summary: document.getElementById('new-version-summary').value,
+                        copyPhasesFromVersionId: state.currentVersionId
+                    };
+                    
+                    const res = await fetch(HOOKS.CRIAR_NOVA_VERSAO, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!res.ok) {
+                        throw new Error('Falha ao criar nova versão.');
+                    }
+
+                    Toast.success('Nova versão iniciada com sucesso!');
+                    document.getElementById('new-version-modal').classList.add('hidden');
+                    e.target.reset();
+                    
+                    await loadData();
+                    openProjectDetail(state.currentProjectId); // Opens the latest version by default
+
+                } catch (err) {
+                    Toast.error(err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            });
+
+            document.getElementById('version-selector-dropdown').addEventListener('change', (e) => {
+                if (!Views.projectDetail.classList.contains('hidden') && state.currentProjectId) {
+                    renderProjectDetail(state.currentProjectId, e.target.value);
+                }
+            });
+
 
             document.getElementById('create-client-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -2081,7 +2168,7 @@
                 });
                 Toast.success('Progresso salvo');
                 await loadData();
-                renderProjectDetail(state.currentProjectId);
+                renderProjectDetail(state.currentProjectId, state.currentVersionId);
             });
             
             document.getElementById('back-to-clients-button').addEventListener('click', () => {
